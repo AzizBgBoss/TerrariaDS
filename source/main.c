@@ -876,8 +876,9 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 
 		if (held & KEY_TOUCH)
 		{
-			int worldX = scrollX + ((touch.px * 256) / scale);
-			int worldY = scrollY + ((touch.py * 256) / scale);
+			touchRead(&touch);
+			int worldX = scrollX + touch.px;
+			int worldY = scrollY + touch.py;
 
 			int worldTouchX = worldX / 16;
 			int worldTouchY = worldY / 16;
