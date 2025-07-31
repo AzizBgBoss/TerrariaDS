@@ -36,6 +36,7 @@ V    Trees
 #include "font.h"
 #include "ui.h"
 #include "von.h"
+#include "items.h"
 #include "soundbank.h"
 #include "soundbank_bin.h"
 
@@ -118,12 +119,10 @@ typedef struct
 } Sprite;
 
 // Define the player entity
-Player player = {0, 0, 0, 0, 0, NULL, 16, 24, false, true, 1, 0, true, false, 4, ANIM_NONE};
+Player player = {MAP_WIDTH * 8 / 2, 0, 0, 0, 0, NULL, 16, 24, false, true, 1, 0, true, false, 4, ANIM_NONE};
 
 // Define 64 slots for item entities
 Item item[64] = {{0, 0, 0, 0, NULL, 8, 8, false, 60, 0, 0}};
-
-Sprite destructionSprite = {0, 0, 0, 0, NULL};
 
 u16 *bg2Map;
 
@@ -181,6 +180,8 @@ int getElementTile(int tile)
 {
 	switch (tile)
 	{
+	case TILE_AIR:
+		return 15;
 	case TILE_GRASS:
 		return 0;
 	case TILE_DIRT:
@@ -190,19 +191,38 @@ int getElementTile(int tile)
 	case TILE_WOODLOG:
 		return 3;
 	case TILE_MUSHROOM:
-		return 20;
+		return 5;
 	case TILE_LEAVES:
-		return 16;
+		return 4;
+	default:
+		return 14;
+	}
+}
+
+int getItemTile(int item)
+{
+	switch (item)
+	{
+	case ITEM_SWORD:
+		return 0;
 	case ITEM_PICKAXE:
 		return 4;
-	case ITEM_SWORD:
-		return 17;
 	case ITEM_AXE:
-		return 18;
+		return 8;
 	case ITEM_HAMMER:
-		return 19;
+		return 12;
+	case TILE_GRASS:
+		return 16;
+	case TILE_DIRT:
+		return 16;
+	case TILE_STONE:
+		return 20;
+	case TILE_MUSHROOM:
+		return 24;
+	case TILE_WOODLOG:
+		return 28;
 	default:
-		return 15;
+		return 56;
 	}
 }
 
@@ -302,10 +322,10 @@ void setInventory(int slot, int item, int quantity)
 	}
 	inventory[slot] = item;
 	inventoryQuantity[slot] = quantity;
-	Bg1UpSetTile(x, y, getElementTile(item) + 0);
-	Bg1UpSetTile(x + 1, y, getElementTile(item) + 1);
-	Bg1UpSetTile(x, y + 1, getElementTile(item) + 2);
-	Bg1UpSetTile(x + 1, y + 1, getElementTile(item) + 3);
+	Bg1UpSetTile(x, y, getItemTile(item) + 0);
+	Bg1UpSetTile(x + 1, y, getItemTile(item) + 1);
+	Bg1UpSetTile(x, y + 1, getItemTile(item) + 2);
+	Bg1UpSetTile(x + 1, y + 1, getItemTile(item) + 3);
 	print(x, y + 2, "   ");
 	if (quantity == 1)
 		return;
@@ -358,30 +378,20 @@ void dropItem(int x, int y, int tile, int quantity)
 	item[index].tile = tile;
 	item[index].quantity = quantity;
 
-	dmaCopy(tilemapTiles + 4 * 4 * getElementTile(tile), item[index].sprite_gfx_mem, 8 * 8);
+	dmaCopy(itemsTiles + 4 * 4 * getItemTile(tile), item[index].sprite_gfx_mem, 16 * 16);
 }
 
 void destroyItem(int id)
 {
 	item[id].exists = false;
-	dmaCopy(tilemapTiles + 4 * 4 * getElementTile(0), item[id].sprite_gfx_mem, 8 * 8);
+	dmaCopy(tilemapTiles + 4 * 4 * getElementTile(0), item[id].sprite_gfx_mem, 16 * 16);
 }
 
 void breakTile(int x, int y, int speed)
 {
 	gameTerrainHealth[x + y * MAP_WIDTH] += speed;
-	for (int i = 0; i < 10; i++)
-	{
-		if (gameTerrainHealth[x + y * MAP_WIDTH] - 1 == getElementHealth(gameTerrain[x + y * MAP_WIDTH]) / 10 * i)
-		{
-			dmaCopy(tilemapTiles + 8 * 8 * (i + 5), destructionSprite.sprite_gfx_mem, 16 * 16);
-		}
-	}
-	destructionSprite.x = x * 8;
-	destructionSprite.y = y * 8;
 	if (gameTerrainHealth[x + y * MAP_WIDTH] >= getElementHealth(gameTerrain[x + y * MAP_WIDTH]))
 	{
-		dmaCopy(tilemapTiles + 8 * 8 * 15, destructionSprite.sprite_gfx_mem, 16 * 16);
 		dropItem(x, y, gameTerrain[x + y * MAP_WIDTH], 1);
 		setGameTerrain(x, y, 0);
 		gameTerrainHealth[x + y * MAP_WIDTH] = 0;
@@ -681,7 +691,7 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 	dmaCopy(invTiles, (void *)CHAR_BASE_BLOCK(1), invTilesLen);
 	dmaCopy(invMap, (void *)SCREEN_BASE_BLOCK(0), invMapLen);
 	BGCTRL[1] = BG_TILE_BASE(2) | BG_MAP_BASE(2) | BG_COLOR_256 | BG_32x32 | BG_PRIORITY(2);
-	dmaCopy(tilemapTiles, (void *)CHAR_BASE_BLOCK(2), tilemapTilesLen);
+	dmaCopy(itemsTiles, (void *)CHAR_BASE_BLOCK(2), itemsTilesLen);
 	dmaFillHalfWords(63, (void *)SCREEN_BASE_BLOCK(2), 2048);
 	BGCTRL[3] = BG_TILE_BASE(3) | BG_MAP_BASE(3) | BG_COLOR_256 | BG_32x32 | BG_PRIORITY(0);
 	dmaCopy(fontTiles, (void *)CHAR_BASE_BLOCK(3), fontTilesLen);
@@ -716,19 +726,17 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 	u16 *nullSprite = oamAllocateGfx(&oamSub, SpriteSize_16x16, SpriteColorFormat_256Color);
 	dmaFillHalfWords(0, nullSprite, 16 * 16);
 
-	player.sprite_gfx_mem = oamAllocateGfx(&oamSub, SpriteSize_16x32, SpriteColorFormat_256Color);
-	dmaCopy(spritesTiles, player.sprite_gfx_mem, 16 * 32);
+	player.sprite_gfx_mem = oamAllocateGfx(&oamSub, SpriteSize_32x64, SpriteColorFormat_256Color);
+	dmaCopy(spritesTiles, player.sprite_gfx_mem, 32 * 64);
 
 	itemHandSprite = oamAllocateGfx(&oamSub, SpriteSize_16x16, SpriteColorFormat_256Color);
 	dmaCopy(tilemapTiles + 8 * 8 * 4, itemHandSprite, 16 * 16);
 
 	for (int i = 0; i < MAX_ITEMS; i++)
 	{
-		item[i].sprite_gfx_mem = oamAllocateGfx(&oamSub, SpriteSize_8x8, SpriteColorFormat_256Color);
+		item[i].sprite_gfx_mem = oamAllocateGfx(&oamSub, SpriteSize_16x16, SpriteColorFormat_256Color);
 		// No need to copy anything, we'll do that later when we summon the item
 	}
-
-	destructionSprite.sprite_gfx_mem = oamAllocateGfx(&oamSub, SpriteSize_16x16, SpriteColorFormat_256Color);
 
 	dmaCopy(spritesPal, SPRITE_PALETTE_SUB, spritesPalLen);
 
@@ -739,7 +747,7 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 	giveInventory(ITEM_PICKAXE, 1);
 	setInventorySelection(0);
 
-	print(0, 0, "Terraria DS version 0.1alpha\nBy AzizBgBoss\nhttps://github.com/AzizBgBoss/TerrariaDS\n\nPress A to jump\nPress L and R to switch items");
+	print(0, 0, "Terraria DS version 0.0.0.0pre\nBy AzizBgBoss\nhttps://github.com/AzizBgBoss/TerrariaDS\n\nPress A to jump\nPress L and R to switch items");
 
 	while (pmMainLoop())
 	{
@@ -759,7 +767,7 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 		if (pressed & KEY_SELECT)
 			loadMapFromFile("map.dat");
 
-		if (pressed & KEY_R)
+		if (pressed & KEY_X)
 		{
 			if (inventorySelection < 8 * 4 - 1)
 				setInventorySelection(inventorySelection + 1);
@@ -767,7 +775,7 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 				setInventorySelection(0);
 		}
 
-		if (pressed & KEY_L)
+		if (pressed & KEY_Y)
 		{
 			if (inventorySelection > 0)
 				setInventorySelection(inventorySelection - 1);
@@ -775,9 +783,9 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 				setInventorySelection(8 * 4 - 1);
 		}
 
-		if (held & KEY_X)
+		if (held & KEY_DOWN)
 			scale *= 1.01;
-		if (held & KEY_Y)
+		if (held & KEY_UP)
 			scale *= 0.99;
 
 		if (scale > 256)
@@ -874,36 +882,43 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 		if (held & KEY_TOUCH)
 		{
 			touchRead(&touch);
-			int worldX = scrollX + touch.px;
-			int worldY = scrollY + touch.py;
+			int dx = touch.px - SCREEN_WIDTH / 2;
+			int dy = touch.py - SCREEN_HEIGHT / 2;
 
-			int worldTouchX = worldX / 8;
-			int worldTouchY = worldY / 8;
+			int worldX = player.x + player.sizeX / 2 + (dx * scale) / 256;
+			int worldY = player.y + player.sizeY / 2 + (dy * scale) / 256;
 
-			// Check if touch within player range
-			if (worldTouchX >= TLCtileX - player.tileRange && worldTouchX <= TRCtileX + player.tileRange &&
-				worldTouchY >= TLCtileY - player.tileRange && worldTouchY <= BRCtileY + player.tileRange)
+			if (worldX >= 0 && worldX < MAP_WIDTH * 8 && worldY >= 0 && worldY < MAP_HEIGHT * 8)
 			{
-				if (inventory[inventorySelection] >= 1 && inventory[inventorySelection] < 100 // Object is a tile, not an item
-					&& inventoryQuantity[inventorySelection])
+
+				int worldTouchX = worldX / 8;
+				int worldTouchY = worldY / 8;
+
+				// Check if touch within player range
+				if (worldTouchX >= TLCtileX - player.tileRange && worldTouchX <= TRCtileX + player.tileRange &&
+					worldTouchY >= TLCtileY - player.tileRange && worldTouchY <= BRCtileY + player.tileRange)
 				{
-					if (!gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH])
+					if (inventory[inventorySelection] >= 1 && inventory[inventorySelection] < 100 // Object is a tile, not an item
+						&& inventoryQuantity[inventorySelection])
 					{
-						if (!(worldTouchX >= TLCtileX && worldTouchX <= TRCtileX && worldTouchY >= TLCtileY && worldTouchY <= BLCtileY))
+						if (!gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH])
 						{
-							setGameTerrain(worldTouchX, worldTouchY, inventory[inventorySelection]);
-							inventoryQuantity[inventorySelection]--;
-							setInventory(inventorySelection, inventory[inventorySelection], inventoryQuantity[inventorySelection]);
+							if (!(worldTouchX >= TLCtileX && worldTouchX <= TRCtileX && worldTouchY >= TLCtileY && worldTouchY <= BLCtileY))
+							{
+								setGameTerrain(worldTouchX, worldTouchY, inventory[inventorySelection]);
+								inventoryQuantity[inventorySelection]--;
+								setInventory(inventorySelection, inventory[inventorySelection], inventoryQuantity[inventorySelection]);
+							}
 						}
 					}
-				}
-				else if (inventory[inventorySelection] >= 100 && inventory[inventorySelection] < 200 // Object is an item, not a tile
-						 && inventoryQuantity[inventorySelection])
-				{
-					if (inventory[inventorySelection] == ITEM_PICKAXE)
+					else if (inventory[inventorySelection] >= 100 && inventory[inventorySelection] < 200 // Object is an item, not a tile
+							 && inventoryQuantity[inventorySelection])
 					{
-						if (gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH])
-							breakTile(worldTouchX, worldTouchY, 1);
+						if (inventory[inventorySelection] == ITEM_PICKAXE)
+						{
+							if (gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH])
+								breakTile(worldTouchX, worldTouchY, 1);
+						}
 					}
 				}
 			}
@@ -932,19 +947,8 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 			player.isJumping = true;
 		}
 
-		if (player.x >= SCREEN_WIDTH / 2 - player.sizeX / 2 && player.x < MAP_WIDTH * 8 - SCREEN_WIDTH / 2 - player.sizeX / 2)
-			scrollX = player.x - SCREEN_WIDTH / 2 + player.sizeX / 2;
-		else if (player.x >= MAP_WIDTH * 8 - SCREEN_WIDTH / 2 - player.sizeX / 2)
-			scrollX = MAP_WIDTH * 8 - SCREEN_WIDTH;
-		else
-			scrollX = 0;
-
-		if (player.y >= SCREEN_HEIGHT / 2 - player.sizeY / 2 && player.y < MAP_HEIGHT * 8 - SCREEN_HEIGHT / 2 - player.sizeY / 2)
-			scrollY = player.y - SCREEN_HEIGHT / 2 + player.sizeY / 2;
-		else if (player.y >= MAP_HEIGHT * 8 - SCREEN_HEIGHT / 2 - player.sizeY / 2)
-			scrollY = MAP_HEIGHT * 8 - SCREEN_HEIGHT;
-		else
-			scrollY = 0;
+		scrollX = player.x - SCREEN_WIDTH / 2 + player.sizeX / 2;
+		scrollY = player.y - SCREEN_HEIGHT / 2 + player.sizeY / 2;
 
 		for (int i = 0; i < 64; i++)
 		{
@@ -985,9 +989,6 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 			}
 		}
 
-		destructionSprite.renderX = destructionSprite.x - scrollX;
-		destructionSprite.renderY = destructionSprite.y - scrollY;
-
 		if (debug)
 		{
 			char buffer[4] = "    ";
@@ -1019,7 +1020,7 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 		bgSetCenter(bg2, player.renderX + player.sizeX / 2, player.renderY + player.sizeY / 2);
 		bgSetScroll(bg2, scrollX + player.renderX + player.sizeX / 2, scrollY + player.renderY + player.sizeY / 2);
 		bgSetScale(bg2, scale, scale);
-		oamRotateScale(&oamSub, 0, degreesToAngle(0), (scale), (scale));
+		oamRotateScale(&oamSub, 0, degreesToAngle(0), scale * 2 * (player.isLookingLeft ? -1 : 1), scale * 2);
 		REG_BG0HOFS_SUB = scrollX / 8;
 		REG_BG0VOFS_SUB = scrollY / 8;
 
@@ -1070,11 +1071,10 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 			}
 		}
 
-		dmaCopy(spritesTiles + player.anim_frame * 8 * 16, player.sprite_gfx_mem, 16 * 32);
+		dmaCopy(spritesTiles + player.anim_frame * 16 * 32, player.sprite_gfx_mem, 32 * 64);
 
-		oamSet(&oamSub, 0, player.renderX, player.renderY, 1, 0, SpriteSize_16x32, SpriteColorFormat_256Color, player.sprite_gfx_mem, 0, false, false, player.isLookingLeft, false, false);
+		oamSet(&oamSub, 0, player.renderX - player.sizeX / 2, player.renderY - player.sizeY / 2, 1, 0, SpriteSize_32x64, SpriteColorFormat_256Color, player.sprite_gfx_mem, 0, false, false, player.isLookingLeft, false, false);
 		// oamSet(&oamSub, 1, player.renderX, player.renderY, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, itemHandSprite, -1, false, false, player.isLookingLeft, false, false);
-		oamSet(&oamSub, 2, destructionSprite.renderX, destructionSprite.renderY, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, destructionSprite.sprite_gfx_mem, -1, false, false, false, false, false);
 		// Render dropped items
 		u8 renderedItems = 0;
 
@@ -1084,9 +1084,10 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 			{
 				if (item[i].exists)
 				{
-					item[i].renderX = item[i].x - scrollX;
-					item[i].renderY = item[i].y - scrollY;
-					oamSet(&oamSub, renderedItems + 3, item[i].renderX, item[i].renderY, 0, 0, SpriteSize_8x8, SpriteColorFormat_256Color, item[i].sprite_gfx_mem, -1, false, false, false, false, false);
+					item[i].renderX = item[i].x - scrollX - (player.x - item[i].x) * 256 / scale + player.x - item[i].x; // Adjust for player position
+					item[i].renderY = item[i].y - scrollY - (player.y - item[i].y) * 256 / scale + player.y - item[i].y; // Adjust for player position
+					oamRotateScale(&oamSub, renderedItems + 2, degreesToAngle(0), scale * 2, scale * 2);
+					oamSet(&oamSub, renderedItems + 2, item[i].renderX - item[i].sizeX * 256 / scale, item[i].renderY - item[i].sizeY * 256 / scale, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, item[i].sprite_gfx_mem, renderedItems + i, false, false, false, false, false);
 					renderedItems++;
 				}
 			}
@@ -1094,7 +1095,7 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 		// Clean up used sprites
 		for (int i = renderedItems; i < MAX_ITEMS; i++)
 		{
-			oamSet(&oamSub, i + 3, 0, 0, 0, 0, SpriteSize_8x8, SpriteColorFormat_256Color, nullSprite, -1, false, false, false, false, false);
+			oamSet(&oamSub, i + 2, 0, 0, 0, 0, SpriteSize_8x8, SpriteColorFormat_256Color, nullSprite, -1, false, false, false, false, false);
 		}
 
 		oamUpdate(&oamSub);
