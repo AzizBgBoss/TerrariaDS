@@ -118,7 +118,7 @@ typedef struct
 } Sprite;
 
 // Define the player entity
-Player player = {0, 0, 0, 0, 0, NULL, 32, 48, false, true, 1, 0, true, false, 4, ANIM_NONE};
+Player player = {0, 0, 0, 0, 0, NULL, 16, 24, false, true, 1, 0, true, false, 4, ANIM_NONE};
 
 // Define 64 slots for item entities
 Item item[64] = {{0, 0, 0, 0, NULL, 8, 8, false, 60, 0, 0}};
@@ -129,7 +129,7 @@ u16 *bg2Map;
 
 void Bg1SetTile(int x, int y, int tile)
 {
-	bg2Map[x + y * 128] = tile;
+	bg2Map[x + y * 64] = tile;
 }
 
 void Bg1UpSetTile(int x, int y, int tile)
@@ -184,25 +184,25 @@ int getElementTile(int tile)
 	case TILE_GRASS:
 		return 0;
 	case TILE_DIRT:
-		return 4;
+		return 1;
 	case TILE_STONE:
-		return 8;
+		return 2;
 	case TILE_WOODLOG:
-		return 12;
+		return 3;
 	case TILE_MUSHROOM:
-		return 80;
+		return 20;
 	case TILE_LEAVES:
-		return 64;
-	case ITEM_PICKAXE:
 		return 16;
+	case ITEM_PICKAXE:
+		return 4;
 	case ITEM_SWORD:
-		return 68;
+		return 17;
 	case ITEM_AXE:
-		return 72;
+		return 18;
 	case ITEM_HAMMER:
-		return 76;
+		return 19;
 	default:
-		return 60;
+		return 15;
 	}
 }
 
@@ -280,10 +280,7 @@ void setGameTerrain(int x, int y, int tile)
 		return;
 
 	x = x % 64;
-	Bg1SetTile(x * 2, y * 2, getElementTile(tile) + 0);
-	Bg1SetTile(x * 2 + 1, y * 2, getElementTile(tile) + 1);
-	Bg1SetTile(x * 2, y * 2 + 1, getElementTile(tile) + 2);
-	Bg1SetTile(x * 2 + 1, y * 2 + 1, getElementTile(tile) + 3);
+	Bg1SetTile(x, y, getElementTile(tile));
 }
 
 void setInventory(int slot, int item, int quantity)
@@ -355,8 +352,8 @@ void dropItem(int x, int y, int tile, int quantity)
 	while (item[index].exists)
 		index++;
 	// we can do item[index] = {...} directly but it'll get confusing
-	item[index].x = x * 16 + 4; // Drop in the middle of the tile
-	item[index].y = y * 16 + 4;
+	item[index].x = x * 8 + 4; // Drop in the middle of the tile
+	item[index].y = y * 8 + 4;
 	item[index].exists = true;
 	item[index].tile = tile;
 	item[index].quantity = quantity;
@@ -380,8 +377,8 @@ void breakTile(int x, int y, int speed)
 			dmaCopy(tilemapTiles + 8 * 8 * (i + 5), destructionSprite.sprite_gfx_mem, 16 * 16);
 		}
 	}
-	destructionSprite.x = x * 16;
-	destructionSprite.y = y * 16;
+	destructionSprite.x = x * 8;
+	destructionSprite.y = y * 8;
 	if (gameTerrainHealth[x + y * MAP_WIDTH] >= getElementHealth(gameTerrain[x + y * MAP_WIDTH]))
 	{
 		dmaCopy(tilemapTiles + 8 * 8 * 15, destructionSprite.sprite_gfx_mem, 16 * 16);
@@ -673,7 +670,7 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 	touchPosition touch;
 
 	videoSetMode(MODE_0_2D | DISPLAY_BG0_ACTIVE | DISPLAY_BG1_ACTIVE | DISPLAY_BG3_ACTIVE);
-	videoSetModeSub(MODE_5_2D | DISPLAY_BG0_ACTIVE | DISPLAY_BG2_ACTIVE);
+	videoSetModeSub(MODE_3_2D | DISPLAY_BG0_ACTIVE | DISPLAY_BG3_ACTIVE);
 
 	vramSetBankA(VRAM_A_MAIN_BG);
 	vramSetBankB(VRAM_B_MAIN_SPRITE);
@@ -696,12 +693,12 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 	dmaCopy(bgTiles, (void *)CHAR_BASE_BLOCK_SUB(1), bgTilesLen);
 	dmaCopy(bgMap, (void *)SCREEN_BASE_BLOCK_SUB(0), bgMapLen);
 
-	int bg2 = bgInitSub(2, BgType_ExRotation, BgSize_ER_1024x1024, 3, 3);
+	int bg2 = bgInitSub(3, BgType_ExRotation, BgSize_ER_512x512, 3, 3);
 	bgWrapOn(bg2);
 	bgSetPriority(bg2, 2);
 	dmaCopy(tilemapTiles, bgGetGfxPtr(bg2), tilemapTilesLen);
 	// Fill with empty tiles
-	dmaFillHalfWords(63, bgGetMapPtr(bg2), 128 * 128 * 2);
+	dmaFillHalfWords(63, bgGetMapPtr(bg2), 64 * 64 * 2);
 
 	bg2Map = (u16 *)bgGetMapPtr(bg2);
 
@@ -719,8 +716,8 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 	u16 *nullSprite = oamAllocateGfx(&oamSub, SpriteSize_16x16, SpriteColorFormat_256Color);
 	dmaFillHalfWords(0, nullSprite, 16 * 16);
 
-	player.sprite_gfx_mem = oamAllocateGfx(&oamSub, SpriteSize_32x64, SpriteColorFormat_256Color);
-	dmaCopy(spritesTiles, player.sprite_gfx_mem, 32 * 64);
+	player.sprite_gfx_mem = oamAllocateGfx(&oamSub, SpriteSize_16x32, SpriteColorFormat_256Color);
+	dmaCopy(spritesTiles, player.sprite_gfx_mem, 16 * 32);
 
 	itemHandSprite = oamAllocateGfx(&oamSub, SpriteSize_16x16, SpriteColorFormat_256Color);
 	dmaCopy(tilemapTiles + 8 * 8 * 4, itemHandSprite, 16 * 16);
@@ -779,14 +776,14 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 		}
 
 		if (held & KEY_X)
-			scale++;
+			scale *= 1.01;
 		if (held & KEY_Y)
-			scale--;
+			scale *= 0.99;
 
-		if (scale > 512)
-			scale = 512; // Max scale (0.5x)
-		if (scale < 192)
-			scale = 192; // Min scale (1.5x)
+		if (scale > 256)
+			scale = 256;
+		if (scale < 128)
+			scale = 128;
 
 		// Draw player sprite
 		if (pressed & KEY_A)
@@ -795,7 +792,7 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 			if (player.isOnGround)
 			{
 				player.isJumping = true;
-				player.velocity = -10; // Set a negative velocity for jumping
+				player.velocity = -5; // Set a negative velocity for jumping
 				player.isOnGround = false;
 				player.animation = ANIM_JUMP;
 			}
@@ -803,11 +800,11 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 
 		if (held & KEY_RIGHT)
 		{
-			if ((player.x + player.sizeX) / 16 < MAP_WIDTH)
+			if ((player.x + player.sizeX) / 8 < MAP_WIDTH)
 			{
-				if (!isTileSolid(gameTerrain[(player.x + player.sizeX) / 16 + player.y / 16 * MAP_WIDTH]) &&
-					!isTileSolid(gameTerrain[(player.x + player.sizeX) / 16 + (player.y + player.sizeY / 2) / 16 * MAP_WIDTH]) &&
-					!isTileSolid(gameTerrain[(player.x + player.sizeX) / 16 + (player.y + player.sizeY - 1) / 16 * MAP_WIDTH]))
+				if (!isTileSolid(gameTerrain[(player.x + player.sizeX) / 8 + player.y / 8 * MAP_WIDTH]) &&
+					!isTileSolid(gameTerrain[(player.x + player.sizeX) / 8 + (player.y + player.sizeY / 2) / 8 * MAP_WIDTH]) &&
+					!isTileSolid(gameTerrain[(player.x + player.sizeX) / 8 + (player.y + player.sizeY - 1) / 8 * MAP_WIDTH]))
 				{
 					player.isLookingLeft = false;
 					player.x++;
@@ -819,9 +816,9 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 		{
 			if (player.x - 1 >= 0)
 			{
-				if (!isTileSolid(gameTerrain[(player.x - 1) / 16 + player.y / 16 * MAP_WIDTH]) &&
-					!isTileSolid(gameTerrain[(player.x - 1) / 16 + (player.y + player.sizeY / 2) / 16 * MAP_WIDTH]) &&
-					!isTileSolid(gameTerrain[(player.x - 1) / 16 + (player.y + player.sizeY - 1) / 16 * MAP_WIDTH]))
+				if (!isTileSolid(gameTerrain[(player.x - 1) / 8 + player.y / 8 * MAP_WIDTH]) &&
+					!isTileSolid(gameTerrain[(player.x - 1) / 8 + (player.y + player.sizeY / 2) / 8 * MAP_WIDTH]) &&
+					!isTileSolid(gameTerrain[(player.x - 1) / 8 + (player.y + player.sizeY - 1) / 8 * MAP_WIDTH]))
 				{
 					player.isLookingLeft = true;
 					player.x--;
@@ -834,13 +831,13 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 
 		if (!player.isOnGround)
 		{
-			if (isTileSolid(gameTerrain[player.x / 16 + (player.y + player.velocity) / 16 * MAP_WIDTH]))
+			if (isTileSolid(gameTerrain[player.x / 8 + (player.y + player.velocity) / 8 * MAP_WIDTH]))
 			{
 				player.velocity = 0;
 				player.y /= 16;
 				player.y *= 16;
 			}
-			if (isTileSolid(gameTerrain[(player.x + player.sizeX - 1) / 16 + (player.y + player.velocity) / 16 * MAP_WIDTH]))
+			if (isTileSolid(gameTerrain[(player.x + player.sizeX - 1) / 8 + (player.y + player.velocity) / 8 * MAP_WIDTH]))
 			{
 				player.velocity = 0;
 				player.y /= 16;
@@ -865,14 +862,14 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 		int BRCx = player.x + player.sizeX - 1;
 		int BRCy = player.y + player.sizeY;
 
-		int TLCtileX = TLCx / 16;
-		int TLCtileY = TLCy / 16;
-		int TRCtileX = TRCx / 16;
-		int TRCtileY = TRCy / 16;
-		int BLCtileX = BLCx / 16;
-		int BLCtileY = BLCy / 16;
-		int BRCtileX = BRCx / 16;
-		int BRCtileY = BRCy / 16;
+		int TLCtileX = TLCx / 8;
+		int TLCtileY = TLCy / 8;
+		int TRCtileX = TRCx / 8;
+		int TRCtileY = TRCy / 8;
+		int BLCtileX = BLCx / 8;
+		int BLCtileY = BLCy / 8;
+		int BRCtileX = BRCx / 8;
+		int BRCtileY = BRCy / 8;
 
 		if (held & KEY_TOUCH)
 		{
@@ -880,8 +877,8 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 			int worldX = scrollX + touch.px;
 			int worldY = scrollY + touch.py;
 
-			int worldTouchX = worldX / 16;
-			int worldTouchY = worldY / 16;
+			int worldTouchX = worldX / 8;
+			int worldTouchY = worldY / 8;
 
 			// Check if touch within player range
 			if (worldTouchX >= TLCtileX - player.tileRange && worldTouchX <= TRCtileX + player.tileRange &&
@@ -918,7 +915,7 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 			player.isOnGround = true;
 			player.isJumping = false;
 			player.velocity = 0; // Reset velocity when on the ground
-			player.y = BLCtileY * 16 - player.sizeY;
+			player.y = BLCtileY * 8 - player.sizeY;
 		}
 
 		if (isTileSolid(gameTerrain[BRCtileX + BRCtileY * MAP_WIDTH]))
@@ -926,7 +923,7 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 			player.isOnGround = true;
 			player.isJumping = false;
 			player.velocity = 0; // Reset velocity when on the ground
-			player.y = BRCtileY * 16 - player.sizeY;
+			player.y = BRCtileY * 8 - player.sizeY;
 		}
 
 		if (!isTileSolid(gameTerrain[BLCtileX + BLCtileY * MAP_WIDTH]) && !isTileSolid(gameTerrain[BRCtileX + BRCtileY * MAP_WIDTH]))
@@ -935,17 +932,17 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 			player.isJumping = true;
 		}
 
-		if (player.x >= SCREEN_WIDTH / 2 - player.sizeX / 2 && player.x < MAP_WIDTH * 16 - SCREEN_WIDTH / 2 - player.sizeX / 2)
+		if (player.x >= SCREEN_WIDTH / 2 - player.sizeX / 2 && player.x < MAP_WIDTH * 8 - SCREEN_WIDTH / 2 - player.sizeX / 2)
 			scrollX = player.x - SCREEN_WIDTH / 2 + player.sizeX / 2;
-		else if (player.x >= MAP_WIDTH * 16 - SCREEN_WIDTH / 2 - player.sizeX / 2)
-			scrollX = MAP_WIDTH * 16 - SCREEN_WIDTH;
+		else if (player.x >= MAP_WIDTH * 8 - SCREEN_WIDTH / 2 - player.sizeX / 2)
+			scrollX = MAP_WIDTH * 8 - SCREEN_WIDTH;
 		else
 			scrollX = 0;
 
-		if (player.y >= SCREEN_HEIGHT / 2 - player.sizeY / 2 && player.y < MAP_HEIGHT * 16 - SCREEN_HEIGHT / 2 - player.sizeY / 2)
+		if (player.y >= SCREEN_HEIGHT / 2 - player.sizeY / 2 && player.y < MAP_HEIGHT * 8 - SCREEN_HEIGHT / 2 - player.sizeY / 2)
 			scrollY = player.y - SCREEN_HEIGHT / 2 + player.sizeY / 2;
-		else if (player.y >= MAP_HEIGHT * 16 - SCREEN_HEIGHT / 2 - player.sizeY / 2)
-			scrollY = MAP_HEIGHT * 16 - SCREEN_HEIGHT;
+		else if (player.y >= MAP_HEIGHT * 8 - SCREEN_HEIGHT / 2 - player.sizeY / 2)
+			scrollY = MAP_HEIGHT * 8 - SCREEN_HEIGHT;
 		else
 			scrollY = 0;
 
@@ -954,7 +951,7 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 			if (item[i].exists)
 			{
 				// Item falls until it hits a tile
-				if (!isTileSolid(gameTerrain[item[i].x / 16 + (item[i].y + 8 + item[i].velocity) / 16 * MAP_WIDTH]))
+				if (!isTileSolid(gameTerrain[item[i].x / 8 + (item[i].y + 8 + item[i].velocity) / 8 * MAP_WIDTH]))
 				{
 					item[i].velocity++;
 				}
@@ -994,10 +991,10 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 		if (debug)
 		{
 			char buffer[4] = "    ";
-			itoa(player.x / 16, buffer, 10);
+			itoa(player.x / 8, buffer, 10);
 			print(0, 0, "X: ");
 			print(3, 0, buffer);
-			itoa(player.y / 16, buffer, 10);
+			itoa(player.y / 8, buffer, 10);
 			print(0, 1, "Y: ");
 			print(3, 1, buffer);
 			itoa(chunk, buffer, 10);
@@ -1042,46 +1039,40 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 
 		// When the player reaches the 3rd quarter of the background, swap the first 4 rows in the bg with the next 4 rows in the map
 		// so when it wraps it gives the illusion of continuity
-		if (player.x > 1024 / 4 * 3 + chunk * 64)
+		if (player.x > 512 / 8 * 5 + chunk * 32)
 		{
 			if (chunk < MAP_WIDTH / 4 - 1)
 			{
-				int newTile = (chunk % 16) * 8;
+				int newTile = (chunk % 16) * 4;
 				for (int x = 0; x < 4; x++)
 				{
 					for (int y = 0; y < 32; y++)
 					{
-						Bg1SetTile(newTile + x * 2, y * 2, getElementTile(gameTerrain[64 + chunk * 4 + x + y * MAP_WIDTH]) + 0);
-						Bg1SetTile(newTile + x * 2 + 1, y * 2, getElementTile(gameTerrain[64 + chunk * 4 + x + y * MAP_WIDTH]) + 1);
-						Bg1SetTile(newTile + x * 2, y * 2 + 1, getElementTile(gameTerrain[64 + chunk * 4 + x + y * MAP_WIDTH]) + 2);
-						Bg1SetTile(newTile + x * 2 + 1, y * 2 + 1, getElementTile(gameTerrain[64 + chunk * 4 + x + y * MAP_WIDTH]) + 3);
+						Bg1SetTile(newTile + x, y, getElementTile(gameTerrain[64 + chunk * 4 + x + y * MAP_WIDTH]));
 					}
 				}
 				chunk++;
 			}
 		}
-		else if (player.x < 1024 / 4 + chunk * 64)
+		else if (player.x < 512 / 8 * 3 + chunk * 32)
 		{
 			if (chunk > 0)
 			{
 				chunk--;
-				int newTile = (chunk % 16) * 8;
+				int newTile = (chunk % 16) * 4;
 				for (int x = 0; x < 4; x++)
 				{
 					for (int y = 0; y < 32; y++)
 					{
-						Bg1SetTile(newTile + x * 2, y * 2, getElementTile(gameTerrain[chunk * 4 + x + y * MAP_WIDTH]) + 0);
-						Bg1SetTile(newTile + x * 2 + 1, y * 2, getElementTile(gameTerrain[chunk * 4 + x + y * MAP_WIDTH]) + 1);
-						Bg1SetTile(newTile + x * 2, y * 2 + 1, getElementTile(gameTerrain[chunk * 4 + x + y * MAP_WIDTH]) + 2);
-						Bg1SetTile(newTile + x * 2 + 1, y * 2 + 1, getElementTile(gameTerrain[chunk * 4 + x + y * MAP_WIDTH]) + 3);
+						Bg1SetTile(newTile + x, y, getElementTile(gameTerrain[(chunk * 4 + x) + y * MAP_WIDTH]));
 					}
 				}
 			}
 		}
 
-		dmaCopy(spritesTiles + player.anim_frame * 16 * 32, player.sprite_gfx_mem, 32 * 64);
+		dmaCopy(spritesTiles + player.anim_frame * 8 * 16, player.sprite_gfx_mem, 16 * 32);
 
-		oamSet(&oamSub, 0, player.renderX, player.renderY, 1, 0, SpriteSize_32x64, SpriteColorFormat_256Color, player.sprite_gfx_mem, 0, false, false, player.isLookingLeft, false, false);
+		oamSet(&oamSub, 0, player.renderX, player.renderY, 1, 0, SpriteSize_16x32, SpriteColorFormat_256Color, player.sprite_gfx_mem, 0, false, false, player.isLookingLeft, false, false);
 		// oamSet(&oamSub, 1, player.renderX, player.renderY, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, itemHandSprite, -1, false, false, player.isLookingLeft, false, false);
 		oamSet(&oamSub, 2, destructionSprite.renderX, destructionSprite.renderY, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, destructionSprite.sprite_gfx_mem, -1, false, false, false, false, false);
 		// Render dropped items
