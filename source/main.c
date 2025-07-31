@@ -79,6 +79,8 @@ u8 inventorySelection = 0;
 u16 *inventorySelectionSprite;
 u16 *itemHandSprite;
 
+bool debug = false;
+
 typedef struct
 {
 	int x, y; // Player position
@@ -127,7 +129,7 @@ u16 *bg2Map;
 
 void Bg1SetTile(int x, int y, int tile)
 {
-	bg2Map[x + y * 64] = tile;
+	bg2Map[x + y * 128] = tile;
 }
 
 void Bg1UpSetTile(int x, int y, int tile)
@@ -274,10 +276,10 @@ void setGameTerrain(int x, int y, int tile)
 
 	gameTerrain[x + y * MAP_WIDTH] = tile;
 
-	if (x < chunk * 4 || x > chunk * 4 + 31)
+	if (x < chunk * 4 || x > chunk * 4 + 63)
 		return;
 
-	x = x % 32;
+	x = x % 64;
 	Bg1SetTile(x * 2, y * 2, getElementTile(tile) + 0);
 	Bg1SetTile(x * 2 + 1, y * 2, getElementTile(tile) + 1);
 	Bg1SetTile(x * 2, y * 2 + 1, getElementTile(tile) + 2);
@@ -694,13 +696,12 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 	dmaCopy(bgTiles, (void *)CHAR_BASE_BLOCK_SUB(1), bgTilesLen);
 	dmaCopy(bgMap, (void *)SCREEN_BASE_BLOCK_SUB(0), bgMapLen);
 
-	int bg2 = bgInitSub(2, BgType_ExRotation, BgSize_ER_512x512, 3, 3);
+	int bg2 = bgInitSub(2, BgType_ExRotation, BgSize_ER_1024x1024, 3, 3);
 	bgWrapOn(bg2);
 	bgSetPriority(bg2, 2);
-	bgSetScale(bg2, 256, 256);
 	dmaCopy(tilemapTiles, bgGetGfxPtr(bg2), tilemapTilesLen);
 	// Fill with empty tiles
-	dmaFillHalfWords(63, bgGetMapPtr(bg2), 64 * 64 * 2);
+	dmaFillHalfWords(63, bgGetMapPtr(bg2), 128 * 128 * 2);
 
 	bg2Map = (u16 *)bgGetMapPtr(bg2);
 
@@ -750,6 +751,12 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 		scanKeys();
 		int pressed = keysDown();
 		int held = keysHeld();
+
+		if (held & KEY_A && held & KEY_B && held & KEY_X && held & KEY_Y)
+		{
+			debug = !debug;
+		}
+
 		if (pressed & KEY_START)
 			saveMapToFile("map.dat");
 		if (pressed & KEY_SELECT)
@@ -869,22 +876,12 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 
 		if (held & KEY_TOUCH)
 		{
-			touchRead(&touch);
-			char buffer[4];
-			itoa(touch.px, buffer, 10);
-			print(0, 0, buffer);
-			itoa(touch.py, buffer, 10);
-			print(0, 1, buffer);
 			int worldX = scrollX + ((touch.px * 256) / scale);
 			int worldY = scrollY + ((touch.py * 256) / scale);
 
 			int worldTouchX = worldX / 16;
-			int worldTouchY = worldY / 16;	
+			int worldTouchY = worldY / 16;
 
-			itoa(worldTouchX, buffer, 10);
-			print(0, 2, buffer);
-			itoa(worldTouchY, buffer, 10);
-			print(0, 3, buffer);
 			// Check if touch within player range
 			if (worldTouchX >= TLCtileX - player.tileRange && worldTouchX <= TRCtileX + player.tileRange &&
 				worldTouchY >= TLCtileY - player.tileRange && worldTouchY <= BRCtileY + player.tileRange)
@@ -993,15 +990,40 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 		destructionSprite.renderX = destructionSprite.x - scrollX;
 		destructionSprite.renderY = destructionSprite.y - scrollY;
 
-		// Apply scroll
-		bgSetScroll(bg2, scrollX, scrollY);
-		bgSetScale(bg2, scale, scale);
-		REG_BG0HOFS_SUB = scrollX / 8;
-		REG_BG0VOFS_SUB = scrollY / 8;
+		if (debug)
+		{
+			char buffer[4] = "    ";
+			itoa(player.x / 16, buffer, 10);
+			print(0, 0, "X: ");
+			print(3, 0, buffer);
+			itoa(player.y / 16, buffer, 10);
+			print(0, 1, "Y: ");
+			print(3, 1, buffer);
+			itoa(chunk, buffer, 10);
+			print(0, 2, "Chunk: ");
+			print(7, 2, buffer);
+			itoa(scrollX, buffer, 10);
+			print(0, 3, "ScrollX: ");
+			print(9, 3, buffer);
+			itoa(scrollY, buffer, 10);
+			print(0, 4, "ScrollY: ");
+			print(9, 4, buffer);
+			itoa(scale, buffer, 10);
+			print(0, 5, "Scale: ");
+			print(7, 5, buffer);
+		}
 
 		// Compute screen-relative render coordinates
 		player.renderX = player.x - scrollX;
 		player.renderY = player.y - scrollY;
+
+		// Apply scroll
+		bgSetCenter(bg2, player.renderX + player.sizeX / 2, player.renderY + player.sizeY / 2);
+		bgSetScroll(bg2, scrollX + player.renderX + player.sizeX / 2, scrollY + player.renderY + player.sizeY / 2);
+		bgSetScale(bg2, scale, scale);
+		oamRotateScale(&oamSub, 0, degreesToAngle(0), (scale), (scale));
+		REG_BG0HOFS_SUB = scrollX / 8;
+		REG_BG0VOFS_SUB = scrollY / 8;
 
 		// Animate player
 		switch (player.animation)
@@ -1017,42 +1039,32 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 			break;
 		}
 
-		char buffer[4];
-		itoa(player.x / 16, buffer, 10);
-		print(27, 0, buffer);
-		itoa(player.y / 16, buffer, 10);
-		print(27, 1, buffer);
-		itoa(chunk, buffer, 10);
-		print(27, 2, buffer);
-		itoa(player.x, buffer, 10);
-		print(27, 3, buffer);
-
 		// When the player reaches the 3rd quarter of the background, swap the first 4 rows in the bg with the next 4 rows in the map
 		// so when it wraps it gives the illusion of continuity
-		if (player.x > 512 / 8 * 5 + chunk * 64)
+		if (player.x > 1024 / 4 * 3 + chunk * 64)
 		{
 			if (chunk < MAP_WIDTH / 4 - 1)
 			{
-				int newTile = (chunk % 8) * 8;
+				int newTile = (chunk % 16) * 8;
 				for (int x = 0; x < 4; x++)
 				{
 					for (int y = 0; y < 32; y++)
 					{
-						Bg1SetTile(newTile + x * 2, y * 2, getElementTile(gameTerrain[32 + chunk * 4 + x + y * MAP_WIDTH]) + 0);
-						Bg1SetTile(newTile + x * 2 + 1, y * 2, getElementTile(gameTerrain[32 + chunk * 4 + x + y * MAP_WIDTH]) + 1);
-						Bg1SetTile(newTile + x * 2, y * 2 + 1, getElementTile(gameTerrain[32 + chunk * 4 + x + y * MAP_WIDTH]) + 2);
-						Bg1SetTile(newTile + x * 2 + 1, y * 2 + 1, getElementTile(gameTerrain[32 + chunk * 4 + x + y * MAP_WIDTH]) + 3);
+						Bg1SetTile(newTile + x * 2, y * 2, getElementTile(gameTerrain[64 + chunk * 4 + x + y * MAP_WIDTH]) + 0);
+						Bg1SetTile(newTile + x * 2 + 1, y * 2, getElementTile(gameTerrain[64 + chunk * 4 + x + y * MAP_WIDTH]) + 1);
+						Bg1SetTile(newTile + x * 2, y * 2 + 1, getElementTile(gameTerrain[64 + chunk * 4 + x + y * MAP_WIDTH]) + 2);
+						Bg1SetTile(newTile + x * 2 + 1, y * 2 + 1, getElementTile(gameTerrain[64 + chunk * 4 + x + y * MAP_WIDTH]) + 3);
 					}
 				}
 				chunk++;
 			}
 		}
-		else if (player.x < 512 / 8 * 3 + chunk * 64)
+		else if (player.x < 1024 / 4 + chunk * 64)
 		{
 			if (chunk > 0)
 			{
 				chunk--;
-				int newTile = (chunk % 8) * 8;
+				int newTile = (chunk % 16) * 8;
 				for (int x = 0; x < 4; x++)
 				{
 					for (int y = 0; y < 32; y++)
@@ -1068,7 +1080,7 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 
 		dmaCopy(spritesTiles + player.anim_frame * 16 * 32, player.sprite_gfx_mem, 32 * 64);
 
-		oamSet(&oamSub, 0, player.renderX, player.renderY, 1, 0, SpriteSize_32x64, SpriteColorFormat_256Color, player.sprite_gfx_mem, -1, false, false, player.isLookingLeft, false, false);
+		oamSet(&oamSub, 0, player.renderX, player.renderY, 1, 0, SpriteSize_32x64, SpriteColorFormat_256Color, player.sprite_gfx_mem, 0, false, false, player.isLookingLeft, false, false);
 		// oamSet(&oamSub, 1, player.renderX, player.renderY, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, itemHandSprite, -1, false, false, player.isLookingLeft, false, false);
 		oamSet(&oamSub, 2, destructionSprite.renderX, destructionSprite.renderY, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, destructionSprite.sprite_gfx_mem, -1, false, false, false, false, false);
 		// Render dropped items
