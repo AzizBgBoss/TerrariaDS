@@ -47,7 +47,6 @@ V    Trees
 
 // Define game elements
 #define TILE_AIR 0
-#define TILE_GRASS 1
 #define TILE_DIRT 2
 #define TILE_STONE 3
 #define TILE_WOODLOG 4
@@ -128,6 +127,8 @@ u16 *bg2Map;
 
 void Bg1SetTile(int x, int y, int tile)
 {
+	if (x < 0 || x >= 64 || y < 0 || y >= 32)
+		return; // Prevent out of bounds access
 	bg2Map[x + y * 64] = tile;
 }
 
@@ -176,26 +177,152 @@ static int clamp(int val, int min, int max)
 	return val;
 }
 
-int getElementTile(int tile)
+bool isTileSolid(int tile)
 {
 	switch (tile)
 	{
+	case TILE_DIRT:
+	case TILE_STONE:
+		return true;
+	default:
+		return false;
+	}
+}
+
+int getElementTile(int tile, int x, int y) // Tile will change based on surrounding tiles
+{
+	int tileabove = (y > 0) ? gameTerrain[x + (y - 1) * MAP_WIDTH] : TILE_AIR;
+	int tilebelow = (y < MAP_HEIGHT - 1) ? gameTerrain[x + (y + 1) * MAP_WIDTH] : TILE_AIR;
+	int tileleft = (x > 0) ? gameTerrain[x - 1 + y * MAP_WIDTH] : TILE_AIR;
+	int tileright = (x < MAP_WIDTH - 1) ? gameTerrain[x + 1 + y * MAP_WIDTH] : TILE_AIR;
+
+	int offset = 0;
+	switch (tile)
+	{
 	case TILE_AIR:
-		return 15;
-	case TILE_GRASS:
 		return 0;
 	case TILE_DIRT:
-		return 1;
+		offset = 1;
+		break;
 	case TILE_STONE:
-		return 2;
-	case TILE_WOODLOG:
-		return 3;
-	case TILE_MUSHROOM:
-		return 5;
+		offset = 2;
+		break;
 	case TILE_LEAVES:
-		return 4;
+		offset = 3;
+		break;
+	case TILE_WOODLOG:
+		return 2;
+	case TILE_MUSHROOM:
+		return 1;
 	default:
-		return 14;
+		return 8;
+	}
+
+	if (tileabove == TILE_AIR)
+	{
+		if (tilebelow == TILE_AIR)
+		{
+			if (tileleft == TILE_AIR)
+			{
+				if (tileright == TILE_AIR)
+				{
+					return offset * 9 + 0; // Middle
+				}
+				else
+				{
+					return offset * 9 + 0; // Top right corner
+				}
+			}
+			else
+			{
+				if (tileright == TILE_AIR)
+				{
+					return offset * 9 + 2; // Top left corner
+				}
+				else
+				{
+					return offset * 9 + 1; // Top edge
+				}
+			}
+		}
+		else
+		{
+			if (tileleft == TILE_AIR)
+			{
+				if (tileright == TILE_AIR)
+				{
+					return offset * 9 + 1; // Top edge
+				}
+				else
+				{
+					return offset * 9 + 0; // Top left corner
+				}
+			}
+			else
+			{
+				if (tileright == TILE_AIR)
+				{
+					return offset * 9 + 2; // Top right corner
+				}
+				else
+				{
+					return offset * 9 + 1; // Top edge
+				}
+			}
+		}
+	}
+	else
+	{
+		if (tilebelow == TILE_AIR)
+		{
+			if (tileleft == TILE_AIR)
+			{
+				if (tileright == TILE_AIR)
+				{
+					return offset * 9 + 7; // Bottom middle
+				}
+				else
+				{
+					return offset * 9 + 6; // Bottom left corner
+				}
+			}
+			else
+			{
+				if (tileright == TILE_AIR)
+				{
+					return offset * 9 + 8; // Bottom right corner
+				}
+				else
+				{
+					return offset * 9 + 7; // Bottom edge
+				}
+			}
+		}
+		else
+		{
+			if (tileleft == TILE_AIR)
+			{
+				if (tileright == TILE_AIR)
+				{
+					return offset * 9 + 4; // Middle
+				}
+				else
+				{
+					return offset * 9 + 3; // Left edge
+				}
+			}
+			else
+			{
+				if (tileright == TILE_AIR)
+				{
+					return offset * 9 + 5; // Left edge
+				}
+				else
+				{
+					return offset * 9 + 4; // Middle
+				}
+			}
+		}
 	}
 }
 
@@ -211,8 +338,6 @@ int getItemTile(int item)
 		return 8;
 	case ITEM_HAMMER:
 		return 12;
-	case TILE_GRASS:
-		return 16;
 	case TILE_DIRT:
 		return 16;
 	case TILE_STONE:
@@ -230,8 +355,6 @@ char *getElementName(int element)
 {
 	switch (element)
 	{
-	case TILE_GRASS:
-		return "Grass";
 	case TILE_DIRT:
 		return "Dirt";
 	case TILE_STONE:
@@ -259,8 +382,6 @@ int getElementHealth(int element)
 {
 	switch (element)
 	{
-	case TILE_GRASS:
-		return 100;
 	case TILE_DIRT:
 		return 100;
 	case TILE_STONE:
@@ -276,31 +397,9 @@ int getElementHealth(int element)
 	}
 }
 
-bool isTileSolid(int tile)
+int rando(int min, int max)
 {
-	switch (tile)
-	{
-	case TILE_GRASS:
-	case TILE_DIRT:
-	case TILE_STONE:
-		return true;
-	default:
-		return false;
-	}
-}
-
-void setGameTerrain(int x, int y, int tile)
-{
-	if (x < 0 || x >= MAP_WIDTH || y < 0 || y >= MAP_HEIGHT)
-		return;
-
-	gameTerrain[x + y * MAP_WIDTH] = tile;
-
-	if (x < chunk * 4 || x > chunk * 4 + 63)
-		return;
-
-	x = x % 64;
-	Bg1SetTile(x, y, getElementTile(tile));
+	return rand() % (max - min + 1) + min;
 }
 
 void setInventory(int slot, int item, int quantity)
@@ -334,6 +433,72 @@ void setInventory(int slot, int item, int quantity)
 	print(x, y + 2, buffer);
 }
 
+void setGameTerrain(int x, int y, int tile)
+{
+	if (x < 0 || x >= MAP_WIDTH || y < 0 || y >= MAP_HEIGHT)
+		return;
+
+	gameTerrain[x + y * MAP_WIDTH] = tile;
+
+	if (x < chunk * 4 || x > chunk * 4 + 63)
+		return;
+
+	int rx = x % 64;
+	// Re-render neighboring tiles
+	Bg1SetTile(rx - 1, y, getElementTile(gameTerrain[x - 1 + y * MAP_WIDTH], x - 1, y));
+	Bg1SetTile(rx + 1, y, getElementTile(gameTerrain[x + 1 + y * MAP_WIDTH], x + 1, y));
+	Bg1SetTile(rx, y - 1, getElementTile(gameTerrain[x + (y - 1) * MAP_WIDTH], x, y - 1));
+	Bg1SetTile(rx, y + 1, getElementTile(gameTerrain[x + (y + 1) * MAP_WIDTH], x, y + 1));
+	Bg1SetTile(rx, y, getElementTile(tile, x, y));
+}
+
+void playerPutGameTerrain(int x, int y, int tile)
+{
+	if (x < 0 || x >= MAP_WIDTH || y < 0 || y >= MAP_HEIGHT)
+		return;
+
+	// The difference is that we check the surrounding tiles to prevent placing tiles out of thin air
+	bool canPlace = false;
+	for (int dx = -1; dx <= 1; dx++)
+	{
+		for (int dy = -1; dy <= 1; dy++)
+		{
+			if (dx == 0 && dy == 0)
+				continue; // Skip the tile itself
+			int nx = x + dx;
+			int ny = y + dy;
+			if (nx < 0 || nx >= MAP_WIDTH || ny < 0 || ny >= MAP_HEIGHT)
+				continue; // Out of bounds
+			if (gameTerrain[nx + ny * MAP_WIDTH] != TILE_AIR)
+			{
+				canPlace = true;
+				break;
+			}
+		}
+		if (canPlace)
+			break;
+	}
+	if (!canPlace)
+		return; // Cannot place tile if no surrounding tiles are solid
+
+	Bg1SetTile(x, y, getElementTile(tile, x, y));
+	inventoryQuantity[inventorySelection]--;
+	setInventory(inventorySelection, inventory[inventorySelection], inventoryQuantity[inventorySelection]);
+	setGameTerrain(x, y, tile);
+	switch (rando(0, 2))
+		{
+		case 0:
+			mmEffect(SFX_IG_0);
+			break;
+		case 1:
+			mmEffect(SFX_IG_1);
+			break;
+		case 2:
+			mmEffect(SFX_IG_2);
+			break;
+		}
+}
+
 bool giveInventory(int item, int quantity)
 {
 	for (int i = 0; i < 8 * 4; i++)
@@ -364,6 +529,7 @@ void setInventorySelection(u8 slot)
 	print(1, 7, getElementName(inventory[slot]));
 	oamSet(&oamMain, 0, x, y, 0, 0, SpriteSize_32x32, SpriteColorFormat_256Color, inventorySelectionSprite, -1, false, false, false, false, false);
 	oamUpdate(&oamMain);
+	mmEffect(SFX_ENU_TICK);
 }
 
 void dropItem(int x, int y, int tile, int quantity)
@@ -384,7 +550,7 @@ void dropItem(int x, int y, int tile, int quantity)
 void destroyItem(int id)
 {
 	item[id].exists = false;
-	dmaCopy(tilemapTiles + 4 * 4 * getElementTile(0), item[id].sprite_gfx_mem, 16 * 16);
+	dmaCopy(tilemapTiles + 4 * 4 * getElementTile(0, 0, 0), item[id].sprite_gfx_mem, 16 * 16);
 }
 
 void breakTile(int x, int y, int speed)
@@ -396,16 +562,28 @@ void breakTile(int x, int y, int speed)
 		setGameTerrain(x, y, 0);
 		gameTerrainHealth[x + y * MAP_WIDTH] = 0;
 	}
-}
-
-int rando(int min, int max)
-{
-	return rand() % (max - min + 1) + min;
+	// Random sound effect for breaking tiles
+	if (frame % 15 == 0) // Play sound every 10 frames
+	{
+		switch (rando(0, 2))
+		{
+		case 0:
+			mmEffect(SFX_IG_0);
+			break;
+		case 1:
+			mmEffect(SFX_IG_1);
+			break;
+		case 2:
+			mmEffect(SFX_IG_2);
+			break;
+		}
+	}
 }
 
 bool saveMapToFile(const char *filename)
 {
 	FILE *file = fopen(filename, "wb"); // "wb" = write binary
+	mmEffect(SFX_ENU_CLOSE);
 	if (!file)
 	{
 		print(0, 0, "Failed to open file for writing: map.dat");
@@ -432,6 +610,7 @@ bool loadMapFromFile(const char *filename)
 {
 	chunk = -6;
 	FILE *file = fopen(filename, "rb"); // "rb" = read binary
+	mmEffect(SFX_ENU_OPEN);
 	if (!file)
 	{
 		print(0, 0, "Failed to open file for reading: map.dat");
@@ -452,10 +631,10 @@ bool loadMapFromFile(const char *filename)
 }
 
 // Hash function
-int hash(int x)
+int hash(int x , int seed)
 {
 	x = (x << 13) ^ x;
-	return (x * (x * x * 15731 + 789221) + 1376312589) & 0x7fffffff;
+	return (x * (x * x * 15731 + 789220 + seed) + 1376312589) & 0x7fffffff;
 }
 
 // Linear interpolation
@@ -478,13 +657,13 @@ float grad(int hash, float x)
 }
 
 // 1D Perlin noise
-float perlin1d(float x)
+float perlin1d(float x, int seed)
 {
 	int xi = (int)x;
 	float xf = x - xi;
 
-	int h0 = hash(xi);
-	int h1 = hash(xi + 1);
+	int h0 = hash(xi, seed);
+	int h1 = hash(xi + 1, seed);
 
 	float g0 = grad(h0, xf);
 	float g1 = grad(h1, xf - 1.0f);
@@ -494,30 +673,7 @@ float perlin1d(float x)
 	return lerp(g0, g1, u); // Returns value in range ~[-1, 1]
 }
 
-float perlin2d(float x, float y)
-{
-	int xi = (int)x;
-	int yi = (int)y;
-	float xf = x - xi;
-	float yf = y - yi;
-
-	int h00 = hash(xi + hash(yi));
-	int h01 = hash(xi + hash(yi + 1));
-	int h10 = hash(xi + 1 + hash(yi));
-	int h11 = hash(xi + 1 + hash(yi + 1));
-
-	float g00 = grad(h00, xf) + grad(h00, yf);
-	float g01 = grad(h01, xf) + grad(h01, yf - 1.0f);
-	float g10 = grad(h10, xf - 1.0f) + grad(h10, yf);
-	float g11 = grad(h11, xf - 1.0f) + grad(h11, yf - 1.0f);
-
-	float u = fade(xf);
-	float v = fade(yf);
-
-	return lerp(lerp(g00, g10, u), lerp(g01, g11, u), v); // Returns value in range ~[-2, 2]
-}
-
-float fractalPerlin1D(float x, int octaves, float persistence, float scale)
+float fractalPerlin1D(float x, int octaves, float persistence, float scale, int seed)
 {
 	float total = 0;
 	float frequency = scale;
@@ -526,26 +682,7 @@ float fractalPerlin1D(float x, int octaves, float persistence, float scale)
 
 	for (int i = 0; i < octaves; i++)
 	{
-		total += perlin1d(x * frequency) * amplitude;
-		maxAmplitude += amplitude;
-
-		amplitude *= persistence;
-		frequency *= 2.0f;
-	}
-
-	return total / maxAmplitude; // normalize to -1..1
-}
-
-float fractalPerlin2D(float x, float y, int octaves, float persistence, float scale)
-{
-	float total = 0;
-	float frequency = scale;
-	float amplitude = 1;
-	float maxAmplitude = 0;
-
-	for (int i = 0; i < octaves; i++)
-	{
-		total += perlin2d(x * frequency, y * frequency) * amplitude;
+		total += perlin1d(x * frequency, seed) * amplitude;
 		maxAmplitude += amplitude;
 
 		amplitude *= persistence;
@@ -566,13 +703,12 @@ void generateMap()
 {
 	u8 grassSurface[MAP_WIDTH];
 	u8 stoneSurface[MAP_WIDTH];
-
+	int seed = rando(0, 1000);
 	// Generate grass height surface
 	for (int x = 0; x < MAP_WIDTH; x++)
 	{
-		float wave = fractalPerlin1D(x, 4, 0.4f, 0.01f) * 20.0f;
-
-		grassSurface[x] = clamp((int)(wave + MAP_HEIGHT / 2), MIN_GRASS_HEIGHT, MAX_GRASS_HEIGHT);
+		float wave = fractalPerlin1D(x, 4, 0.4f, 0.01f, seed) * 20.0f;
+		grassSurface[x] = clamp((int)(wave + (MIN_GRASS_HEIGHT + MAX_GRASS_HEIGHT) / 2), MIN_GRASS_HEIGHT, MAX_GRASS_HEIGHT);
 	}
 
 	// remove 1 block spikes, i fucking hate them
@@ -587,8 +723,8 @@ void generateMap()
 	// Generate stone height surface
 	for (int x = 0; x < MAP_WIDTH; x++)
 	{
-		float wave = sinf((x + 100) / 7.0f) * 3; // different offset + scale
-		stoneSurface[x] = clamp((int)(wave + MAP_HEIGHT / 2 + 5), MIN_STONE_HEIGHT, MAX_STONE_HEIGHT);
+		float wave = fractalPerlin1D(x, 4, 0.4f, 0.01f, seed + 1) * 20.0f;
+		stoneSurface[x] = clamp((int)(wave + (MIN_STONE_HEIGHT + MAX_STONE_HEIGHT) / 2), MIN_STONE_HEIGHT, MAX_STONE_HEIGHT);
 	}
 
 	// Place terrain
@@ -596,11 +732,7 @@ void generateMap()
 	{
 		for (int y = 0; y < MAP_HEIGHT; y++)
 		{
-			if (y == grassSurface[x])
-			{
-				setGameTerrain(x, y, TILE_GRASS);
-			}
-			else if (y > grassSurface[x] && y <= stoneSurface[x])
+			if (y >= grassSurface[x] && y <= stoneSurface[x])
 			{
 				setGameTerrain(x, y, TILE_DIRT);
 			}
@@ -648,9 +780,9 @@ void generateMap()
 int main(void)
 {
 	scanKeys();
+	mmInitDefaultMem((mm_addr)soundbank_bin);
 	if (!fatInitDefault() || keysHeld() & KEY_START)
 	{
-		mmInitDefaultMem((mm_addr)soundbank_bin);
 		mmLoad(MOD_MODULE1);
 
 		mmStart(MOD_MODULE1, MM_PLAY_LOOP);
@@ -708,7 +840,7 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 	bgSetPriority(bg2, 2);
 	dmaCopy(tilemapTiles, bgGetGfxPtr(bg2), tilemapTilesLen);
 	// Fill with empty tiles
-	dmaFillHalfWords(63, bgGetMapPtr(bg2), 64 * 64 * 2);
+	dmaFillHalfWords(TILE_AIR, bgGetMapPtr(bg2), 64 * 64 * 2);
 
 	bg2Map = (u16 *)bgGetMapPtr(bg2);
 
@@ -739,6 +871,10 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 	}
 
 	dmaCopy(spritesPal, SPRITE_PALETTE_SUB, spritesPalLen);
+
+	mmLoadEffect(SFX_IG_0);
+	mmLoadEffect(SFX_IG_1);
+	mmLoadEffect(SFX_IG_2);
 
 	generateMap();
 
@@ -905,9 +1041,7 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 						{
 							if (!(worldTouchX >= TLCtileX && worldTouchX <= TRCtileX && worldTouchY >= TLCtileY && worldTouchY <= BLCtileY))
 							{
-								setGameTerrain(worldTouchX, worldTouchY, inventory[inventorySelection]);
-								inventoryQuantity[inventorySelection]--;
-								setInventory(inventorySelection, inventory[inventorySelection], inventoryQuantity[inventorySelection]);
+								playerPutGameTerrain(worldTouchX, worldTouchY, inventory[inventorySelection]);
 							}
 						}
 					}
@@ -1049,7 +1183,7 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 				{
 					for (int y = 0; y < 32; y++)
 					{
-						Bg1SetTile(newTile + x, y, getElementTile(gameTerrain[64 + chunk * 4 + x + y * MAP_WIDTH]));
+						Bg1SetTile(newTile + x, y, getElementTile(gameTerrain[64 + chunk * 4 + x + y * MAP_WIDTH], 64 + chunk * 4 + x, y));
 					}
 				}
 				chunk++;
@@ -1065,7 +1199,7 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 				{
 					for (int y = 0; y < 32; y++)
 					{
-						Bg1SetTile(newTile + x, y, getElementTile(gameTerrain[(chunk * 4 + x) + y * MAP_WIDTH]));
+						Bg1SetTile(newTile + x, y, getElementTile(gameTerrain[chunk * 4 + x + y * MAP_WIDTH], chunk * 4 + x, y));
 					}
 				}
 			}
