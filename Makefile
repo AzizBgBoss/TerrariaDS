@@ -30,7 +30,7 @@ ICON     :=
 
 # specify a directory which contains the nitro filesystem
 # this is relative to the Makefile
-NITRO    :=
+NITRO    := 
 
 #---------------------------------------------------------------------------------
 # options for code generation

@@ -41,17 +41,21 @@ V    Trees
 #include "soundbank_bin.h"
 
 #define MAP_WIDTH 512
-#define MAP_HEIGHT 32
+#define MAP_HEIGHT 64
 
 #define MAX_ITEMS 16 // Maximum items to be rendered
 
 // Define game elements
 #define TILE_AIR 0
+#define TILE_PLANKS 1
 #define TILE_DIRT 2
 #define TILE_STONE 3
 #define TILE_WOODLOG 4
 #define TILE_LEAVES 5
 #define TILE_MUSHROOM 6
+
+#define TILE_DIRT_WALL 7
+#define TILE_STONE_WALL 8
 
 #define ITEM_PICKAXE 101
 #define ITEM_AXE 102
@@ -66,7 +70,7 @@ V    Trees
 int frame = 0;
 int scrollX = 0;
 int scrollY = 0;
-int scale = 256; // 128 is x2, 256 is x1, 512 is x0.5
+int scale = 128; // 128 is x2, 256 is x1, 512 is x0.5
 int chunk = 0;
 
 u8 gameTerrain[MAP_WIDTH * MAP_HEIGHT] = {0};
@@ -127,7 +131,7 @@ u16 *bg2Map;
 
 void Bg1SetTile(int x, int y, int tile)
 {
-	if (x < 0 || x >= 64 || y < 0 || y >= 32)
+	if (x < 0 || x >= 64 || y < 0 || y >= 64)
 		return; // Prevent out of bounds access
 	bg2Map[x + y * 64] = tile;
 }
@@ -183,6 +187,7 @@ bool isTileSolid(int tile)
 	{
 	case TILE_DIRT:
 	case TILE_STONE:
+	case TILE_PLANKS:
 		return true;
 	default:
 		return false;
@@ -209,6 +214,15 @@ int getElementTile(int tile, int x, int y) // Tile will change based on surround
 		break;
 	case TILE_LEAVES:
 		offset = 3;
+		break;
+	case TILE_PLANKS:
+		offset = 4;
+		break;
+	case TILE_DIRT_WALL:
+		offset = 5;
+		break;
+	case TILE_STONE_WALL:
+		offset = 6;
 		break;
 	case TILE_WOODLOG:
 		return 2;
@@ -344,8 +358,14 @@ int getItemTile(int item)
 		return 20;
 	case TILE_MUSHROOM:
 		return 24;
-	case TILE_WOODLOG:
+	case TILE_PLANKS:
 		return 28;
+	case TILE_LEAVES:
+		return 32;
+	case TILE_DIRT_WALL:
+		return 36;
+	case TILE_STONE_WALL:
+		return 40;
 	default:
 		return 56;
 	}
@@ -361,10 +381,16 @@ char *getElementName(int element)
 		return "Stone";
 	case TILE_WOODLOG:
 		return "Wood Log";
+	case TILE_PLANKS:
+		return "Planks";
 	case TILE_MUSHROOM:
 		return "Mushroom";
 	case TILE_LEAVES:
 		return "Leaves";
+	case TILE_DIRT_WALL:
+		return "Dirt Wall";
+	case TILE_STONE_WALL:
+		return "Stone Wall";
 	case ITEM_PICKAXE:
 		return "Pickaxe";
 	case ITEM_SWORD:
@@ -385,15 +411,49 @@ int getElementHealth(int element)
 	case TILE_DIRT:
 		return 100;
 	case TILE_STONE:
-		return 1000;
+		return 300;
 	case TILE_WOODLOG:
-		return 500;
+		return 200;
+	case TILE_PLANKS:
+		return 100;
 	case TILE_LEAVES:
 		return 50;
 	case TILE_MUSHROOM:
 		return 10;
+	case TILE_DIRT_WALL:
+		return 100;
+	case TILE_STONE_WALL:
+		return 150;
 	default:
 		return 0;
+	}
+}
+
+int getElementDrop(int element)
+{
+	switch (element)
+	{
+	case TILE_WOODLOG:
+		return TILE_PLANKS; // Drops planks when broken
+	default:
+		return element; // Drops itself
+	}
+}
+
+bool isToolCompatible(int tool, int tile)
+{
+	switch (tool)
+	{
+	case ITEM_PICKAXE:
+		return tile == TILE_STONE || tile == TILE_DIRT || tile == TILE_PLANKS || tile == TILE_MUSHROOM;
+	case ITEM_AXE:
+		return tile == TILE_WOODLOG || tile == TILE_LEAVES || tile == TILE_MUSHROOM;
+	case ITEM_SWORD:
+		return tile == TILE_MUSHROOM; // Can break mushrooms
+	case ITEM_HAMMER:
+		return tile == TILE_DIRT_WALL || tile == TILE_STONE_WALL; // Can break walls
+	default:
+		return false;
 	}
 }
 
@@ -486,17 +546,17 @@ void playerPutGameTerrain(int x, int y, int tile)
 	setInventory(inventorySelection, inventory[inventorySelection], inventoryQuantity[inventorySelection]);
 	setGameTerrain(x, y, tile);
 	switch (rando(0, 2))
-		{
-		case 0:
-			mmEffect(SFX_IG_0);
-			break;
-		case 1:
-			mmEffect(SFX_IG_1);
-			break;
-		case 2:
-			mmEffect(SFX_IG_2);
-			break;
-		}
+	{
+	case 0:
+		mmEffect(SFX_IG_0);
+		break;
+	case 1:
+		mmEffect(SFX_IG_1);
+		break;
+	case 2:
+		mmEffect(SFX_IG_2);
+		break;
+	}
 }
 
 bool giveInventory(int item, int quantity)
@@ -550,7 +610,6 @@ void dropItem(int x, int y, int tile, int quantity)
 void destroyItem(int id)
 {
 	item[id].exists = false;
-	dmaCopy(tilemapTiles + 4 * 4 * getElementTile(0, 0, 0), item[id].sprite_gfx_mem, 16 * 16);
 }
 
 void breakTile(int x, int y, int speed)
@@ -558,7 +617,40 @@ void breakTile(int x, int y, int speed)
 	gameTerrainHealth[x + y * MAP_WIDTH] += speed;
 	if (gameTerrainHealth[x + y * MAP_WIDTH] >= getElementHealth(gameTerrain[x + y * MAP_WIDTH]))
 	{
-		dropItem(x, y, gameTerrain[x + y * MAP_WIDTH], 1);
+		// Special blocks handling
+		if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODLOG)
+		{
+			// Trees have special treatment: break all the logs and leaves above it
+			for (int i = y - 1; i >= 0; i--)
+			{
+				if (gameTerrain[x + i * MAP_WIDTH] == TILE_WOODLOG)
+				{
+					dropItem(x, i, getElementDrop(TILE_WOODLOG), 1);
+					setGameTerrain(x, i, 0);
+					gameTerrainHealth[x + i * MAP_WIDTH] = 0;
+				}
+				else if (gameTerrain[x + i * MAP_WIDTH] == TILE_LEAVES)
+				{ // Leaves don't drop anything if broken from tree
+					setGameTerrain(x, i, 0);
+					gameTerrainHealth[x + i * MAP_WIDTH] = 0;
+					if (gameTerrain[x - 1 + i * MAP_WIDTH] == TILE_LEAVES)
+					{
+						setGameTerrain(x - 1, i, 0);
+						gameTerrainHealth[x - 1 + i * MAP_WIDTH] = 0;
+					}
+					if (gameTerrain[x + 1 + i * MAP_WIDTH] == TILE_LEAVES)
+					{
+						setGameTerrain(x + 1, i, 0);
+						gameTerrainHealth[x + 1 + i * MAP_WIDTH] = 0;
+					}
+				}
+				else
+				{
+					break; // Stop breaking when we hit a non-log or non-leaf tile
+				}
+			}
+		}
+		dropItem(x, y, getElementDrop(gameTerrain[x + y * MAP_WIDTH]), 1);
 		setGameTerrain(x, y, 0);
 		gameTerrainHealth[x + y * MAP_WIDTH] = 0;
 	}
@@ -631,10 +723,57 @@ bool loadMapFromFile(const char *filename)
 }
 
 // Hash function
-int hash(int x , int seed)
+static inline uint32_t murmur_32_scramble(uint32_t k)
 {
-	x = (x << 13) ^ x;
-	return (x * (x * x * 15731 + 789220 + seed) + 1376312589) & 0x7fffffff;
+	k *= 0xcc9e2d51;
+	k = (k << 15) | (k >> 17);
+	k *= 0x1b873593;
+	return k;
+}
+uint32_t murmur3_32(const uint8_t *key, size_t len, uint32_t seed)
+{
+	uint32_t h = seed;
+	uint32_t k;
+	/* Read in groups of 4. */
+	for (size_t i = len >> 2; i; i--)
+	{
+		// Here is a source of differing results across endiannesses.
+		// A swap here has no effects on hash properties though.
+		memcpy(&k, key, sizeof(uint32_t));
+		key += sizeof(uint32_t);
+		h ^= murmur_32_scramble(k);
+		h = (h << 13) | (h >> 19);
+		h = h * 5 + 0xe6546b64;
+	}
+	/* Read the rest. */
+	k = 0;
+	for (size_t i = len & 3; i; i--)
+	{
+		k <<= 8;
+		k |= key[i - 1];
+	}
+	// A swap is *not* necessary here because the preceding loop already
+	// places the low bytes in the low places according to whatever endianness
+	// we use. Swaps only apply when the memory is copied in a chunk.
+	h ^= murmur_32_scramble(k);
+	/* Finalize. */
+	h ^= len;
+	h ^= h >> 16;
+	h *= 0x85ebca6b;
+	h ^= h >> 13;
+	h *= 0xc2b2ae35;
+	h ^= h >> 16;
+	return h;
+}
+
+// Hash function for Perlin noise
+int hash(int x, int seed)
+{
+	// Use MurmurHash3 to generate a hash value based on the input x and seed
+	uint32_t hashValue = murmur3_32((const uint8_t *)&x, sizeof(x), seed);
+	// Return the hash value modulo 256 to fit in a byte
+	return hashValue & 0x7fffffff; // Ensure it's positive
+								   // Note: This will return a value in the range [0, 255] which is suitable for use in Perlin noise calculations.
 }
 
 // Linear interpolation
@@ -673,6 +812,56 @@ float perlin1d(float x, int seed)
 	return lerp(g0, g1, u); // Returns value in range ~[-1, 1]
 }
 
+float grad2D(int hash, float x, float y)
+{
+	int h = hash & 7; // 8 directions
+	switch (h)
+	{
+	case 0:
+		return x + y;
+	case 1:
+		return -x + y;
+	case 2:
+		return x - y;
+	case 3:
+		return -x - y;
+	case 4:
+		return x;
+	case 5:
+		return -x;
+	case 6:
+		return y;
+	default:
+		return -y;
+	}
+}
+
+float perlin2d(float x, float y, int seed)
+{
+	int xi = (int)floorf(x);
+	int yi = (int)floorf(y);
+	float xf = x - xi;
+	float yf = y - yi;
+
+	int aa = hash(xi + hash(yi, seed), seed);
+	int ab = hash(xi + hash(yi + 1, seed), seed);
+	int ba = hash(xi + 1 + hash(yi, seed), seed);
+	int bb = hash(xi + 1 + hash(yi + 1, seed), seed);
+
+	float dotAA = grad2D(aa, xf, yf);
+	float dotBA = grad2D(ba, xf - 1, yf);
+	float dotAB = grad2D(ab, xf, yf - 1);
+	float dotBB = grad2D(bb, xf - 1, yf - 1);
+
+	float u = fade(xf);
+	float v = fade(yf);
+
+	float x1 = lerp(dotAA, dotBA, u);
+	float x2 = lerp(dotAB, dotBB, u);
+
+	return lerp(x1, x2, v); // value in ~[-1, 1]
+}
+
 float fractalPerlin1D(float x, int octaves, float persistence, float scale, int seed)
 {
 	float total = 0;
@@ -692,7 +881,26 @@ float fractalPerlin1D(float x, int octaves, float persistence, float scale, int 
 	return total / maxAmplitude; // normalize to -1..1
 }
 
-#define TREE_CHANCE 20
+float fractalPerlin2D(float x, float y, int octaves, float persistence, float scale, int seed)
+{
+	float total = 0;
+	float frequency = scale;
+	float amplitude = 1;
+	float maxAmplitude = 0;
+
+	for (int i = 0; i < octaves; i++)
+	{
+		total += perlin2d(x * frequency, y * frequency, seed) * amplitude;
+		maxAmplitude += amplitude;
+
+		amplitude *= persistence;
+		frequency *= 2.0f;
+	}
+
+	return total / maxAmplitude; // normalize to -1..1
+}
+
+#define TREE_CHANCE 10
 #define MUSHROOM_CHANCE 10
 #define MIN_GRASS_HEIGHT 12
 #define MAX_GRASS_HEIGHT 20
@@ -703,8 +911,9 @@ void generateMap()
 {
 	u8 grassSurface[MAP_WIDTH];
 	u8 stoneSurface[MAP_WIDTH];
-	int seed = rando(0, 1000);
+	int seed = rando(0, 99999999);
 	// Generate grass height surface
+	print(0, 0, "Generating terrain...");
 	for (int x = 0; x < MAP_WIDTH; x++)
 	{
 		float wave = fractalPerlin1D(x, 4, 0.4f, 0.01f, seed) * 20.0f;
@@ -712,15 +921,17 @@ void generateMap()
 	}
 
 	// remove 1 block spikes, i fucking hate them
+	print(0, 0, "Removing spikes because they are annoying...");
 	for (int x = 1; x < MAP_WIDTH - 1; x++)
 	{
 		if (grassSurface[x - 1] != grassSurface[x] && grassSurface[x + 1] != grassSurface[x])
 		{
-			grassSurface[x] = 0;
+			grassSurface[x] += 1;
 		}
 	}
 
 	// Generate stone height surface
+	print(0, 0, "Generating stone surface...");
 	for (int x = 0; x < MAP_WIDTH; x++)
 	{
 		float wave = fractalPerlin1D(x, 4, 0.4f, 0.01f, seed + 1) * 20.0f;
@@ -728,25 +939,58 @@ void generateMap()
 	}
 
 	// Place terrain
+	print(0, 0, "Placing terrain...");
 	for (int x = 0; x < MAP_WIDTH; x++)
 	{
 		for (int y = 0; y < MAP_HEIGHT; y++)
 		{
-			if (y >= grassSurface[x] && y <= stoneSurface[x])
+			if (y >= grassSurface[x] && y < stoneSurface[x])
 			{
 				setGameTerrain(x, y, TILE_DIRT);
 			}
-			else if (y > stoneSurface[x])
+			else if (y >= stoneSurface[x])
 			{
 				setGameTerrain(x, y, TILE_STONE);
 			}
 		}
 	}
 
+	// Generate caves
+	print(0, 0, "Generating caves...");
+	for (int x = 0; x < MAP_WIDTH; x++)
+	{
+		for (int y = 0; y < MAP_HEIGHT; y++)
+		{
+			if (y >= grassSurface[x] && y >= stoneSurface[x])
+			{
+				float caveNoise = fractalPerlin2D(x, y, 4, 0.4f, 0.01f, seed);
+				if (caveNoise < -0.15f) // Adjust this threshold to control cave density
+				{
+					setGameTerrain(x, y, TILE_AIR); // Create a cave
+				}
+			}
+		}
+	}
+
+	// Adding walls
+	print(0, 0, "Adding walls...");
+	for (int x = 0; x < MAP_WIDTH; x++)
+	{
+		for (int y = 0; y < MAP_HEIGHT; y++)
+		{
+			if (gameTerrain[x + y * MAP_WIDTH] == TILE_AIR)
+			{
+				if (y >= grassSurface[x] && y < stoneSurface[x]) setGameTerrain(x, y, TILE_DIRT_WALL);
+				else if (y >= stoneSurface[x]) setGameTerrain(x, y, TILE_STONE_WALL);
+			}
+		}
+	}
+
 	// Place trees
+	print(0, 0, "Placing trees...");
 	for (int x = 1; x < MAP_WIDTH - 1; x++)
 	{
-		if (rando(0, TREE_CHANCE) == 0)
+		if (rando(0, TREE_CHANCE) == 0 && gameTerrain[x + (grassSurface[x] + 1) * MAP_WIDTH] == TILE_DIRT)
 		{
 			int tree_height = rando(3, 5);
 			// Tree trunk
@@ -767,9 +1011,10 @@ void generateMap()
 	}
 
 	// Place mushrooms
+	print(0, 0, "Placing mushrooms...");
 	for (int x = 1; x < MAP_WIDTH - 1; x++)
 	{
-		if (rando(0, MUSHROOM_CHANCE) == 0 && gameTerrain[x + (grassSurface[x] - 1) * MAP_WIDTH] == 0)
+		if (rando(0, MUSHROOM_CHANCE) == 0 && gameTerrain[x + (grassSurface[x] + 1) * MAP_WIDTH] == TILE_DIRT)
 		{
 			setGameTerrain(x, grassSurface[x] - 1, TILE_MUSHROOM);
 		}
@@ -798,13 +1043,18 @@ int main(void)
 Fear not, for this plight we shall overcome.\n\
 If thou usest a DS cartridge, ensure that thou applyest the proper DLDI patch suited to thy cartridge's nature.\n\
 If thou art upon a DSi, no need to patch anything; perchance thy SD card be corrupted, dear twin.\n\
-Or, if thou playest on an emulator, be sure that SD emulation is enabled, for most such emulators do patch DLDI of their own accord.");
+Or, if thou playest on an emulator, be sure that SD emulation is enabled, for most such emulators do patch DLDI of their own accord.\n\
+You shall press START to continue, with no saving abilities.\n");
 
 		while (pmMainLoop())
 		{
 			swiWaitForVBlank();
+			scanKeys();
+			int pressed = keysDown();
+			if (pressed & KEY_START)
+				break;
 		}
-		return 1;
+		mmStop();
 	}
 
 	srand(time(NULL));
@@ -994,6 +1244,13 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 			player.velocity += player.weight; // Apply gravity
 			player.y += player.velocity;
 			player.animation = ANIM_JUMP; // Fall and jump look the same
+			if (player.y + player.sizeY > MAP_HEIGHT * 8)
+			{
+				player.y = MAP_HEIGHT * 8 - player.sizeY; // Prevent falling out of the map
+				player.isOnGround = true;
+				player.isJumping = false;
+				player.velocity = 0; // Reset velocity when on the ground
+			}
 		}
 
 		// Collision detection with ground
@@ -1048,7 +1305,7 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 					else if (inventory[inventorySelection] >= 100 && inventory[inventorySelection] < 200 // Object is an item, not a tile
 							 && inventoryQuantity[inventorySelection])
 					{
-						if (inventory[inventorySelection] == ITEM_PICKAXE)
+						if (isToolCompatible(inventory[inventorySelection], gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH])) // Check if the tool can break the tile
 						{
 							if (gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH])
 								breakTile(worldTouchX, worldTouchY, 1);
@@ -1091,7 +1348,7 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 				// Item falls until it hits a tile
 				if (!isTileSolid(gameTerrain[item[i].x / 8 + (item[i].y + 8 + item[i].velocity) / 8 * MAP_WIDTH]))
 				{
-					item[i].velocity++;
+					item[i].velocity = 1;
 				}
 				else
 				{
@@ -1117,6 +1374,12 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 				}
 
 				item[i].y += item[i].velocity;
+
+				if (item[i].y > MAP_HEIGHT * 8)
+				{
+					destroyItem(i); // Remove item if it falls out of the map
+					continue;
+				}
 
 				item[i].renderX = item[i].x - scrollX;
 				item[i].renderY = item[i].y - scrollY;
@@ -1181,7 +1444,7 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 				int newTile = (chunk % 16) * 4;
 				for (int x = 0; x < 4; x++)
 				{
-					for (int y = 0; y < 32; y++)
+					for (int y = 0; y < MAP_HEIGHT; y++)
 					{
 						Bg1SetTile(newTile + x, y, getElementTile(gameTerrain[64 + chunk * 4 + x + y * MAP_WIDTH], 64 + chunk * 4 + x, y));
 					}
@@ -1197,7 +1460,7 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 				int newTile = (chunk % 16) * 4;
 				for (int x = 0; x < 4; x++)
 				{
-					for (int y = 0; y < 32; y++)
+					for (int y = 0; y < MAP_HEIGHT; y++)
 					{
 						Bg1SetTile(newTile + x, y, getElementTile(gameTerrain[chunk * 4 + x + y * MAP_WIDTH], chunk * 4 + x, y));
 					}
@@ -1221,7 +1484,7 @@ Or, if thou playest on an emulator, be sure that SD emulation is enabled, for mo
 					item[i].renderX = item[i].x - scrollX - (player.x - item[i].x) * 256 / scale + player.x - item[i].x; // Adjust for player position
 					item[i].renderY = item[i].y - scrollY - (player.y - item[i].y) * 256 / scale + player.y - item[i].y; // Adjust for player position
 					oamRotateScale(&oamSub, renderedItems + 2, degreesToAngle(0), scale * 2, scale * 2);
-					oamSet(&oamSub, renderedItems + 2, item[i].renderX - item[i].sizeX * 256 / scale, item[i].renderY - item[i].sizeY * 256 / scale, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, item[i].sprite_gfx_mem, renderedItems + i, false, false, false, false, false);
+					oamSet(&oamSub, renderedItems + 2, item[i].renderX - item[i].sizeX * 256 / scale, item[i].renderY - item[i].sizeY * 256 / scale, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, item[i].sprite_gfx_mem, renderedItems + 2, false, false, false, false, false);
 					renderedItems++;
 				}
 			}
