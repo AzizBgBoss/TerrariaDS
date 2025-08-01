@@ -57,6 +57,8 @@ V    Trees
 #define TILE_DIRT_WALL 7
 #define TILE_STONE_WALL 8
 
+#define TILE_DEMONITE_BRICK 9 // Indestructible brick
+
 #define ITEM_PICKAXE 101
 #define ITEM_AXE 102
 #define ITEM_SWORD 103
@@ -188,6 +190,7 @@ bool isTileSolid(int tile)
 	case TILE_DIRT:
 	case TILE_STONE:
 	case TILE_PLANKS:
+	case TILE_DEMONITE_BRICK:
 		return true;
 	default:
 		return false;
@@ -223,6 +226,9 @@ int getElementTile(int tile, int x, int y) // Tile will change based on surround
 		break;
 	case TILE_STONE_WALL:
 		offset = 6;
+		break;
+	case TILE_DEMONITE_BRICK:
+		offset = 7;
 		break;
 	case TILE_WOODLOG:
 		return 2;
@@ -366,6 +372,8 @@ int getItemTile(int item)
 		return 36;
 	case TILE_STONE_WALL:
 		return 40;
+	case TILE_DEMONITE_BRICK:
+		return 44;
 	default:
 		return 56;
 	}
@@ -391,6 +399,8 @@ char *getElementName(int element)
 		return "Dirt Wall";
 	case TILE_STONE_WALL:
 		return "Stone Wall";
+	case TILE_DEMONITE_BRICK:
+		return "Demonite Brick";
 	case ITEM_PICKAXE:
 		return "Pickaxe";
 	case ITEM_SWORD:
@@ -424,6 +434,8 @@ int getElementHealth(int element)
 		return 100;
 	case TILE_STONE_WALL:
 		return 150;
+	case TILE_DEMONITE_BRICK:
+		return INFINITY;
 	default:
 		return 0;
 	}
@@ -445,7 +457,7 @@ bool isToolCompatible(int tool, int tile)
 	switch (tool)
 	{
 	case ITEM_PICKAXE:
-		return tile == TILE_STONE || tile == TILE_DIRT || tile == TILE_PLANKS || tile == TILE_MUSHROOM;
+		return tile == TILE_STONE || tile == TILE_DIRT || tile == TILE_PLANKS || tile == TILE_MUSHROOM || tile == TILE_DEMONITE_BRICK;
 	case ITEM_AXE:
 		return tile == TILE_WOODLOG || tile == TILE_LEAVES || tile == TILE_MUSHROOM;
 	case ITEM_SWORD:
@@ -1014,10 +1026,16 @@ void generateMap()
 	print(0, 0, "Placing mushrooms...");
 	for (int x = 1; x < MAP_WIDTH - 1; x++)
 	{
-		if (rando(0, MUSHROOM_CHANCE) == 0 && gameTerrain[x + (grassSurface[x] + 1) * MAP_WIDTH] == TILE_DIRT)
+		if (rando(0, MUSHROOM_CHANCE) == 0 && gameTerrain[x + grassSurface[x] * MAP_WIDTH] == TILE_DIRT && gameTerrain[x + (grassSurface[x] - 1) * MAP_WIDTH] == TILE_AIR)
 		{
 			setGameTerrain(x, grassSurface[x] - 1, TILE_MUSHROOM);
 		}
+	}
+
+	// Place demonite bricks to limit the world
+	for (int x = 0; x < MAP_WIDTH - 1; x++)
+	{
+		setGameTerrain(x, MAP_HEIGHT - 1, TILE_DEMONITE_BRICK);
 	}
 }
 
@@ -1242,6 +1260,7 @@ You shall press START to continue, with no saving abilities.\n");
 		if (!player.isOnGround)
 		{
 			player.velocity += player.weight; // Apply gravity
+			if (player.velocity > 7) player.velocity = 7;
 			player.y += player.velocity;
 			player.animation = ANIM_JUMP; // Fall and jump look the same
 			if (player.y + player.sizeY > MAP_HEIGHT * 8)
