@@ -86,6 +86,7 @@ u16 *inventorySelectionSprite;
 u16 *itemHandSprite;
 
 bool debug = false;
+bool subMain = false;
 
 typedef struct
 {
@@ -975,7 +976,7 @@ void generateMap()
 		{
 			if (y >= grassSurface[x] && y >= stoneSurface[x])
 			{
-				float caveNoise = fractalPerlin2D(x, y, 4, 0.4f, 0.01f, seed);
+				float caveNoise = fractalPerlin2D(x, y, 6, 0.4f, 0.01f, seed);
 				if (caveNoise < -0.15f) // Adjust this threshold to control cave density
 				{
 					setGameTerrain(x, y, TILE_AIR); // Create a cave
@@ -992,8 +993,10 @@ void generateMap()
 		{
 			if (gameTerrain[x + y * MAP_WIDTH] == TILE_AIR)
 			{
-				if (y >= grassSurface[x] && y < stoneSurface[x]) setGameTerrain(x, y, TILE_DIRT_WALL);
-				else if (y >= stoneSurface[x]) setGameTerrain(x, y, TILE_STONE_WALL);
+				if (y >= grassSurface[x] && y < stoneSurface[x])
+					setGameTerrain(x, y, TILE_DIRT_WALL);
+				else if (y >= stoneSurface[x])
+					setGameTerrain(x, y, TILE_STONE_WALL);
 			}
 		}
 	}
@@ -1161,6 +1164,20 @@ You shall press START to continue, with no saving abilities.\n");
 		int pressed = keysDown();
 		int held = keysHeld();
 
+		if (pressed & KEY_R)
+		{
+			if (subMain)
+			{
+				subMain = false;
+				lcdMainOnTop();
+			}
+			else
+			{
+				subMain = true;
+				lcdMainOnBottom();
+			}
+		}
+
 		if (held & KEY_A && held & KEY_B && held & KEY_X && held & KEY_Y)
 		{
 			debug = !debug;
@@ -1260,7 +1277,8 @@ You shall press START to continue, with no saving abilities.\n");
 		if (!player.isOnGround)
 		{
 			player.velocity += player.weight; // Apply gravity
-			if (player.velocity > 7) player.velocity = 7;
+			if (player.velocity > 7)
+				player.velocity = 7;
 			player.y += player.velocity;
 			player.animation = ANIM_JUMP; // Fall and jump look the same
 			if (player.y + player.sizeY > MAP_HEIGHT * 8)
@@ -1291,43 +1309,130 @@ You shall press START to continue, with no saving abilities.\n");
 		int BRCtileX = BRCx / 8;
 		int BRCtileY = BRCy / 8;
 
-		if (held & KEY_TOUCH)
-		{
-			touchRead(&touch);
-			int dx = touch.px - SCREEN_WIDTH / 2;
-			int dy = touch.py - SCREEN_HEIGHT / 2;
-
-			int worldX = player.x + player.sizeX / 2 + (dx * scale) / 256;
-			int worldY = player.y + player.sizeY / 2 + (dy * scale) / 256;
-
-			if (worldX >= 0 && worldX < MAP_WIDTH * 8 && worldY >= 0 && worldY < MAP_HEIGHT * 8)
+		if (subMain)
+		{ // Inventory interaction on sub-screen
+			if (pressed & KEY_TOUCH)
 			{
-
-				int worldTouchX = worldX / 8;
-				int worldTouchY = worldY / 8;
-
-				// Check if touch within player range
-				if (worldTouchX >= TLCtileX - player.tileRange && worldTouchX <= TRCtileX + player.tileRange &&
-					worldTouchY >= TLCtileY - player.tileRange && worldTouchY <= BRCtileY + player.tileRange)
+				touchRead(&touch);
+				// Player is selecting an item from the inventory
+				for (int i = 0; i < 8 * 4; i++)
 				{
-					if (inventory[inventorySelection] >= 1 && inventory[inventorySelection] < 100 // Object is a tile, not an item
-						&& inventoryQuantity[inventorySelection])
+					int x = (i % 8) * 4 * 8;
+					int y = ((i / 8) * -4 + 20) * 8;
+					if (touch.px >= x && touch.px < x + 32 && touch.py >= y && touch.py < y + 32)
 					{
-						if (!gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH])
+						setInventorySelection(i);
+						break;
+					}
+				}
+			}
+			else if (held & KEY_TOUCH) // Player is moving an item
+			{
+				touchRead(&touch);
+				int itemToMove = -1, destination = -1;
+				for (int i = 0; i < 8 * 4; i++)
+				{
+					int x = (i % 8) * 4 * 8;
+					int y = ((i / 8) * -4 + 20) * 8;
+					if (touch.px >= x && touch.px < x + 32 && touch.py >= y && touch.py < y + 32)
+					{
+						itemToMove = i;
+						print(0, 0, "found item to move");
+						break;
+					}
+				}
+				while (held & KEY_TOUCH)
+				{
+					swiWaitForVBlank();
+					scanKeys();
+					held = keysHeld();
+					if (held & KEY_TOUCH) touchRead(&touch);
+				}
+				for (int i = 0; i < 8 * 4; i++)
+				{
+					int x = (i % 8) * 4 * 8;
+					int y = ((i / 8) * -4 + 20) * 8;
+					if (touch.px >= x && touch.px < x + 32 && touch.py >= y && touch.py < y + 32)
+					{
+						destination = i;
+						print(0, 0, "found destination");
+						break;
+					}
+				}
+				if (itemToMove != -1 && destination != -1 && itemToMove != destination && inventory[itemToMove] != 0)
+				{
+					if (inventory[itemToMove] == inventory[destination]) // If both items are the same
+					{
+						int totalQuantity = inventoryQuantity[itemToMove] + inventoryQuantity[destination];
+						if (totalQuantity > 99) // Limit quantity to 99
 						{
-							if (!(worldTouchX >= TLCtileX && worldTouchX <= TRCtileX && worldTouchY >= TLCtileY && worldTouchY <= BLCtileY))
-							{
-								playerPutGameTerrain(worldTouchX, worldTouchY, inventory[inventorySelection]);
-							}
+							setInventory(destination, inventory[itemToMove], 99);				 // Set destination to 99
+							setInventory(itemToMove, inventory[itemToMove], totalQuantity - 99); // Set itemToMove to the remaining quantity
+						}
+						else
+						{
+							setInventory(destination, inventory[itemToMove], totalQuantity); // Combine quantities
+							setInventory(itemToMove, 0, 0);									 // Clear the itemToMove slot
 						}
 					}
-					else if (inventory[inventorySelection] >= 100 && inventory[inventorySelection] < 200 // Object is an item, not a tile
-							 && inventoryQuantity[inventorySelection])
+					else // If items are different
 					{
-						if (isToolCompatible(inventory[inventorySelection], gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH])) // Check if the tool can break the tile
+						if (inventory[destination] == 0) // Just move the itemToMove to the destination
 						{
-							if (gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH])
-								breakTile(worldTouchX, worldTouchY, 1);
+							setInventory(destination, inventory[itemToMove], inventoryQuantity[itemToMove]);
+							setInventory(itemToMove, 0, 0); // Clear the itemToMove slot
+						}
+						else // Swap items
+						{
+							int tempItem = inventory[destination];
+							int tempQuantity = inventoryQuantity[destination];
+							setInventory(destination, inventory[itemToMove], inventoryQuantity[itemToMove]);
+							setInventory(itemToMove, tempItem, tempQuantity); // Swap the items
+						}
+					}
+				}
+			}
+		}
+		else
+		{ // Game world interaction on sub-screen
+			if (held & KEY_TOUCH)
+			{
+				touchRead(&touch);
+				int dx = touch.px - SCREEN_WIDTH / 2;
+				int dy = touch.py - SCREEN_HEIGHT / 2;
+
+				int worldX = player.x + player.sizeX / 2 + (dx * scale) / 256;
+				int worldY = player.y + player.sizeY / 2 + (dy * scale) / 256;
+
+				if (worldX >= 0 && worldX < MAP_WIDTH * 8 && worldY >= 0 && worldY < MAP_HEIGHT * 8)
+				{
+
+					int worldTouchX = worldX / 8;
+					int worldTouchY = worldY / 8;
+
+					// Check if touch within player range
+					if (worldTouchX >= TLCtileX - player.tileRange && worldTouchX <= TRCtileX + player.tileRange &&
+						worldTouchY >= TLCtileY - player.tileRange && worldTouchY <= BRCtileY + player.tileRange)
+					{
+						if (inventory[inventorySelection] >= 1 && inventory[inventorySelection] < 100 // Object is a tile, not an item
+							&& inventoryQuantity[inventorySelection])
+						{
+							if (!gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH])
+							{
+								if (!(worldTouchX >= TLCtileX && worldTouchX <= TRCtileX && worldTouchY >= TLCtileY && worldTouchY <= BLCtileY))
+								{
+									playerPutGameTerrain(worldTouchX, worldTouchY, inventory[inventorySelection]);
+								}
+							}
+						}
+						else if (inventory[inventorySelection] >= 100 && inventory[inventorySelection] < 200 // Object is an item, not a tile
+								 && inventoryQuantity[inventorySelection])
+						{
+							if (isToolCompatible(inventory[inventorySelection], gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH])) // Check if the tool can break the tile
+							{
+								if (gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH])
+									breakTile(worldTouchX, worldTouchY, 1);
+							}
 						}
 					}
 				}

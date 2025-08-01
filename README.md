@@ -8,15 +8,30 @@ I'm trying as hard as possible to stay loyal to the original game design, but th
 
 I'm very open to contributions and suggestions, so if you want to help, feel free to open a pull request or an issue.
 
+### Disclaimer
+This project is not affiliated with Re-Logic or Terraria in any way. It is a fan-made project and is not intended for commercial use. All assets used in this project are use for educational and entertainment purposes only. If you're a party of Re-Logic and owner of any assets used in this project and want them removed, please contact me.
+
 ## Changelog and Features
 - Version naming follows the Terraria PC versioning system, with a "pre" suffix for incomplete versions.
-### Version 0.0.0.0pre (soon):
-- Initial commit with basic project structure.
-- Basic tile rendering and scrolling.
-- Touch input handling for world coordinates.
-- Map generation with default tiles.
-- Map saving and loading functionality.
-- Camera zooming.
+### Version 0.0.0.0pre (Working on it):
+Initial commit with basic project structure.
+- Basic tile rendering and scrolling. ***(done)***
+- Touch input handling for world interaction and inventory interaction. ***(done)***
+- Map generation (terrain, caves, trees and mushrooms). ***(done)***
+- Map saving and loading functionality. ***(done. you can use START to save, and SELECT to load for now)***
+- Camera zooming. ***(done)***
+- Basic crafting system.
+
+## Planned Features for version 0.0.0.0alpha:
+- Add entities (NPCs, enemies, etc.) to the game world.
+- Add interactive tiles (chests, doors, etc.).
+- Add ores and more items to the game.
+- Add more biomes (desert, jungle, etc.).
+
+## Planed Features for the future:
+- Multiplayer support.
+
+Again, I'm open to suggestions and contributions, so if you have any ideas or want to help, feel free to open a pull request or an issue.
 
 ## Compile it yourself
 To compile this project, you need to have devkitPro installed. You can find instructions on how to install it on the [devkitPro website](https://devkitpro.org/wiki/Getting_Started) (Note: devkitPro NDS compilation only works on Windows as far as I know, or x86_64 architectures in general).
