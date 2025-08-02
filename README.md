@@ -41,7 +41,7 @@ You can either compile the game yourself (for nightly releases) or wait for stab
 
 ## Changelog and Features
 - Version naming follows the Terraria PC versioning system, with a "pre" suffix for incomplete versions.
-### Version 0.0.0.0pre (Working on it):
+### Version 0.0pre (Working on it):
 Initial commit with basic project structure.
 - Basic tile rendering and scrolling. ***(done)***
 - Touch input handling for world interaction and inventory interaction. ***(done)***
@@ -50,7 +50,8 @@ Initial commit with basic project structure.
 - Camera zooming. ***(done)***
 - Basic crafting system.
 
-### Version 0.0.0.0alpha (Plans):
+### Version 0.0alpha (Plans):
+- Add ores.
 - Add health.
 - Add menus.
 - Add ability to change button mappings (since many DS'es (including mine) have malfunctioning shoulder buttons because of dust accumulation under them over the years).
@@ -60,6 +61,7 @@ Initial commit with basic project structure.
 - Add more biomes (desert, jungle, etc.).
 - Add crimson/corruption.
 - Support for maps with more height (limit is 64 for now).
+- Add breaking animation.
 
 ## Planed Features for the future:
 - Multiplayer support.

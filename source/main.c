@@ -562,7 +562,7 @@ void inventorySetHotbar()
 		}
 	}
 	clearPrint();
-	print(0, 0, "TerrariaDS v0.0.0.0pre\n\
+	print(0, 0, "TerrariaDS v0.0pre\n\
 By AzizBgBoss\n\
 https://github.com/AzizBgBoss/TerrariaDS\n\
 Jump: A\n\
@@ -1079,7 +1079,7 @@ void generateMap()
 	{
 		for (int y = 0; y < MAP_HEIGHT; y++)
 		{
-			if (y >= grassSurface[x] && y >= stoneSurface[x])
+			if (y >= grassSurface[x])
 			{
 				float caveNoise = fractalPerlin2D(x, y, 6, 0.4f, 0.01f, seed);
 				if (caveNoise < -0.15f) // Adjust this threshold to control cave density
@@ -1649,8 +1649,7 @@ Press B to load a world if possible.");
 					item[i].velocity = 0;
 				}
 				// If item touches the player, remove it and set it to his inventory
-				// FIXME: make range bigger
-				if (item[i].x >= player.x && item[i].x < player.x + player.sizeX && item[i].y >= player.y && item[i].y < player.y + player.sizeY)
+				if (item[i].x >= player.x - 8 * 2 && item[i].x < player.x + player.sizeX + 8 * 2 && item[i].y >= player.y + 8 * 2 && item[i].y < player.y + player.sizeY + 8 * 2)
 				{
 					if (giveInventory(item[i].tile, item[i].quantity))
 						destroyItem(i); // Only destroy item entity if the player has enough inventory space
@@ -1779,9 +1778,12 @@ Press B to load a world if possible.");
 				{
 					item[i].renderX = item[i].x - scrollX - (player.x - item[i].x) * 256 / scale + player.x - item[i].x; // Adjust for player position
 					item[i].renderY = item[i].y - scrollY - (player.y - item[i].y) * 256 / scale + player.y - item[i].y; // Adjust for player position
-					oamRotateScale(&oamSub, renderedItems + 2, degreesToAngle(0), scale * 2, scale * 2);
-					oamSet(&oamSub, renderedItems + 2, item[i].renderX - item[i].sizeX * 256 / scale, item[i].renderY - item[i].sizeY * 256 / scale, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, item[i].sprite_gfx_mem, renderedItems + 2, false, false, false, false, false);
-					renderedItems++;
+					if (item[i].renderX >= 0 && item[i].renderX < SCREEN_WIDTH && item[i].renderY >= 0 && item[i].renderY < SCREEN_HEIGHT)
+					{
+						oamRotateScale(&oamSub, renderedItems + 2, degreesToAngle(0), scale * 2, scale * 2);
+						oamSet(&oamSub, renderedItems + 2, item[i].renderX - item[i].sizeX * 256 / scale, item[i].renderY - item[i].sizeY * 256 / scale, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, item[i].sprite_gfx_mem, renderedItems + 2, false, false, false, false, false);
+						renderedItems++;
+					}
 				}
 			}
 		}
