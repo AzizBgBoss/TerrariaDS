@@ -1497,6 +1497,7 @@ https://github.com/AzizBgBoss/TerrariaDS\n");
 									playerPutGameTerrain(worldTouchX, worldTouchY, inventory[inventorySelection]);
 								}
 							}
+							// TODO: add block swap for walls for now
 						}
 						else if (inventory[inventorySelection] >= 100 && inventory[inventorySelection] < 200 // Object is an item, not a tile
 								 && inventoryQuantity[inventorySelection])

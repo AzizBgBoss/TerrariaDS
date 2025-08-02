@@ -14,15 +14,32 @@ If you want to try the latest changes, you can compile the project yourself, or 
 ### Disclaimer
 This project is not affiliated with Re-Logic or Terraria in any way. It is a fan-made project and is not intended for commercial use. All assets used in this project are use for educational and entertainment purposes only. If you're a party of Re-Logic and owner of any assets used in this project and want them removed, please contact me.
 
+## Installation:
+You can either compile the game yourself (for nightly releases) or wait for stable releases in the Releases page. Please check the Tested devices part before starting.
+
+### Tested devices:
+- The game should probably work fine on all platforms, the only thing that can vary is speed/graphical glitches (very unlikely)/ability to save and load.
+| System                           | Functionality             | Cons                  | Notes                                                                                                       |
+|----------------------------------|---------------------------|-----------------------|-------------------------------------------------------------------------------------------------------------|
+| Nintendo DSi (TM++)              | Excellent                 | None                  | Make sure to set launcher as Default or Unlaunch                                                            |
+| Nintendo 3DS (TM++)              | Not tested yet            | Not tested yet        | Should work fine as long as you're using TW++ since it basically becomes a DSi at that point               |
+| Flashcarts (DS/DS Lite/DSi)      | Not tested yet            | Not tested yet        | You should probably patch the .nds rom with the proper DLDI patch depending on your flashcart type (e.g., R4) |
+| melonDS Windows (Emulator)       | Good                      | No save/load ability  | Even though melonDS has DLDI support, it doesn't support multi-block writing; I'll look to fix that        |
+| NO$GBA Windows (Emulator)        | Good                      | No save/load ability  | NO$GBA doesn't support DLDI                                                                                 |
+| DeSmuME Windows (Emulator)       | Not functional            | Not functional at all | Doesn't even start                                                                                          |
+
+*More platforms will be tested soon.*
+
+
 ## Gameplay:
-A: Jump
-Left/Right: Move
-Up/Down: Zoom in/out
-X/Y: Switch items
-R: Open inventory
-Start: Save map
-Select: Load map
-A+B+X+Y: Toggle debug mode
+- A: Jump
+- Left/Right: Move
+- Up/Down: Zoom in/out
+- X/Y: Switch items
+- R: Open inventory
+- Start: Save map
+- Select: Load map
+- A+B+X+Y: Toggle debug mode
 
 ## Changelog and Features
 - Version naming follows the Terraria PC versioning system, with a "pre" suffix for incomplete versions.
@@ -51,6 +68,7 @@ Initial commit with basic project structure.
 - Skins (or changeable player styles).
 - Add mana and magic items.
 - Add bosses.
+- Extra content and features for the DSi.
 
 Again, I'm open to suggestions and contributions, so if you have any ideas or want to help, feel free to open a pull request or an issue.
 
@@ -74,3 +92,9 @@ make
 This will create a `terraria.nds` file in the root directory of the project.
 
 (Note: if you're not using the Msys2 shell, you may need to define the `DEVKITPRO` environment variable to point to your devkitPro installation directory, e.g. `export DEVKITPRO=/mnt/c/devkitPro` and `export DEVKITARM=/mnt/c/devkitPro/devkitARM`)
+
+## Credits
+- Re-Logic for making such a great game.
+- AzizBgBoss for the DS port.
+- DS(i) Mode Customization! Discord server for being very helpful and provide me with resources to understand how the DS works.
+- The Terraria Wiki for being the best source to understand how blocks and all Terraria mechanics work.
