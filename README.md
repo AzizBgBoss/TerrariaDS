@@ -1,3 +1,4 @@
+![TerrariaDS Logo](media/logo.png)
 # TerrariaDS
 A terraria remake (not port) for the Nintendo DS made by AzizBgBoss.
 
@@ -8,8 +9,20 @@ I'm trying as hard as possible to stay loyal to the original game design, but th
 
 I'm very open to contributions and suggestions, so if you want to help, feel free to open a pull request or an issue.
 
+If you want to try the latest changes, you can compile the project yourself, or wait for a new release to be published.
+
 ### Disclaimer
 This project is not affiliated with Re-Logic or Terraria in any way. It is a fan-made project and is not intended for commercial use. All assets used in this project are use for educational and entertainment purposes only. If you're a party of Re-Logic and owner of any assets used in this project and want them removed, please contact me.
+
+## Gameplay:
+A: Jump
+Left/Right: Move
+Up/Down: Zoom in/out
+X/Y: Switch items
+R: Open inventory
+Start: Save map
+Select: Load map
+A+B+X+Y: Toggle debug mode
 
 ## Changelog and Features
 - Version naming follows the Terraria PC versioning system, with a "pre" suffix for incomplete versions.
@@ -22,14 +35,22 @@ Initial commit with basic project structure.
 - Camera zooming. ***(done)***
 - Basic crafting system.
 
-## Planned Features for version 0.0.0.0alpha:
+### Version 0.0.0.0alpha (Plans):
+- Add health.
+- Add menus.
+- Add ability to change button mappings (since some DS have malfunctioning shoulder buttons because of dust accumulation over the years).
 - Add entities (NPCs, enemies, etc.) to the game world.
 - Add interactive tiles (chests, doors, etc.).
 - Add ores and more items to the game.
 - Add more biomes (desert, jungle, etc.).
+- Support for maps with more height (limit is 64 for now).
 
 ## Planed Features for the future:
 - Multiplayer support.
+- Ability to change the map size.
+- Skins (or changeable player styles).
+- Add mana and magic items.
+- Add bosses.
 
 Again, I'm open to suggestions and contributions, so if you have any ideas or want to help, feel free to open a pull request or an issue.
 

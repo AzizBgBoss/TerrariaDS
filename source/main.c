@@ -40,7 +40,7 @@ V    Trees
 #include "soundbank.h"
 #include "soundbank_bin.h"
 
-#define MAP_WIDTH 512
+#define MAP_WIDTH 1024
 #define MAP_HEIGHT 64
 
 #define MAX_ITEMS 16 // Maximum items to be rendered
@@ -151,6 +151,21 @@ void Bg3UpSetTile(int x, int y, int tile)
 	[x + y * 32] = tile;
 }
 
+int cx, cy; // Current cursor position
+
+void clearPrint()
+{
+	cx = 0;
+	cy = 0;
+	for (int y = 0; y < SCREEN_HEIGHT / 8; y++)
+	{
+		for (int x = 0; x < SCREEN_WIDTH / 8; x++)
+		{
+			Bg3UpSetTile(x, y, 0); // Clear the screen
+		}
+	}
+}
+
 void print(int x, int y, const char *text)
 {
 	while (*text)
@@ -166,13 +181,33 @@ void print(int x, int y, const char *text)
 		}
 		Bg3UpSetTile(x, y, (char)(*text - 8 * 4));
 		x++;
-		if (x >= SCREEN_WIDTH / 8 - 1)
+		if (x > SCREEN_WIDTH / 8 - 1)
 		{
 			x = 0;
 			y++;
 		}
 		text++;
 	}
+	cx = x; // Update current cursor position
+	cy = y;
+}
+
+void printDirect(const char *text) {
+	print(cx, cy, text);
+}
+
+void printVal(int x, int y, int value)
+{
+	char buffer[32];
+	itoa(value, buffer, 10);
+	print(x, y, buffer);
+}
+
+void printValDirect(int value)
+{
+	char buffer[32];
+	itoa(value, buffer, 10);
+	printDirect(buffer);
 }
 
 static int clamp(int val, int min, int max)
@@ -598,8 +633,8 @@ void setInventorySelection(u8 slot)
 	inventorySelection = slot;
 	int x = (slot % 8) * 4 * 8;
 	int y = ((slot / 8) * -4 + 20) * 8;
-	print(1, 7, "                ");
-	print(1, 7, getElementName(inventory[slot]));
+	print(1, 19, "                ");
+	print(1, 19, getElementName(inventory[slot]));
 	oamSet(&oamMain, 0, x, y, 0, 0, SpriteSize_32x32, SpriteColorFormat_256Color, inventorySelectionSprite, -1, false, false, false, false, false);
 	oamUpdate(&oamMain);
 	mmEffect(SFX_ENU_TICK);
@@ -925,34 +960,47 @@ void generateMap()
 	u8 grassSurface[MAP_WIDTH];
 	u8 stoneSurface[MAP_WIDTH];
 	int seed = rando(0, 99999999);
-	// Generate grass height surface
-	print(0, 0, "Generating terrain...");
+	print(0, 0, "Seed: ");
+	printValDirect(seed);
+	printDirect("\nGenerating terrain...\n");
 	for (int x = 0; x < MAP_WIDTH; x++)
 	{
 		float wave = fractalPerlin1D(x, 4, 0.4f, 0.01f, seed) * 20.0f;
 		grassSurface[x] = clamp((int)(wave + (MIN_GRASS_HEIGHT + MAX_GRASS_HEIGHT) / 2), MIN_GRASS_HEIGHT, MAX_GRASS_HEIGHT);
+		if (x % (MAP_WIDTH / 32) == 0)
+		{
+			printDirect(".");
+		}
 	}
 
 	// remove 1 block spikes, i fucking hate them
-	print(0, 0, "Removing spikes because they are annoying...");
+	printDirect("\nRemoving spikes because they are annoying...\n");
 	for (int x = 1; x < MAP_WIDTH - 1; x++)
 	{
 		if (grassSurface[x - 1] != grassSurface[x] && grassSurface[x + 1] != grassSurface[x])
 		{
 			grassSurface[x] += 1;
 		}
+		if (x % (MAP_WIDTH / 32) == 0)
+		{
+			printDirect(".");
+		}
 	}
 
 	// Generate stone height surface
-	print(0, 0, "Generating stone surface...");
+	printDirect("\nGenerating stone surface...\n");
 	for (int x = 0; x < MAP_WIDTH; x++)
 	{
 		float wave = fractalPerlin1D(x, 4, 0.4f, 0.01f, seed + 1) * 20.0f;
 		stoneSurface[x] = clamp((int)(wave + (MIN_STONE_HEIGHT + MAX_STONE_HEIGHT) / 2), MIN_STONE_HEIGHT, MAX_STONE_HEIGHT);
+		if (x % (MAP_WIDTH / 32) == 0)
+		{
+			printDirect(".");
+		}
 	}
 
 	// Place terrain
-	print(0, 0, "Placing terrain...");
+	printDirect("\nPlacing terrain...\n");
 	for (int x = 0; x < MAP_WIDTH; x++)
 	{
 		for (int y = 0; y < MAP_HEIGHT; y++)
@@ -966,10 +1014,14 @@ void generateMap()
 				setGameTerrain(x, y, TILE_STONE);
 			}
 		}
+		if (x % (MAP_WIDTH / 32) == 0)
+		{
+			printDirect(".");
+		}
 	}
 
 	// Generate caves
-	print(0, 0, "Generating caves...");
+	printDirect("\nGenerating caves...\n");
 	for (int x = 0; x < MAP_WIDTH; x++)
 	{
 		for (int y = 0; y < MAP_HEIGHT; y++)
@@ -983,10 +1035,14 @@ void generateMap()
 				}
 			}
 		}
+		if (x % (MAP_WIDTH / 32) == 0)
+		{
+			printDirect(".");
+		}
 	}
 
 	// Adding walls
-	print(0, 0, "Adding walls...");
+	printDirect("\nAdding walls...\n");
 	for (int x = 0; x < MAP_WIDTH; x++)
 	{
 		for (int y = 0; y < MAP_HEIGHT; y++)
@@ -999,10 +1055,14 @@ void generateMap()
 					setGameTerrain(x, y, TILE_STONE_WALL);
 			}
 		}
+		if (x % (MAP_WIDTH / 32) == 0)
+		{
+			printDirect(".");
+		}
 	}
 
 	// Place trees
-	print(0, 0, "Placing trees...");
+	printDirect("\nPlacing trees...\n");
 	for (int x = 1; x < MAP_WIDTH - 1; x++)
 	{
 		if (rando(0, TREE_CHANCE) == 0 && gameTerrain[x + (grassSurface[x] + 1) * MAP_WIDTH] == TILE_DIRT)
@@ -1023,22 +1083,35 @@ void generateMap()
 				}
 			}
 		}
+		if (x % (MAP_WIDTH / 32) == 0)
+		{
+			printDirect(".");
+		}
 	}
 
 	// Place mushrooms
-	print(0, 0, "Placing mushrooms...");
+	printDirect("\nPlacing mushrooms...\n");
 	for (int x = 1; x < MAP_WIDTH - 1; x++)
 	{
 		if (rando(0, MUSHROOM_CHANCE) == 0 && gameTerrain[x + grassSurface[x] * MAP_WIDTH] == TILE_DIRT && gameTerrain[x + (grassSurface[x] - 1) * MAP_WIDTH] == TILE_AIR)
 		{
 			setGameTerrain(x, grassSurface[x] - 1, TILE_MUSHROOM);
 		}
+		if (x % (MAP_WIDTH / 32) == 0)
+		{
+			printDirect(".");
+		}
 	}
 
 	// Place demonite bricks to limit the world
+	printDirect("\nPlacing demonite bricks at the bottom so you don't escape >:) ...\n");
 	for (int x = 0; x < MAP_WIDTH - 1; x++)
 	{
 		setGameTerrain(x, MAP_HEIGHT - 1, TILE_DEMONITE_BRICK);
+		if (x % (MAP_WIDTH / 32) == 0)
+		{
+			printDirect(".");
+		}
 	}
 }
 
@@ -1153,8 +1226,10 @@ You shall press START to continue, with no saving abilities.\n");
 	giveInventory(ITEM_AXE, 1);
 	giveInventory(ITEM_PICKAXE, 1);
 	setInventorySelection(0);
-
-	print(0, 0, "Terraria DS version 0.0.0.0pre\nBy AzizBgBoss\nhttps://github.com/AzizBgBoss/TerrariaDS\n\nPress A to jump\nPress L and R to switch items");
+	clearPrint();
+	print(0, 10, "TerrariaDS v0.0.0.0pre\n\
+By AzizBgBoss\n\
+https://github.com/AzizBgBoss/TerrariaDS\n");
 
 	while (pmMainLoop())
 	{
@@ -1337,7 +1412,6 @@ You shall press START to continue, with no saving abilities.\n");
 					if (touch.px >= x && touch.px < x + 32 && touch.py >= y && touch.py < y + 32)
 					{
 						itemToMove = i;
-						print(0, 0, "found item to move");
 						break;
 					}
 				}
@@ -1355,7 +1429,6 @@ You shall press START to continue, with no saving abilities.\n");
 					if (touch.px >= x && touch.px < x + 32 && touch.py >= y && touch.py < y + 32)
 					{
 						destination = i;
-						print(0, 0, "found destination");
 						break;
 					}
 				}
