@@ -18,7 +18,6 @@ This project is not affiliated with Re-Logic or Terraria in any way. It is a fan
 You can either compile the game yourself (for nightly releases) or wait for stable releases in the Releases page. Please check the Tested devices part before starting.
 
 ### Tested devices:
-- The game should probably work fine on all platforms, the only thing that can vary is speed/graphical glitches (very unlikely)/ability to save and load.
 | System                           | Functionality             | Cons                  | Notes                                                                                                       |
 |----------------------------------|---------------------------|-----------------------|-------------------------------------------------------------------------------------------------------------|
 | Nintendo DSi (TM++)              | Excellent                 | None                  | Make sure to set launcher as Default or Unlaunch                                                            |
@@ -28,7 +27,7 @@ You can either compile the game yourself (for nightly releases) or wait for stab
 | NO$GBA Windows (Emulator)        | Good                      | No save/load ability  | NO$GBA doesn't support DLDI                                                                                 |
 | DeSmuME Windows (Emulator)       | Not functional            | Not functional at all | Doesn't even start                                                                                          |
 
-*More platforms will be tested soon.*
+*The game should probably work fine on all platforms, the only thing that can vary is speed/graphical glitches (very unlikely)/ability to save and load. More platforms will be tested soon.*
 
 
 ## Gameplay:
