@@ -5,22 +5,6 @@ AzizBgBoss - https://github.com/AzizBgBoss
 
 ---------------------------------------------------------------------------------*/
 
-/*
-TODO: We're making the game more like terraria desktop.
-
-We're gonna start with Terraria 0.1:
-V    Dirt
-V    Stone
-V    Trees
-	Basic Tools and Wooden Weapons
-	Clouds
-	Tooltips
-	Mushrooms
-	Damage Numbers
-	Splitting Stacks
-	FPS Meter (Unnecessary)
-*/
-
 #include <nds.h>
 #include <stdio.h>
 #include <math.h>
@@ -231,20 +215,6 @@ static int clamp(int val, int min, int max)
 	if (val > max)
 		return max;
 	return val;
-}
-
-bool isTileSolid(int tile)
-{
-	switch (tile)
-	{
-	case TILE_DIRT:
-	case TILE_STONE:
-	case TILE_PLANKS:
-	case TILE_DEMONITE_BRICK:
-		return true;
-	default:
-		return false;
-	}
 }
 
 int getElementTile(int tile, int x, int y) // Tile will change based on surrounding tiles
@@ -514,6 +484,32 @@ bool isToolCompatible(int tool, int tile)
 		return tile == TILE_MUSHROOM; // Can break mushrooms
 	case ITEM_HAMMER:
 		return tile == TILE_DIRT_WALL || tile == TILE_STONE_WALL; // Can break walls
+	default:
+		return false;
+	}
+}
+
+bool isTileSolid(int tile)
+{
+	switch (tile)
+	{
+	case TILE_DIRT:
+	case TILE_STONE:
+	case TILE_PLANKS:
+	case TILE_DEMONITE_BRICK:
+		return true;
+	default:
+		return false;
+	}
+}
+
+bool isElementWall(int tile)
+{
+	switch (tile)
+	{
+	case TILE_DIRT_WALL:
+	case TILE_STONE_WALL:
+		return true;
 	default:
 		return false;
 	}
@@ -1593,7 +1589,10 @@ Press B to load a world if possible.");
 									playerPutGameTerrain(worldTouchX, worldTouchY, inventory[inventorySelection]);
 								}
 							}
-							// TODO: add block swap for walls for now
+							else if (isElementWall(gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH]))
+							{
+								breakTile(worldTouchX, worldTouchY, 1);
+							}
 						}
 						else if (inventory[inventorySelection] >= 100 && inventory[inventorySelection] < 200 // Object is an item, not a tile
 								 && inventoryQuantity[inventorySelection])
@@ -1640,6 +1639,7 @@ Press B to load a world if possible.");
 			if (item[i].exists)
 			{
 				// Item falls until it hits a tile
+				// TODO: if item inside a tile, try to get it to the closest side with a non solid tile
 				if (!isTileSolid(gameTerrain[item[i].x / 8 + (item[i].y + 8 + item[i].velocity) / 8 * MAP_WIDTH]))
 				{
 					item[i].velocity = 1;
@@ -1649,6 +1649,7 @@ Press B to load a world if possible.");
 					item[i].velocity = 0;
 				}
 				// If item touches the player, remove it and set it to his inventory
+				// FIXME: make range bigger
 				if (item[i].x >= player.x && item[i].x < player.x + player.sizeX && item[i].y >= player.y && item[i].y < player.y + player.sizeY)
 				{
 					if (giveInventory(item[i].tile, item[i].quantity))
@@ -1769,6 +1770,7 @@ Press B to load a world if possible.");
 		// Render dropped items
 		u8 renderedItems = 0;
 
+		// FIXME: items out of screen wraping to the other side (if item out of screen js dont render)
 		for (int i = 0; i < 64; i++)
 		{
 			if (renderedItems < MAX_ITEMS)

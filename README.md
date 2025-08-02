@@ -29,7 +29,6 @@ You can either compile the game yourself (for nightly releases) or wait for stab
 
 *The game should probably work fine on all platforms, the only thing that can vary is speed/graphical glitches (very unlikely)/ability to save and load. More platforms will be tested soon.*
 
-
 ## Gameplay:
 - A: Jump
 - Left/Right: Move
@@ -54,11 +53,12 @@ Initial commit with basic project structure.
 ### Version 0.0.0.0alpha (Plans):
 - Add health.
 - Add menus.
-- Add ability to change button mappings (since some DS have malfunctioning shoulder buttons because of dust accumulation over the years).
+- Add ability to change button mappings (since many DS'es (including mine) have malfunctioning shoulder buttons because of dust accumulation under them over the years).
 - Add entities (NPCs, enemies, etc.) to the game world.
 - Add interactive tiles (chests, doors, etc.).
 - Add ores and more items to the game.
 - Add more biomes (desert, jungle, etc.).
+- Add crimson/corruption.
 - Support for maps with more height (limit is 64 for now).
 
 ## Planed Features for the future:
