@@ -90,12 +90,12 @@ Now, you can compile the project by running:
 ```bash
 make
 ```
-This will create a `terraria.nds` file in the root directory of the project.
+This will create a `TerrariaDS.nds` file in the root directory of the project.
 
 (Note: if you're not using the Msys2 shell, you may need to define the `DEVKITPRO` environment variable to point to your devkitPro installation directory, e.g. `export DEVKITPRO=/mnt/c/devkitPro` and `export DEVKITARM=/mnt/c/devkitPro/devkitARM`)
 
 ## Credits
-- Re-Logic for making such a great game.
-- AzizBgBoss for the DS port.
+- AzizBgBoss for the DS remake.
 - DS(i) Mode Customization! Discord server for being very helpful and provide me with resources to understand how the DS works.
 - The Terraria Wiki for being the best source to understand how blocks and all Terraria mechanics work.
+- Re-Logic for making such a great game.
