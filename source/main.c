@@ -139,6 +139,19 @@ void Bg1SetTile(int x, int y, int tile)
 	bg2Map[x + y * 64] = tile;
 }
 
+void Bg0UpFill(int tile)
+{
+	for (int i = 0; i < 32 * 32; i++)
+		BG_MAP_RAM(0)
+	[i] = tile;
+}
+
+void Bg0UpSetTile(int x, int y, int tile)
+{
+	BG_MAP_RAM(0)
+	[x + y * 32] = tile;
+}
+
 void Bg1UpSetTile(int x, int y, int tile)
 {
 	BG_MAP_RAM(2)
@@ -172,9 +185,9 @@ void print(int x, int y, const char *text)
 	{
 		if (*text == '\n') // If we reach a newline character, move to the next line
 		{
-			x = 0;							// Reset x to the beginning of the line
-			y++;							// Move to the next line
-			if (y >= SCREEN_HEIGHT / 8 - 1) // If we reach the bottom of the screen, stop printing
+			x = 0;						   // Reset x to the beginning of the line
+			y++;						   // Move to the next line
+			if (y > SCREEN_HEIGHT / 8 - 1) // If we reach the bottom of the screen, stop printing
 				return;
 			text++;
 			continue; // Skip the newline character
@@ -192,7 +205,8 @@ void print(int x, int y, const char *text)
 	cy = y;
 }
 
-void printDirect(const char *text) {
+void printDirect(const char *text)
+{
 	print(cx, cy, text);
 }
 
@@ -539,6 +553,49 @@ void setInventory(int slot, int item, int quantity)
 	char buffer[3];
 	itoa(quantity, buffer, 10);
 	print(x, y + 2, buffer);
+}
+
+void inventorySetHotbar()
+{
+	Bg0UpFill(0);
+	for (int i = 0; i < 32; i += 4)
+	{
+		for (int j = 0; j < 16; j++)
+		{
+			Bg0UpSetTile(i + (j % 4), 20 + j / 4, 16 + j);
+		}
+	}
+	clearPrint();
+	print(0, 0, "TerrariaDS v0.0.0.0pre\n\
+By AzizBgBoss\n\
+https://github.com/AzizBgBoss/TerrariaDS\n\
+Jump: A\n\
+Move: Left/Right\n\
+A: Jump\n\
+Left/Right: Move\n\
+Up/Down: Zoom in/out\n\
+X/Y: Switch items\n\
+R: Open inventory\n\
+Start: Save map\n\
+Select: Load map\n\
+A+B+X+Y: Toggle debug mode\n");
+}
+
+void inventorySetFull()
+{
+	Bg0UpFill(0);
+	for (int i = 0; i < 8 * 4; i++)
+	{
+		for (int j = 0; j < 16; j++)
+		{
+			Bg0UpSetTile((i % 8) * 4 + j % 4, 8 + (i / 8) * 4 + j / 4, 16 + j);
+		}
+	}
+	clearPrint();
+	print(0, 0, "Tap on a slot to select it.\n\
+Hold and move an item to change it's slot.\n\
+Press R to close inventory\n\
+You can still move the player with the other buttons.");
 }
 
 void setGameTerrain(int x, int y, int tile)
@@ -960,7 +1017,7 @@ void generateMap()
 	u8 grassSurface[MAP_WIDTH];
 	u8 stoneSurface[MAP_WIDTH];
 	int seed = rando(0, 99999999);
-	print(0, 0, "Seed: ");
+	printDirect("\nSeed: ");
 	printValDirect(seed);
 	printDirect("\nGenerating terrain...\n");
 	for (int x = 0; x < MAP_WIDTH; x++)
@@ -1165,7 +1222,6 @@ You shall press START to continue, with no saving abilities.\n");
 
 	BGCTRL[0] = BG_TILE_BASE(1) | BG_MAP_BASE(0) | BG_COLOR_256 | BG_32x32 | BG_PRIORITY(3);
 	dmaCopy(invTiles, (void *)CHAR_BASE_BLOCK(1), invTilesLen);
-	dmaCopy(invMap, (void *)SCREEN_BASE_BLOCK(0), invMapLen);
 	BGCTRL[1] = BG_TILE_BASE(2) | BG_MAP_BASE(2) | BG_COLOR_256 | BG_32x32 | BG_PRIORITY(2);
 	dmaCopy(itemsTiles, (void *)CHAR_BASE_BLOCK(2), itemsTilesLen);
 	dmaFillHalfWords(63, (void *)SCREEN_BASE_BLOCK(2), 2048);
@@ -1220,16 +1276,53 @@ You shall press START to continue, with no saving abilities.\n");
 	mmLoadEffect(SFX_IG_1);
 	mmLoadEffect(SFX_IG_2);
 
-	generateMap();
+	print(0, 0, "Welcome to TerrariaDS by AzizBgBoss\n\
+https://github.com/AzizBgBoss/TerrariaDS\n\
+Press A to generate a new world.\n\
+Press B to load a world if possible.");
 
+	while (1)
+	{
+		scanKeys();
+		int pressed = keysDown();
+		if (pressed & KEY_A)
+		{
+			clearPrint();
+			generateMap();
+			break;
+		}
+		else if (pressed & KEY_B)
+		{
+			if (fatInitDefault())
+			{
+				if (loadMapFromFile("map.dat"))
+				{
+					clearPrint();
+					printDirect("Map loaded successfully!");
+				}
+				else
+				{
+					clearPrint();
+					printDirect("Error loading map!\nFallback to generating map...");
+					generateMap();
+				}
+			}
+			else
+			{
+				clearPrint();
+				printDirect("Error: FatInitDefault failed!\nFallback to generating map...");
+				generateMap();
+			}
+			break;
+		}
+	}
+
+	// Setup inventory
+	inventorySetHotbar();
 	giveInventory(ITEM_SWORD, 1);
 	giveInventory(ITEM_AXE, 1);
 	giveInventory(ITEM_PICKAXE, 1);
 	setInventorySelection(0);
-	clearPrint();
-	print(0, 10, "TerrariaDS v0.0.0.0pre\n\
-By AzizBgBoss\n\
-https://github.com/AzizBgBoss/TerrariaDS\n");
 
 	while (pmMainLoop())
 	{
@@ -1245,11 +1338,13 @@ https://github.com/AzizBgBoss/TerrariaDS\n");
 			{
 				subMain = false;
 				lcdMainOnTop();
+				inventorySetHotbar();
 			}
 			else
 			{
 				subMain = true;
 				lcdMainOnBottom();
+				inventorySetFull();
 			}
 		}
 
@@ -1420,7 +1515,8 @@ https://github.com/AzizBgBoss/TerrariaDS\n");
 					swiWaitForVBlank();
 					scanKeys();
 					held = keysHeld();
-					if (held & KEY_TOUCH) touchRead(&touch);
+					if (held & KEY_TOUCH)
+						touchRead(&touch);
 				}
 				for (int i = 0; i < 8 * 4; i++)
 				{
