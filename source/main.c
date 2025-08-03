@@ -1002,7 +1002,7 @@ bool saveMapToFile(const char *filename)
 	print(0, 0, "Saving map...");
 	uint32_t magic = 0xA212B055;
 	size_t bytesWritten = fwrite(&magic, 1, 4, file);
-	bytesWritten = fwrite(gameTerrain, 1, sizeof(gameTerrain), file);
+	bytesWritten += fwrite(gameTerrain, 1, sizeof(gameTerrain), file);
 	bytesWritten += fwrite(inventory, 1, sizeof(inventory), file);
 	bytesWritten += fwrite(inventoryQuantity, 1, sizeof(inventoryQuantity), file);
 	fclose(file);
@@ -1036,7 +1036,7 @@ bool loadMapFromFile(const char *filename)
 		print(0, 0, "Invalid map file: map.dat");
 		return false;
 	}
-	bytesRead = fread(gameTerrain, 1, sizeof(gameTerrain), file);
+	bytesRead += fread(gameTerrain, 1, sizeof(gameTerrain), file);
 	bytesRead += fread(inventory, 1, sizeof(inventory), file);
 	bytesRead += fread(inventoryQuantity, 1, sizeof(inventoryQuantity), file);
 	fclose(file);
@@ -1050,6 +1050,8 @@ bool loadMapFromFile(const char *filename)
 	player.x = MAP_WIDTH * 8 / 2;
 	player.y = 0;
 	chunk = -6;
+	renderInventory();
+	renderCrafting();
 	print(0, 0, "Map loaded from map.dat");
 	return true;
 }
