@@ -1,15 +1,18 @@
 ![TerrariaDS Logo](media/logo.png)
 # TerrariaDS
-A terraria remake (not port) for the Nintendo DS made by AzizBgBoss.
+A terraria remake (not port) for the Nintendo DS made by AzizBgBoss.<br>
 
+I'm a 17 y/o that's obsessed with programming, I'm also into Terraria! I love the freedom you get in the game and the endless possibilities it has to offer. Another thing I love is the Nintendo DS, it's a great console and I wondered if I can fuse the 3 thing I love together, so I programmed Terraria into the DS! TerrariaDS!<br>
+<br>
 This project is a work in progress and is not affiliated with the original Terraria game. It aims to replicate the core mechanics and gameplay of Terraria on the Nintendo DS.
-It aims at least to somewhat replicate the 3DS version of Terraria, but with some features from the PC version, and some sacrifices to fit the DS hardware limitations.
-
-I'm trying as hard as possible to stay loyal to the original game design, but there are some limitations due to the DS hardware and the fact that this is a remake, not a port.
-
-I'm very open to contributions and suggestions, so if you want to help, feel free to open a pull request or an issue.
-
-If you want to try the latest changes, you can compile the project yourself, or wait for a new release to be published.
+It aims at least to somewhat replicate the 3DS version of Terraria, but with some features from the PC version, and some sacrifices to fit the DS hardware limitations.<br>
+<br>
+I'm trying as hard as possible to stay loyal to the original game design, but there are some limitations due to the DS hardware and the fact that this is a remake, not a port.<br>
+Also please note: ***For now***, I'm prioritizing functionality over content. I'm trying to perfect the core mechanics of the game before adding the Terraria content (Items, tiles, structures...), because without functionality, you wouldn't truly enjoy the content.<br>
+<br>
+I'm very open to contributions and suggestions, so if you want to help, feel free to open a pull request or an issue.<br>
+<br>
+If you want to try the latest changes, you can compile the project yourself, or wait for a new release to be published.<br>
 
 ### Disclaimer
 This project is not affiliated with Re-Logic or Terraria in any way. It is a fan-made project and is not intended for commercial use. All assets used in this project are use for educational and entertainment purposes only. If you're a party of Re-Logic and owner of any assets used in this project and want them removed, please contact me.
@@ -48,7 +51,8 @@ Initial commit with basic project structure.
 - Map generation (terrain, caves, trees and mushrooms). ***(done)***
 - Map saving and loading functionality. ***(done. you can use START to save, and SELECT to load for now)***
 - Camera zooming. ***(done)***
-- Basic crafting system.
+- Basic crafting system. ***(done)***
+- More testing and bug fixing needed, game proof-of-concept is going to be released soon.
 
 ### Version 0.0alpha (Plans):
 - Add ores.

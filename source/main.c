@@ -38,10 +38,13 @@ AzizBgBoss - https://github.com/AzizBgBoss
 #define TILE_LEAVES 5
 #define TILE_MUSHROOM 6
 
+// Make sure to update isTileWall
 #define TILE_DIRT_WALL 7
 #define TILE_STONE_WALL 8
 
 #define TILE_DEMONITE_BRICK 9 // Indestructible brick
+
+#define TILE_WOOD_WALL 10
 
 #define ITEM_PICKAXE 101
 #define ITEM_AXE 102
@@ -65,12 +68,14 @@ int gameTerrainHealth[MAP_WIDTH * MAP_HEIGHT] = {0};
 u8 inventory[8 * 4] = {0};
 u8 inventoryQuantity[8 * 4] = {0};
 u8 inventorySelection = 0;
+u8 craftingSelection = 0;
 
 u16 *inventorySelectionSprite;
 u16 *itemHandSprite;
 
 bool debug = false;
-bool subMain = false;
+bool inventoryOpen = false;
+bool craftingOpen = false;
 
 typedef struct
 {
@@ -108,11 +113,43 @@ typedef struct
 	u16 *sprite_gfx_mem;
 } Sprite;
 
+typedef struct
+{
+	int item;
+	int quantity;
+	int ingredientCount;
+	int itemsNeeded[4];
+	int itemsNeededQuantity[4];
+} CraftingRecipe;
+
 // Define the player entity
 Player player = {MAP_WIDTH * 8 / 2, 0, 0, 0, 0, NULL, 16, 24, false, true, 1, 0, true, false, 4, ANIM_NONE};
 
 // Define 64 slots for item entities
 Item item[64] = {{0, 0, 0, 0, NULL, 8, 8, false, 60, 0, 0}};
+
+// Define crafting recipes
+CraftingRecipe craftingRecipes[] = {
+	{
+		ITEM_HAMMER,
+		1,
+		2,
+		{TILE_PLANKS,
+		 TILE_STONE},
+		{1,
+		 1},
+	},
+	{
+		TILE_WOOD_WALL,
+		4,
+		1,
+		{
+			TILE_PLANKS,
+		},
+		{
+			1,
+		},
+	}};
 
 u16 *bg2Map;
 
@@ -134,6 +171,13 @@ void Bg0UpSetTile(int x, int y, int tile)
 {
 	BG_MAP_RAM(0)
 	[x + y * 32] = tile;
+}
+
+void Bg1UpFill(int tile)
+{
+	for (int i = 0; i < 32 * 32; i++)
+		BG_MAP_RAM(2)
+	[i] = tile;
 }
 
 void Bg1UpSetTile(int x, int y, int tile)
@@ -249,6 +293,9 @@ int getElementTile(int tile, int x, int y) // Tile will change based on surround
 		break;
 	case TILE_DEMONITE_BRICK:
 		offset = 7;
+		break;
+	case TILE_WOOD_WALL:
+		offset = 8;
 		break;
 	case TILE_WOODLOG:
 		return 2;
@@ -394,6 +441,8 @@ int getItemTile(int item)
 		return 40;
 	case TILE_DEMONITE_BRICK:
 		return 44;
+	case TILE_WOOD_WALL:
+		return 48;
 	default:
 		return 56;
 	}
@@ -421,6 +470,8 @@ char *getElementName(int element)
 		return "Stone Wall";
 	case TILE_DEMONITE_BRICK:
 		return "Demonite Brick";
+	case TILE_WOOD_WALL:
+		return "Wood Wall";
 	case ITEM_PICKAXE:
 		return "Pickaxe";
 	case ITEM_SWORD:
@@ -456,6 +507,8 @@ int getElementHealth(int element)
 		return 150;
 	case TILE_DEMONITE_BRICK:
 		return INFINITY;
+	case TILE_WOOD_WALL:
+		return 100;
 	default:
 		return 0;
 	}
@@ -483,7 +536,7 @@ bool isToolCompatible(int tool, int tile)
 	case ITEM_SWORD:
 		return tile == TILE_MUSHROOM; // Can break mushrooms
 	case ITEM_HAMMER:
-		return tile == TILE_DIRT_WALL || tile == TILE_STONE_WALL; // Can break walls
+		return tile == TILE_DIRT_WALL || tile == TILE_STONE_WALL || tile == TILE_WOOD_WALL; // Can break walls
 	default:
 		return false;
 	}
@@ -509,6 +562,7 @@ bool isElementWall(int tile)
 	{
 	case TILE_DIRT_WALL:
 	case TILE_STONE_WALL:
+	case TILE_WOOD_WALL:
 		return true;
 	default:
 		return false;
@@ -520,40 +574,117 @@ int rando(int min, int max)
 	return rand() % (max - min + 1) + min;
 }
 
+void setInventorySelection(u8 slot)
+{
+	inventorySelection = slot;
+	int x = (slot % 8) * 4 * 8;
+	int y = ((slot / 8) * -4 + 20) * 8;
+	if (!craftingOpen)
+	{
+		print(1, 19, "                ");
+		print(1, 19, getElementName(inventory[slot]));
+		oamSet(&oamMain, 0, x, y, 0, 0, SpriteSize_32x32, SpriteColorFormat_256Color, inventorySelectionSprite, -1, false, false, false, false, false);
+		oamUpdate(&oamMain);
+	}
+	mmEffect(SFX_ENU_TICK);
+}
+
+void setCraftingSelection(u8 slot)
+{
+	clearPrint();
+	craftingSelection = slot;
+	int x = (slot % 4) * 4 * 8;
+	int y = ((slot / 4) * -4 + 20) * 8;
+	if (craftingOpen)
+	{
+		print(16, 7, "              ");
+		print(16, 7, getElementName(craftingRecipes[slot].item));
+		for (int i = 0; i < craftingRecipes[slot].ingredientCount; i++)
+		{
+			Bg1UpSetTile(16, 8 + i * 2, getItemTile(craftingRecipes[slot].itemsNeeded[i]) + 0);
+			Bg1UpSetTile(16 + 1, 8 + i * 2, getItemTile(craftingRecipes[slot].itemsNeeded[i]) + 1);
+			Bg1UpSetTile(16, 8 + 1 + i * 2, getItemTile(craftingRecipes[slot].itemsNeeded[i]) + 2);
+			Bg1UpSetTile(16 + 1, 8 + 1 + i * 2, getItemTile(craftingRecipes[slot].itemsNeeded[i]) + 3);
+			print(16 + 2, 8 + i * 2, "              ");
+			print(16 + 2, 8 + i * 2, getElementName(craftingRecipes[slot].itemsNeeded[i]));
+			print(16 + 2, 9 + i * 2, "              ");
+			printVal(16 + 2, 9 + i * 2, craftingRecipes[slot].itemsNeededQuantity[i]);
+		}
+		oamSet(&oamMain, 0, x, y, 0, 0, SpriteSize_32x32, SpriteColorFormat_256Color, inventorySelectionSprite, -1, false, false, false, false, false);
+		oamUpdate(&oamMain);
+	}
+	mmEffect(SFX_ENU_TICK);
+}
+
+void renderInventory()
+{
+	if (!craftingOpen)
+	{
+		Bg1UpFill(63);
+		for (int i = 0; i < 8 * 4; i++)
+		{
+			if (inventory[i] == 0 || inventoryQuantity[i] == 0)
+			{
+				Bg1UpSetTile((i % 8) * 4 + 1, (i / 8) * -4 + 21, 63);
+				Bg1UpSetTile((i % 8) * 4 + 2, (i / 8) * -4 + 21, 63);
+				Bg1UpSetTile((i % 8) * 4 + 1, (i / 8) * -4 + 22, 63);
+				Bg1UpSetTile((i % 8) * 4 + 2, (i / 8) * -4 + 22, 63);
+				print((i % 8) * 4 + 1, (i / 8) * -4 + 23, "   ");
+			}
+			else
+			{
+				Bg1UpSetTile((i % 8) * 4 + 1, (i / 8) * -4 + 21, getItemTile(inventory[i]) + 0);
+				Bg1UpSetTile((i % 8) * 4 + 2, (i / 8) * -4 + 21, getItemTile(inventory[i]) + 1);
+				Bg1UpSetTile((i % 8) * 4 + 1, (i / 8) * -4 + 22, getItemTile(inventory[i]) + 2);
+				Bg1UpSetTile((i % 8) * 4 + 2, (i / 8) * -4 + 22, getItemTile(inventory[i]) + 3);
+				print((i % 8) * 4 + 2, (i / 8) * -4 + 23, "   ");
+				if (inventoryQuantity[i] > 1)
+				{
+					char buffer[3];
+					itoa(inventoryQuantity[i], buffer, 10);
+					print((i % 8) * 4 + 1, (i / 8) * -4 + 23, buffer);
+				}
+			}
+		}
+		setInventorySelection(inventorySelection);
+	}
+}
+
+void renderCrafting()
+{
+	Bg1UpFill(63);
+	int tilesToRender = (sizeof(craftingRecipes) / sizeof(craftingRecipes[0]) <= 16) ? sizeof(craftingRecipes) / sizeof(craftingRecipes[0]) : 16;
+	for (int i = 0; i < tilesToRender; i++)
+	{
+		Bg1UpSetTile((i % 4) * 4 + 1, (i / 4) * -4 + 21, getItemTile(craftingRecipes[i].item) + 0);
+		Bg1UpSetTile((i % 4) * 4 + 2, (i / 4) * -4 + 21, getItemTile(craftingRecipes[i].item) + 1);
+		Bg1UpSetTile((i % 4) * 4 + 1, (i / 4) * -4 + 22, getItemTile(craftingRecipes[i].item) + 2);
+		Bg1UpSetTile((i % 4) * 4 + 2, (i / 4) * -4 + 22, getItemTile(craftingRecipes[i].item) + 3);
+	}
+	setCraftingSelection(craftingSelection);
+}
+
 void setInventory(int slot, int item, int quantity)
 {
 	if (slot < 0 || slot >= 8 * 4)
 		return;
-	int x = (slot % 8) * 4 + 1;
-	int y = (slot / 8) * -4 + 21;
 	if (item == 0 || quantity == 0)
 	{
 		inventory[slot] = 0;
 		inventoryQuantity[slot] = 0;
-		Bg1UpSetTile(x, y, 63);
-		Bg1UpSetTile(x + 1, y, 63);
-		Bg1UpSetTile(x, y + 1, 63);
-		Bg1UpSetTile(x + 1, y + 1, 63);
-		print(x, y + 2, "   ");
+		renderInventory();
 		return;
 	}
 	inventory[slot] = item;
 	inventoryQuantity[slot] = quantity;
-	Bg1UpSetTile(x, y, getItemTile(item) + 0);
-	Bg1UpSetTile(x + 1, y, getItemTile(item) + 1);
-	Bg1UpSetTile(x, y + 1, getItemTile(item) + 2);
-	Bg1UpSetTile(x + 1, y + 1, getItemTile(item) + 3);
-	print(x, y + 2, "   ");
-	if (quantity == 1)
-		return;
-	char buffer[3];
-	itoa(quantity, buffer, 10);
-	print(x, y + 2, buffer);
+	renderInventory();
 }
 
 void inventorySetHotbar()
 {
+	craftingOpen = false;
 	Bg0UpFill(0);
+	Bg1UpFill(63);
 	for (int i = 0; i < 32; i += 4)
 	{
 		for (int j = 0; j < 16; j++)
@@ -575,11 +706,14 @@ R: Open inventory\n\
 Start: Save map\n\
 Select: Load map\n\
 A+B+X+Y: Toggle debug mode\n");
+	renderInventory();
 }
 
 void inventorySetFull()
 {
+	craftingOpen = false;
 	Bg0UpFill(0);
+	Bg1UpFill(63);
 	for (int i = 0; i < 8 * 4; i++)
 	{
 		for (int j = 0; j < 16; j++)
@@ -587,11 +721,37 @@ void inventorySetFull()
 			Bg0UpSetTile((i % 8) * 4 + j % 4, 8 + (i / 8) * 4 + j / 4, 16 + j);
 		}
 	}
+	for (int j = 0; j < 16; j++)
+		Bg0UpSetTile(27 + j % 4, j / 4, 32 + j);
 	clearPrint();
 	print(0, 0, "Tap on a slot to select it.\n\
 Hold and move an item to change it's slot.\n\
 Press R to close inventory\n\
 You can still move the player with the other buttons.");
+	renderInventory();
+}
+
+void inventorySetCrafting()
+{
+	craftingOpen = true;
+	Bg0UpFill(0);
+	Bg1UpFill(63);
+	for (int i = 0; i < 4 * 4; i++)
+	{
+		for (int j = 0; j < 16; j++)
+		{
+			Bg0UpSetTile((i % 4) * 4 + j % 4, 8 + (i / 4) * 4 + j / 4, 16 + j);
+		}
+	}
+
+	for (int j = 0; j < 16; j++)
+		Bg0UpSetTile(27 + j % 4, j / 4, 48 + j);
+	for (int j = 0; j < 16; j++)
+		Bg0UpSetTile(23 + j % 4, 20 + j / 4, 64 + j);
+	for (int j = 0; j < 16; j++)
+		Bg0UpSetTile(27 + j % 4, 20 + j / 4, 80 + j);
+	clearPrint();
+	renderCrafting();
 }
 
 void setGameTerrain(int x, int y, int tile)
@@ -681,16 +841,14 @@ bool giveInventory(int item, int quantity)
 	return false;
 }
 
-void setInventorySelection(u8 slot)
+bool playerHasItem(int item, int quantity)
 {
-	inventorySelection = slot;
-	int x = (slot % 8) * 4 * 8;
-	int y = ((slot / 8) * -4 + 20) * 8;
-	print(1, 19, "                ");
-	print(1, 19, getElementName(inventory[slot]));
-	oamSet(&oamMain, 0, x, y, 0, 0, SpriteSize_32x32, SpriteColorFormat_256Color, inventorySelectionSprite, -1, false, false, false, false, false);
-	oamUpdate(&oamMain);
-	mmEffect(SFX_ENU_TICK);
+	for (int i = 0; i < 8 * 4; i++)
+	{
+		if (inventory[i] == item && inventoryQuantity[i] >= quantity)
+			return true;
+	}
+	return false;
 }
 
 void dropItem(int x, int y, int tile, int quantity)
@@ -1330,15 +1488,15 @@ Press B to load a world if possible.");
 
 		if (pressed & KEY_R)
 		{
-			if (subMain)
+			if (inventoryOpen)
 			{
-				subMain = false;
+				inventoryOpen = false;
 				lcdMainOnTop();
 				inventorySetHotbar();
 			}
 			else
 			{
-				subMain = true;
+				inventoryOpen = true;
 				lcdMainOnBottom();
 				inventorySetFull();
 			}
@@ -1387,7 +1545,7 @@ Press B to load a world if possible.");
 			if (player.isOnGround)
 			{
 				player.isJumping = true;
-				player.velocity = -5; // Set a negative velocity for jumping
+				player.velocity = -10; // Set a negative velocity for jumping
 				player.isOnGround = false;
 				player.animation = ANIM_JUMP;
 			}
@@ -1475,20 +1633,80 @@ Press B to load a world if possible.");
 		int BRCtileX = BRCx / 8;
 		int BRCtileY = BRCy / 8;
 
-		if (subMain)
+		if (inventoryOpen)
 		{ // Inventory interaction on sub-screen
 			if (pressed & KEY_TOUCH)
 			{
-				touchRead(&touch);
-				// Player is selecting an item from the inventory
-				for (int i = 0; i < 8 * 4; i++)
+				if (craftingOpen)
 				{
-					int x = (i % 8) * 4 * 8;
-					int y = ((i / 8) * -4 + 20) * 8;
-					if (touch.px >= x && touch.px < x + 32 && touch.py >= y && touch.py < y + 32)
+					touchRead(&touch);
+					for (int i = 0; i < 4 * 4; i++)
 					{
-						setInventorySelection(i);
-						break;
+						int x = (i % 4) * 4 * 8;
+						int y = ((i / 4) * -4 + 20) * 8;
+						if (touch.px >= x && touch.px < x + 32 && touch.py >= y && touch.py < y + 32)
+						{
+							if (i < sizeof(craftingRecipes) / sizeof(craftingRecipes[0]))
+							{
+								setCraftingSelection(i);
+								renderCrafting();
+								break;
+							}
+						}
+					}
+					if (touch.px >= 27 * 8 && touch.px < 31 * 8 && touch.py >= 0 * 8 && touch.py < 4 * 8) // player touched the crafting button
+					{
+						inventorySetFull();
+					}
+					if (touch.px >= 23 * 8 && touch.px < 31 * 8 && touch.py >= 20 * 8 && touch.py < 24 * 8) // player touched the Craft button
+					{
+						if (craftingSelection >= 0 && craftingSelection < sizeof(craftingRecipes) / sizeof(craftingRecipes[0]))
+						{
+							bool craftable = true;
+							for (int i = 0; i < craftingRecipes[craftingSelection].ingredientCount; i++)
+							{
+								if (playerHasItem(craftingRecipes[craftingSelection].itemsNeeded[i], craftingRecipes[craftingSelection].itemsNeededQuantity[i]) == false)
+								{
+									craftable = false;
+								}
+							}
+							if (craftable)
+							{
+								for (int i = 0; i < craftingRecipes[craftingSelection].ingredientCount; i++)
+								{
+									giveInventory(craftingRecipes[craftingSelection].itemsNeeded[i], -craftingRecipes[craftingSelection].itemsNeededQuantity[i]);
+								}
+								giveInventory(craftingRecipes[craftingSelection].item, craftingRecipes[craftingSelection].quantity);
+								print(0, 1, "                                  ");
+								print(0, 1, "Crafted ");
+								printDirect(getElementName(craftingRecipes[craftingSelection].item));
+							}
+							else
+							{
+								print(0, 1, "                                  ");
+								print(0, 1, "Oops! You don't have enough items!");
+							}
+						}
+					}
+				}
+				else
+				{
+					touchRead(&touch);
+					// Player is selecting an item from the inventory
+					for (int i = 0; i < 8 * 4; i++)
+					{
+						int x = (i % 8) * 4 * 8;
+						int y = ((i / 8) * -4 + 20) * 8;
+						if (touch.px >= x && touch.px < x + 32 && touch.py >= y && touch.py < y + 32)
+						{
+							setInventorySelection(i);
+							break;
+						}
+					}
+
+					if (touch.px >= 27 * 8 && touch.px < 31 * 8 && touch.py >= 0 * 8 && touch.py < 4 * 8) // player touched the crafting button
+					{
+						inventorySetCrafting();
 					}
 				}
 			}

@@ -26,7 +26,11 @@ INCLUDES := include
 DATA     :=
 GRAPHICS := gfx
 AUDIO    := audio
-ICON     :=
+ICON     := media/icon.png
+
+GAME_TITLE     := TerrariaDS
+GAME_SUBTITLE1 := AzizBgBoss
+GAME_SUBTITLE2 := https://github.com/AzizBgBoss/TerrariaDS
 
 # specify a directory which contains the nitro filesystem
 # this is relative to the Makefile
