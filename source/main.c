@@ -931,6 +931,8 @@ void breakTile(int x, int y, int speed)
 	}
 }
 
+// I honestly wanted to make a struct of SaveData but i had some problems with its stack memory or whatever it is
+
 bool saveMapToFile(const char *filename)
 {
 	FILE *file = fopen(filename, "wb"); // "wb" = write binary
@@ -942,12 +944,15 @@ bool saveMapToFile(const char *filename)
 	}
 
 	print(0, 0, "Saving map...");
-	size_t bytesWritten = fwrite(gameTerrain, 1, sizeof(gameTerrain), file);
-	print(0, 0, "Map saved to map.dat");
+	uint32_t magic = 0xA212B055;
+	size_t bytesWritten = fwrite(&magic, 1, 4, file);
+	bytesWritten = fwrite(gameTerrain, 1, sizeof(gameTerrain), file);
+	bytesWritten += fwrite(inventory, 1, sizeof(inventory), file);
+	bytesWritten += fwrite(inventoryQuantity, 1, sizeof(inventoryQuantity), file);
 	fclose(file);
 	print(0, 0, "File closed");
 
-	if (bytesWritten != sizeof(gameTerrain))
+	if (bytesWritten != 4 + sizeof(gameTerrain) + sizeof(inventory) + sizeof(inventoryQuantity))
 	{
 		print(0, 0, "Map save error");
 		return false;
@@ -968,10 +973,20 @@ bool loadMapFromFile(const char *filename)
 		return false;
 	}
 
-	size_t bytesRead = fread(gameTerrain, 1, sizeof(gameTerrain), file);
+	print(0, 0, "Loading map...");
+	uint32_t magic;
+	size_t bytesRead = fread(&magic, 1, 4, file);
+	if (magic != 0xA212B055)
+	{
+		print(0, 0, "Invalid map file: map.dat");
+		return false;
+	}
+	bytesRead = fread(gameTerrain, 1, sizeof(gameTerrain), file);
+	bytesRead += fread(inventory, 1, sizeof(inventory), file);
+	bytesRead += fread(inventoryQuantity, 1, sizeof(inventoryQuantity), file);
 	fclose(file);
 
-	if (bytesRead != sizeof(gameTerrain))
+	if (bytesRead != sizeof(gameTerrain) + sizeof(inventory) + sizeof(inventoryQuantity))
 	{
 		print(0, 0, "Map load error");
 		return false;

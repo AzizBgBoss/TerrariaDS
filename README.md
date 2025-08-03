@@ -44,7 +44,7 @@ You can either compile the game yourself (for nightly releases) or wait for stab
 
 ## Changelog and Features
 - Version naming follows the Terraria PC versioning system, with a "pre" suffix for incomplete versions.
-### Version 0.0pre (Working on it):
+### Version 0.0alpha (Working on it):
 Initial commit with basic project structure.
 - Basic tile rendering and scrolling. ***(done)***
 - Touch input handling for world interaction and inventory interaction. ***(done)***
@@ -54,7 +54,8 @@ Initial commit with basic project structure.
 - Basic crafting system. ***(done)***
 - More testing and bug fixing needed, game proof-of-concept is going to be released soon.
 
-### Version 0.0alpha (Plans):
+### Version 0.1 (Plans):
+- Add special tiles (tiles that need interaction and are not 1:1, like doors, crafting benches, chests...)
 - Add ores.
 - Add health.
 - Add menus.
@@ -66,6 +67,7 @@ Initial commit with basic project structure.
 - Add crimson/corruption.
 - Support for maps with more height (limit is 64 for now).
 - Add breaking animation.
+- Organize my messy code and split it to many files, won't change anything but will make it easier to add features.
 
 ## Planed Features for the future:
 - Multiplayer support.
