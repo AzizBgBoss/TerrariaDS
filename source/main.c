@@ -1041,7 +1041,7 @@ bool loadMapFromFile(const char *filename)
 	bytesRead += fread(inventoryQuantity, 1, sizeof(inventoryQuantity), file);
 	fclose(file);
 
-	if (bytesRead != sizeof(gameTerrain) + sizeof(inventory) + sizeof(inventoryQuantity))
+	if (bytesRead != 4 + sizeof(gameTerrain) + sizeof(inventory) + sizeof(inventoryQuantity))
 	{
 		print(0, 0, "Map load error");
 		return false;
