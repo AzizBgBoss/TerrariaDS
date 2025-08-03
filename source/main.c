@@ -964,9 +964,6 @@ bool saveMapToFile(const char *filename)
 
 bool loadMapFromFile(const char *filename)
 {
-	player.x = MAP_WIDTH * 8 / 2;
-	player.y = 0;
-	chunk = -6;
 	FILE *file = fopen(filename, "rb"); // "rb" = read binary
 	mmEffect(SFX_ENU_OPEN);
 	if (!file)
@@ -994,6 +991,9 @@ bool loadMapFromFile(const char *filename)
 		return false;
 	}
 
+	player.x = MAP_WIDTH * 8 / 2;
+	player.y = 0;
+	chunk = -6;
 	print(0, 0, "Map loaded from map.dat");
 	return true;
 }
