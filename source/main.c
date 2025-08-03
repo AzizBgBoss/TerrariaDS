@@ -134,10 +134,8 @@ CraftingRecipe craftingRecipes[] = {
 		ITEM_HAMMER,
 		1,
 		2,
-		{TILE_PLANKS,
-		 TILE_STONE},
-		{1,
-		 1},
+		{TILE_PLANKS, TILE_STONE},
+		{1, 1},
 	},
 	{
 		TILE_WOOD_WALL,
@@ -149,7 +147,56 @@ CraftingRecipe craftingRecipes[] = {
 		{
 			1,
 		},
-	}};
+	},
+	{
+		TILE_STONE_WALL,
+		4,
+		1,
+		{
+			TILE_STONE,
+		},
+		{
+			1,
+		},
+	},
+	{
+		TILE_DIRT_WALL,
+		4,
+		1,
+		{
+			TILE_DIRT,
+		},
+		{
+			1,
+		},
+	},
+	{TILE_PLANKS,
+	 1,
+	 1,
+	 {
+		 TILE_WOOD_WALL,
+	 },
+	 {
+		 4,
+	 }},
+	{TILE_STONE,
+	 1,
+	 1,
+	 {
+		 TILE_STONE_WALL,
+	 },
+	 {
+		 4,
+	 }},
+	{TILE_DIRT,
+	 1,
+	 1,
+	 {
+		 TILE_DIRT_WALL,
+	 },
+	 {
+		 4,
+	 }}};
 
 u16 *bg2Map;
 
@@ -653,6 +700,7 @@ void renderInventory()
 void renderCrafting()
 {
 	Bg1UpFill(63);
+	setCraftingSelection(craftingSelection);
 	int tilesToRender = (sizeof(craftingRecipes) / sizeof(craftingRecipes[0]) <= 16) ? sizeof(craftingRecipes) / sizeof(craftingRecipes[0]) : 16;
 	for (int i = 0; i < tilesToRender; i++)
 	{
@@ -660,8 +708,12 @@ void renderCrafting()
 		Bg1UpSetTile((i % 4) * 4 + 2, (i / 4) * -4 + 21, getItemTile(craftingRecipes[i].item) + 1);
 		Bg1UpSetTile((i % 4) * 4 + 1, (i / 4) * -4 + 22, getItemTile(craftingRecipes[i].item) + 2);
 		Bg1UpSetTile((i % 4) * 4 + 2, (i / 4) * -4 + 22, getItemTile(craftingRecipes[i].item) + 3);
+		print((i % 4) * 4 + 1, (i / 4) * -4 + 23, "   ");
+		if (craftingRecipes[i].quantity > 1)
+		{
+			printVal((i % 4) * 4 + 1, (i / 4) * -4 + 23, craftingRecipes[i].quantity);
+		}
 	}
-	setCraftingSelection(craftingSelection);
 }
 
 void setInventory(int slot, int item, int quantity)
@@ -693,7 +745,7 @@ void inventorySetHotbar()
 		}
 	}
 	clearPrint();
-	print(0, 0, "TerrariaDS v0.0pre\n\
+	print(0, 0, "TerrariaDS v0.0alpha\n\
 By AzizBgBoss\n\
 https://github.com/AzizBgBoss/TerrariaDS\n\
 Jump: A\n\
@@ -707,6 +759,7 @@ Start: Save map\n\
 Select: Load map\n\
 A+B+X+Y: Toggle debug mode\n");
 	renderInventory();
+	mmEffect(SFX_ENU_CLOSE);
 }
 
 void inventorySetFull()
@@ -727,8 +780,10 @@ void inventorySetFull()
 	print(0, 0, "Tap on a slot to select it.\n\
 Hold and move an item to change it's slot.\n\
 Press R to close inventory\n\
-You can still move the player with the other buttons.");
+You can still move the player with the other buttons.\n\
+Tap on the crafting icon on the top right to craft.	");
 	renderInventory();
+	mmEffect(SFX_ENU_OPEN);
 }
 
 void inventorySetCrafting()
@@ -752,6 +807,7 @@ void inventorySetCrafting()
 		Bg0UpSetTile(27 + j % 4, 20 + j / 4, 80 + j);
 	clearPrint();
 	renderCrafting();
+	mmEffect(SFX_ENU_OPEN);
 }
 
 void setGameTerrain(int x, int y, int tile)
@@ -824,7 +880,7 @@ bool giveInventory(int item, int quantity)
 {
 	for (int i = 0; i < 8 * 4; i++)
 	{
-		if (inventory[i] == item && inventoryQuantity[i] < 99)
+		if (inventory[i] == item && inventoryQuantity[i] < 99 - quantity)
 		{
 			setInventory(i, item, inventoryQuantity[i] + quantity);
 			return true;
@@ -1446,6 +1502,7 @@ You shall press START to continue, with no saving abilities.\n");
 	mmLoadEffect(SFX_IG_0);
 	mmLoadEffect(SFX_IG_1);
 	mmLoadEffect(SFX_IG_2);
+	mmLoadEffect(SFX_RAB);
 
 	print(0, 0, "Welcome to TerrariaDS by AzizBgBoss\n\
 https://github.com/AzizBgBoss/TerrariaDS\n\
@@ -1562,7 +1619,7 @@ Press B to load a world if possible.");
 			if (player.isOnGround)
 			{
 				player.isJumping = true;
-				player.velocity = -10; // Set a negative velocity for jumping
+				player.velocity = -8; // Set a negative velocity for jumping
 				player.isOnGround = false;
 				player.animation = ANIM_JUMP;
 			}
@@ -1604,14 +1661,14 @@ Press B to load a world if possible.");
 			if (isTileSolid(gameTerrain[player.x / 8 + (player.y + player.velocity) / 8 * MAP_WIDTH]))
 			{
 				player.velocity = 0;
-				player.y /= 16;
-				player.y *= 16;
+				player.y /= 8;
+				player.y *= 8;
 			}
 			if (isTileSolid(gameTerrain[(player.x + player.sizeX - 1) / 8 + (player.y + player.velocity) / 8 * MAP_WIDTH]))
 			{
 				player.velocity = 0;
-				player.y /= 16;
-				player.y *= 16;
+				player.y /= 8;
+				player.y *= 8;
 			}
 		}
 
@@ -1822,9 +1879,11 @@ Press B to load a world if possible.");
 								if (!(worldTouchX >= TLCtileX && worldTouchX <= TRCtileX && worldTouchY >= TLCtileY && worldTouchY <= BLCtileY))
 								{
 									playerPutGameTerrain(worldTouchX, worldTouchY, inventory[inventorySelection]);
+								} else {
+									if (!isTileSolid(inventory[inventorySelection])) playerPutGameTerrain(worldTouchX, worldTouchY, inventory[inventorySelection]);
 								}
 							}
-							else if (isElementWall(gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH]))
+							else if (isElementWall(gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH]) && gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH] != inventory[inventorySelection])
 							{
 								breakTile(worldTouchX, worldTouchY, 1);
 							}
@@ -1842,7 +1901,6 @@ Press B to load a world if possible.");
 				}
 			}
 		}
-
 		// Check if player is on the ground
 		if (isTileSolid(gameTerrain[BLCtileX + BLCtileY * MAP_WIDTH]))
 		{
@@ -1887,7 +1945,10 @@ Press B to load a world if possible.");
 				if (item[i].x >= player.x - 8 * 2 && item[i].x < player.x + player.sizeX + 8 * 2 && item[i].y >= player.y + 8 * 2 && item[i].y < player.y + player.sizeY + 8 * 2)
 				{
 					if (giveInventory(item[i].tile, item[i].quantity))
+					{
 						destroyItem(i); // Only destroy item entity if the player has enough inventory space
+						mmEffect(SFX_RAB);
+					}
 				}
 
 				// Check for close items to fuse together to not waste memory

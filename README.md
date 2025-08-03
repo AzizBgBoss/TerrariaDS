@@ -30,7 +30,7 @@ You can either compile the game yourself (for nightly releases) or wait for stab
 | NO$GBA Windows (Emulator)        | Good                      | No save/load ability  | NO$GBA doesn't support DLDI                                                                                 |
 | DeSmuME Windows (Emulator)       | Not functional            | Not functional at all | Doesn't even start                                                                                          |
 
-*The game should probably work fine on all platforms, the only thing that can vary is speed/graphical glitches (very unlikely)/ability to save and load. More platforms will be tested soon.*
+*The game should probably work fine on all platforms, the only thing that can vary is speed/graphical glitches (very unlikely) and ability to save and load. More platforms will be tested soon.*
 
 ## Gameplay:
 - A: Jump
@@ -65,9 +65,10 @@ Initial commit with basic project structure.
 - Add ores and more items to the game.
 - Add more biomes (desert, jungle, etc.).
 - Add crimson/corruption.
-- Support for maps with more height (limit is 64 for now).
+- Support for maps with more height (limit is 64 for now, that means chunking should happen in both X and Y axes).
 - Add breaking animation.
 - Organize my messy code and split it to many files, won't change anything but will make it easier to add features.
+- Add music
 
 ## Planed Features for the future:
 - Multiplayer support.
