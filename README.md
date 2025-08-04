@@ -26,9 +26,7 @@ You can either compile the game yourself (for nightly releases) or wait for stab
 | Nintendo DSi (TM++)              | Excellent                 | None                  | Make sure to set launcher as Default or Unlaunch                                                            |
 | Nintendo 3DS (TM++)              | Not tested yet            | Not tested yet        | Should work fine as long as you're using TW++ since it basically becomes a DSi at that point               |
 | Flashcarts (DS/DS Lite/DSi)      | Not tested yet            | Not tested yet        | You should probably patch the .nds rom with the proper DLDI patch depending on your flashcart type (e.g., R4) |
-| melonDS Windows (Emulator)       | Good                      | No save/load ability  | Even though melonDS has DLDI support, it doesn't support multi-block writing; I'll look to fix that        |
-| NO$GBA Windows (Emulator)        | Good                      | No save/load ability  | NO$GBA doesn't support DLDI                                                                                 |
-| DeSmuME Windows (Emulator)       | Not functional            | Not functional at all | Doesn't even start                                                                                          |
+| Emulators                        | Bad                       | Too many to list tbh  | You can try some if you want, but I don't recommend it.                                              |
 
 *The game should probably work fine on all platforms, the only thing that can vary is speed/graphical glitches (very unlikely) and ability to save and load. More platforms will be tested soon.*
 
