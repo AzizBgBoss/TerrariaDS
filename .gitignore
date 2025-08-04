@@ -1,4 +1,5 @@
 /build/
+/junk/
 /*.nds
 /*.gba
 *.o
