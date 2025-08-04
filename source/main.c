@@ -12,6 +12,7 @@ AzizBgBoss - https://github.com/AzizBgBoss
 #include <maxmod9.h>
 #include <stdlib.h>
 #include <time.h>
+#include <filesystem.h>
 
 #include "tilemap.h"
 #include "bg.h"
@@ -22,7 +23,6 @@ AzizBgBoss - https://github.com/AzizBgBoss
 #include "von.h"
 #include "items.h"
 #include "soundbank.h"
-#include "soundbank_bin.h"
 
 #define MAP_WIDTH 1024
 #define MAP_HEIGHT 64
@@ -1401,12 +1401,45 @@ void generateMap()
 	}
 }
 
+FILE *audioFile;
+
+mm_word on_stream_request(mm_word length, mm_addr dest, mm_stream_formats format)
+{
+	uint8_t *target = (uint8_t *)dest;
+
+	size_t bytesRead = fread(target, 1, length, audioFile);
+
+	if (bytesRead < length)
+	{
+		// Fill rest with silence
+		for (int i = bytesRead; i < length; i++)
+		{
+			target[i] = 128;
+		}
+		fseek(audioFile, 0, SEEK_SET);
+	}
+
+	return length;
+}
+
 //---------------------------------------------------------------------------------
 int main(void)
 {
 	scanKeys();
-	mmInitDefaultMem((mm_addr)soundbank_bin);
-	if (!fatInitDefault() || keysHeld() & KEY_START)
+
+	nitroFSInit(NULL);
+
+	mmInitDefault("nitro:/soundbank.bin");
+
+	mmLoadEffect(SFX_IG_0);
+	mmLoadEffect(SFX_IG_1);
+	mmLoadEffect(SFX_IG_2);
+	mmLoadEffect(SFX_RAB);
+	mmLoadEffect(SFX_ENU_OPEN);
+	mmLoadEffect(SFX_ENU_CLOSE);
+	mmLoadEffect(SFX_ENU_TICK);
+
+	if (!fatInitDefault() || !nitroFSInit(NULL) || keysHeld() & KEY_START)
 	{
 		mmLoad(MOD_MODULE1);
 
@@ -1419,12 +1452,13 @@ int main(void)
 		dmaCopy(vonMap, (void *)SCREEN_BASE_BLOCK(0), vonMapLen);
 		dmaCopy(vonPal, BG_PALETTE, vonPalLen);
 		consoleDemoInit();
-		iprintf("Greetings, twin. FatInitDefault hath failed, dear twin.\n\
+		iprintf("Greetings, twin. fatInitDefault or nitroFSInit hath failed, dear twin.\n\
 Fear not, for this plight we shall overcome.\n\
 If thou usest a DS cartridge, ensure that thou applyest the proper DLDI patch suited to thy cartridge's nature.\n\
 If thou art upon a DSi, no need to patch anything; perchance thy SD card be corrupted, dear twin.\n\
 Or, if thou playest on an emulator, be sure that SD emulation is enabled, for most such emulators do patch DLDI of their own accord.\n\
-You shall press START to continue, with no saving abilities.\n");
+I shall note that some emulators indeed do not support nitroFS, and will thus not be able to play music, twin.\n\
+You shall press START to continue, with no saving abilities, or no music.");
 
 		while (pmMainLoop())
 		{
@@ -1451,6 +1485,7 @@ You shall press START to continue, with no saving abilities.\n");
 
 	BGCTRL[0] = BG_TILE_BASE(1) | BG_MAP_BASE(0) | BG_COLOR_256 | BG_32x32 | BG_PRIORITY(3);
 	dmaCopy(invTiles, (void *)CHAR_BASE_BLOCK(1), invTilesLen);
+	dmaFillHalfWords(0, (void *)SCREEN_BASE_BLOCK(0), 2048);
 	BGCTRL[1] = BG_TILE_BASE(2) | BG_MAP_BASE(2) | BG_COLOR_256 | BG_32x32 | BG_PRIORITY(2);
 	dmaCopy(itemsTiles, (void *)CHAR_BASE_BLOCK(2), itemsTilesLen);
 	dmaFillHalfWords(63, (void *)SCREEN_BASE_BLOCK(2), 2048);
@@ -1501,28 +1536,43 @@ You shall press START to continue, with no saving abilities.\n");
 
 	dmaCopy(spritesPal, SPRITE_PALETTE_SUB, spritesPalLen);
 
-	mmLoadEffect(SFX_IG_0);
-	mmLoadEffect(SFX_IG_1);
-	mmLoadEffect(SFX_IG_2);
-	mmLoadEffect(SFX_RAB);
-
 	print(0, 0, "Welcome to TerrariaDS by AzizBgBoss\n\
 https://github.com/AzizBgBoss/TerrariaDS\n\
 Press A to generate a new world.\n\
 Press B to load a world if possible.");
 
+	audioFile = fopen("nitro:/1.pcm", "rb");
+
+	mm_stream mystream;
+	mystream.sampling_rate = 11025;
+	mystream.buffer_length = 1024;
+	mystream.callback = on_stream_request;
+	mystream.format = MM_STREAM_8BIT_MONO;
+	mystream.timer = MM_TIMER0;
+	mystream.manual = true;
+	mmStreamOpen(&mystream);
+
+	int x = 0;
+
 	while (1)
 	{
+		swiWaitForVBlank();
+		mmStreamUpdate();
+
+		REG_BG0HOFS_SUB = x / 2;
+
 		scanKeys();
 		int pressed = keysDown();
 		if (pressed & KEY_A)
 		{
+			mmStreamClose();
 			clearPrint();
 			generateMap();
 			break;
 		}
 		else if (pressed & KEY_B)
 		{
+			mmStreamClose();
 			if (fatInitDefault())
 			{
 				if (loadMapFromFile("map.dat"))
@@ -1545,7 +1595,11 @@ Press B to load a world if possible.");
 			}
 			break;
 		}
+		x++;
 	}
+	fclose(audioFile);
+	audioFile = fopen("nitro:/2.pcm", "rb");
+	mmStreamOpen(&mystream);
 
 	// Setup inventory
 	inventorySetHotbar();
@@ -1557,7 +1611,7 @@ Press B to load a world if possible.");
 	while (pmMainLoop())
 	{
 		swiWaitForVBlank();
-
+		mmStreamUpdate();
 		scanKeys();
 		int pressed = keysDown();
 		int held = keysHeld();
@@ -1803,6 +1857,7 @@ Press B to load a world if possible.");
 				while (held & KEY_TOUCH)
 				{
 					swiWaitForVBlank();
+					mmStreamUpdate();
 					scanKeys();
 					held = keysHeld();
 					if (held & KEY_TOUCH)
@@ -1881,8 +1936,11 @@ Press B to load a world if possible.");
 								if (!(worldTouchX >= TLCtileX && worldTouchX <= TRCtileX && worldTouchY >= TLCtileY && worldTouchY <= BLCtileY))
 								{
 									playerPutGameTerrain(worldTouchX, worldTouchY, inventory[inventorySelection]);
-								} else {
-									if (!isTileSolid(inventory[inventorySelection])) playerPutGameTerrain(worldTouchX, worldTouchY, inventory[inventorySelection]);
+								}
+								else
+								{
+									if (!isTileSolid(inventory[inventorySelection]))
+										playerPutGameTerrain(worldTouchX, worldTouchY, inventory[inventorySelection]);
 								}
 							}
 							else if (isElementWall(gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH]) && gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH] != inventory[inventorySelection])
@@ -2067,7 +2125,6 @@ Press B to load a world if possible.");
 		// Render dropped items
 		u8 renderedItems = 0;
 
-		// FIXME: items out of screen wraping to the other side (if item out of screen js dont render)
 		for (int i = 0; i < 64; i++)
 		{
 			if (renderedItems < MAX_ITEMS)

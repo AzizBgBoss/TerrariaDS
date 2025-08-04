@@ -34,7 +34,7 @@ GAME_SUBTITLE2 := github.com/AzizBgBoss
 
 # specify a directory which contains the nitro filesystem
 # this is relative to the Makefile
-NITRO    := 
+NITRO    := nitro
 
 #---------------------------------------------------------------------------------
 # options for code generation
