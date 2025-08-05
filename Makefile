@@ -24,7 +24,7 @@ BUILD    := build
 SOURCES  := source
 INCLUDES := include
 DATA     :=
-GRAPHICS := gfx
+GRAPHICS := 
 AUDIO    := audio
 ICON     := media/icon.png
 
@@ -168,6 +168,7 @@ else
 # main targets
 #---------------------------------------------------------------------------------
 $(OUTPUT).nds: $(OUTPUT).elf $(GAME_ICON)
+$(OUTPUT).elf: process_gfx
 $(OUTPUT).elf: $(OFILES)
 
 # need to build soundbank first
@@ -195,6 +196,16 @@ $(SOUNDBANK) : $(MODFILES)
 %.s %.h: %.png %.grit
 #---------------------------------------------------------------------------------
 	grit $< -fts -o$*
+
+process_gfx:
+	@echo "[gfx] Running grit on each PNG..."
+	@cd $(CURDIR)/../gfx && \
+	for file in *.png; do \
+		grit "$$file" -ftb; \
+		base=$${file%.png}; \
+		mv $${base}*.bin ../$(NITRO); \
+		mv $${base}*.h ../$(INCLUDES); \
+	done
 
 #---------------------------------------------------------------------------------
 # Convert non-GRF game icon to GRF if needed

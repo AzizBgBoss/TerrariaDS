@@ -22,6 +22,10 @@ AzizBgBoss - https://github.com/AzizBgBoss
 #include "ui.h"
 #include "von.h"
 #include "items.h"
+#include "intro.h"
+#include "mainscreenbg.h"
+#include "mainscreenui.h"
+
 #include "soundbank.h"
 
 #define MAP_WIDTH 1024
@@ -76,6 +80,8 @@ u16 *itemHandSprite;
 bool debug = false;
 bool inventoryOpen = false;
 bool craftingOpen = false;
+
+FILE *f;
 
 typedef struct
 {
@@ -919,7 +925,10 @@ void dropItem(int x, int y, int tile, int quantity)
 	item[index].tile = tile;
 	item[index].quantity = quantity;
 
-	dmaCopy(itemsTiles + 4 * 4 * getItemTile(tile), item[index].sprite_gfx_mem, 16 * 16);
+	f = fopen("nitro:/items.img.bin", "rb");
+	fseek(f, 4 * 4 * getItemTile(tile), SEEK_SET);
+	fread(item[index].sprite_gfx_mem, 1, 16 * 16, f);
+	fclose(f);
 }
 
 void destroyItem(int id)
@@ -1439,7 +1448,13 @@ int main(void)
 	mmLoadEffect(SFX_ENU_CLOSE);
 	mmLoadEffect(SFX_ENU_TICK);
 
-	if (!fatInitDefault() || !nitroFSInit(NULL) || keysHeld() & KEY_START)
+	if (!nitroFSInit(NULL))
+	{
+		consoleDemoInit();
+		iprintf("nitroFSInit error.");
+	}
+
+	if (!fatInitDefault() || keysHeld() & KEY_START)
 	{
 		mmLoad(MOD_MODULE1);
 
@@ -1448,17 +1463,24 @@ int main(void)
 		videoSetMode(MODE_0_2D | DISPLAY_BG0_ACTIVE);
 		vramSetBankA(VRAM_A_MAIN_BG);
 		BGCTRL[0] = BG_TILE_BASE(1) | BG_MAP_BASE(0) | BG_COLOR_256 | BG_32x32 | BG_PRIORITY(3);
-		dmaCopy(vonTiles, (void *)CHAR_BASE_BLOCK(1), vonTilesLen);
-		dmaCopy(vonMap, (void *)SCREEN_BASE_BLOCK(0), vonMapLen);
-		dmaCopy(vonPal, BG_PALETTE, vonPalLen);
+
+		f = fopen("nitro:/von.img.bin", "rb");
+		fread((void *)CHAR_BASE_BLOCK(1), 1, vonTilesLen, f);
+		fclose(f);
+		f = fopen("nitro:/von.map.bin", "rb");
+		fread((void *)SCREEN_BASE_BLOCK(0), 1, vonMapLen, f);
+		fclose(f);
+		f = fopen("nitro:/von.pal.bin", "rb");
+		fread((void *)BG_PALETTE, 1, vonPalLen, f);
+		fclose(f);
+
 		consoleDemoInit();
-		iprintf("Greetings, twin. fatInitDefault or nitroFSInit hath failed, dear twin.\n\
+		iprintf("Greetings, twin. fatInitDefault hath failed, dear twin.\n\
 Fear not, for this plight we shall overcome.\n\
 If thou usest a DS cartridge, ensure that thou applyest the proper DLDI patch suited to thy cartridge's nature.\n\
 If thou art upon a DSi, no need to patch anything; perchance thy SD card be corrupted, dear twin.\n\
 Or, if thou playest on an emulator, be sure that SD emulation is enabled, for most such emulators do patch DLDI of their own accord.\n\
-I shall note that some emulators indeed do not support nitroFS, and will thus not be able to play music, twin.\n\
-You shall press START to continue, with no saving abilities, or no music.");
+You shall press START to continue, with no saving abilities.");
 
 		while (pmMainLoop())
 		{
@@ -1475,67 +1497,6 @@ You shall press START to continue, with no saving abilities, or no music.");
 
 	touchPosition touch;
 
-	videoSetMode(MODE_0_2D | DISPLAY_BG0_ACTIVE | DISPLAY_BG1_ACTIVE | DISPLAY_BG3_ACTIVE);
-	videoSetModeSub(MODE_3_2D | DISPLAY_BG0_ACTIVE | DISPLAY_BG3_ACTIVE);
-
-	vramSetBankA(VRAM_A_MAIN_BG);
-	vramSetBankB(VRAM_B_MAIN_SPRITE);
-	vramSetBankC(VRAM_C_SUB_BG);	 // for backgrounds on subscreen
-	vramSetBankD(VRAM_D_SUB_SPRITE); // for sprites on subscreen
-
-	BGCTRL[0] = BG_TILE_BASE(1) | BG_MAP_BASE(0) | BG_COLOR_256 | BG_32x32 | BG_PRIORITY(3);
-	dmaCopy(invTiles, (void *)CHAR_BASE_BLOCK(1), invTilesLen);
-	dmaFillHalfWords(0, (void *)SCREEN_BASE_BLOCK(0), 2048);
-	BGCTRL[1] = BG_TILE_BASE(2) | BG_MAP_BASE(2) | BG_COLOR_256 | BG_32x32 | BG_PRIORITY(2);
-	dmaCopy(itemsTiles, (void *)CHAR_BASE_BLOCK(2), itemsTilesLen);
-	dmaFillHalfWords(63, (void *)SCREEN_BASE_BLOCK(2), 2048);
-	BGCTRL[3] = BG_TILE_BASE(3) | BG_MAP_BASE(3) | BG_COLOR_256 | BG_32x32 | BG_PRIORITY(0);
-	dmaCopy(fontTiles, (void *)CHAR_BASE_BLOCK(3), fontTilesLen);
-	dmaFillHalfWords(0, (void *)SCREEN_BASE_BLOCK(3), 2048);
-
-	dmaCopy(invPal, BG_PALETTE, invPalLen);
-
-	BGCTRL_SUB[0] = BG_TILE_BASE(1) | BG_MAP_BASE(0) | BG_COLOR_256 | BG_32x32 | BG_PRIORITY(3);
-	dmaCopy(bgTiles, (void *)CHAR_BASE_BLOCK_SUB(1), bgTilesLen);
-	dmaCopy(bgMap, (void *)SCREEN_BASE_BLOCK_SUB(0), bgMapLen);
-
-	int bg2 = bgInitSub(3, BgType_ExRotation, BgSize_ER_512x512, 3, 3);
-	bgWrapOn(bg2);
-	bgSetPriority(bg2, 2);
-	dmaCopy(tilemapTiles, bgGetGfxPtr(bg2), tilemapTilesLen);
-	// Fill with empty tiles
-	dmaFillHalfWords(TILE_AIR, bgGetMapPtr(bg2), 64 * 64 * 2);
-
-	bg2Map = (u16 *)bgGetMapPtr(bg2);
-
-	dmaCopy(tilemapPal, BG_PALETTE_SUB, tilemapPalLen);
-
-	oamInit(&oamMain, SpriteMapping_1D_128, false);
-
-	inventorySelectionSprite = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_256Color);
-	dmaCopy(uiTiles, inventorySelectionSprite, uiTilesLen);
-
-	dmaCopy(uiPal, SPRITE_PALETTE, uiPalLen);
-
-	oamInit(&oamSub, SpriteMapping_1D_128, false);
-
-	u16 *nullSprite = oamAllocateGfx(&oamSub, SpriteSize_16x16, SpriteColorFormat_256Color);
-	dmaFillHalfWords(0, nullSprite, 16 * 16);
-
-	player.sprite_gfx_mem = oamAllocateGfx(&oamSub, SpriteSize_32x64, SpriteColorFormat_256Color);
-	dmaCopy(spritesTiles, player.sprite_gfx_mem, 32 * 64);
-
-	itemHandSprite = oamAllocateGfx(&oamSub, SpriteSize_16x16, SpriteColorFormat_256Color);
-	dmaCopy(tilemapTiles + 8 * 8 * 4, itemHandSprite, 16 * 16);
-
-	for (int i = 0; i < MAX_ITEMS; i++)
-	{
-		item[i].sprite_gfx_mem = oamAllocateGfx(&oamSub, SpriteSize_16x16, SpriteColorFormat_256Color);
-		// No need to copy anything, we'll do that later when we summon the item
-	}
-
-	dmaCopy(spritesPal, SPRITE_PALETTE_SUB, spritesPalLen);
-
 	audioFile = fopen("nitro:/1.pcm", "rb");
 
 	mm_stream mystream;
@@ -1547,13 +1508,28 @@ You shall press START to continue, with no saving abilities, or no music.");
 	mystream.manual = true;
 	mmStreamOpen(&mystream);
 
-	clearPrint();
-	print(0, 0, "AzizBgBoss presents: TerrariaDS\n\n\
-Version 0.0alpha\n\
-https://github.com/AzizBgBoss/TerrariaDS\n\n\
-This program is totally free and open source.\n\
-If you paid for this (which I doubt lol), you got scammed.\n\
-Check LICENCE for more info.");
+	videoSetMode(MODE_0_2D | DISPLAY_BG0_ACTIVE | DISPLAY_BG3_ACTIVE);
+	videoSetModeSub(MODE_3_2D | DISPLAY_BG0_ACTIVE | DISPLAY_BG1_ACTIVE);
+	vramSetBankA(VRAM_A_MAIN_BG);
+	vramSetBankC(VRAM_C_SUB_BG);
+	BGCTRL[0] = BG_TILE_BASE(1) | BG_MAP_BASE(0) | BG_COLOR_256 | BG_32x32 | BG_PRIORITY(3);
+
+	f = fopen("nitro:/intro.img.bin", "rb");
+	fread((void *)CHAR_BASE_BLOCK(1), 1, introTilesLen, f);
+	fclose(f);
+	f = fopen("nitro:/intro.map.bin", "rb");
+	fread((void *)SCREEN_BASE_BLOCK(0), 1, introMapLen, f);
+	fclose(f);
+
+	BGCTRL[3] = BG_TILE_BASE(3) | BG_MAP_BASE(3) | BG_COLOR_256 | BG_32x32 | BG_PRIORITY(0);
+	f = fopen("nitro:/font.img.bin", "rb");
+	fread((void *)CHAR_BASE_BLOCK(3), 1, fontTilesLen, f);
+	fclose(f);
+	dmaFillHalfWords(0, (void *)SCREEN_BASE_BLOCK(3), 2048);
+
+	f = fopen("nitro:/intro.pal.bin", "rb");
+	fread((void *)BG_PALETTE, 1, introPalLen, f);
+	fclose(f);
 
 	for (int i = 0; i < 560; i++)
 	{
@@ -1561,11 +1537,45 @@ Check LICENCE for more info.");
 		mmStreamUpdate();
 	}
 
-	clearPrint();
-	print(0, 0, "Welcome to TerrariaDS by AzizBgBoss\n\
-https://github.com/AzizBgBoss/TerrariaDS\n\
-Press A to generate a new world.\n\
-Press B to load a world if possible.");
+	f = fopen("nitro:/mainscreenbg.img.bin", "rb");
+	fread((void *)CHAR_BASE_BLOCK(1), 1, mainscreenbgTilesLen, f);
+	fclose(f);
+	f = fopen("nitro:/mainscreenbg.map.bin", "rb");
+	fread((void *)SCREEN_BASE_BLOCK(0), 1, mainscreenbgMapLen, f);
+	fclose(f);
+	f = fopen("nitro:/mainscreenbg.pal.bin", "rb");
+	fread((void *)BG_PALETTE, 1, mainscreenbgPalLen, f);
+	fclose(f);
+
+	BGCTRL_SUB[0] = BG_TILE_BASE(1) | BG_MAP_BASE(0) | BG_COLOR_256 | BG_32x32 | BG_PRIORITY(3);
+	f = fopen("nitro:/bg.img.bin", "rb");
+	fread((void *)CHAR_BASE_BLOCK_SUB(1), 1, bgTilesLen, f);
+	fclose(f);
+	f = fopen("nitro:/bg.map.bin", "rb");
+	fread((void *)SCREEN_BASE_BLOCK_SUB(0), 1, bgMapLen, f);
+	fclose(f);
+
+	BGCTRL_SUB[1] = BG_TILE_BASE(2) | BG_MAP_BASE(1) | BG_COLOR_256 | BG_32x32 | BG_PRIORITY(2);
+	f = fopen("nitro:/mainscreenui.img.bin", "rb");
+	fread((void *)CHAR_BASE_BLOCK_SUB(2), 1, mainscreenuiTilesLen, f);
+	fclose(f);
+	f = fopen("nitro:/mainscreenui.map.bin", "rb");
+	fread((void *)SCREEN_BASE_BLOCK_SUB(1), 1, mainscreenuiMapLen, f);
+	fclose(f);
+
+	int bg2 = bgInitSub(3, BgType_ExRotation, BgSize_ER_512x512, 3, 3);
+	bgWrapOn(bg2);
+	bgSetPriority(bg2, 2);
+	f = fopen("nitro:/tilemap.img.bin", "rb");
+	fread(bgGetGfxPtr(bg2), 1, tilemapTilesLen, f);
+	fclose(f);
+	dmaFillHalfWords(TILE_AIR, bgGetMapPtr(bg2), 64 * 64 * 2);
+
+	bg2Map = (u16 *)bgGetMapPtr(bg2); // Make sure this is defined before using generateMap or setGameTerrain so it doesn't tap into an undefined pointer and freeze
+
+	f = fopen("nitro:/bg.pal.bin", "rb");
+	fread((void *)BG_PALETTE_SUB, 1, bgPalLen, f);
+	fclose(f);
 
 	int x = 0;
 
@@ -1578,41 +1588,107 @@ Press B to load a world if possible.");
 
 		scanKeys();
 		int pressed = keysDown();
-		if (pressed & KEY_A)
+		if (pressed & KEY_TOUCH)
 		{
-			mmStreamClose();
-			clearPrint();
-			generateMap();
-			break;
-		}
-		else if (pressed & KEY_B)
-		{
-			mmStreamClose();
-			if (fatInitDefault())
+			touchRead(&touch);
+			if (touch.px >= 56 && touch.px <= 199 && touch.py >= 56 && touch.py <= 87)
 			{
-				if (loadMapFromFile("map.dat"))
+				mmStreamClose();
+				clearPrint();
+				generateMap();
+				break;
+			}
+			else if (touch.px >= 56 && touch.px <= 199 && touch.py >= 104 && touch.py <= 135)
+			{
+				mmStreamClose();
+				if (fatInitDefault())
 				{
-					clearPrint();
-					printDirect("Map loaded successfully!");
+					if (loadMapFromFile("map.dat"))
+					{
+						clearPrint();
+						printDirect("Map loaded successfully!");
+					}
+					else
+					{
+						clearPrint();
+						printDirect("Error loading map!\nFallback to generating map...");
+						generateMap();
+					}
 				}
 				else
 				{
 					clearPrint();
-					printDirect("Error loading map!\nFallback to generating map...");
+					printDirect("Error: FatInitDefault failed!\nFallback to generating map...");
 					generateMap();
 				}
+				break;
 			}
-			else
-			{
-				clearPrint();
-				printDirect("Error: FatInitDefault failed!\nFallback to generating map...");
-				generateMap();
-			}
-			break;
 		}
 		x++;
 	}
 	fclose(audioFile);
+
+	videoSetMode(MODE_0_2D | DISPLAY_BG0_ACTIVE | DISPLAY_BG1_ACTIVE | DISPLAY_BG3_ACTIVE);
+	videoSetModeSub(MODE_3_2D | DISPLAY_BG0_ACTIVE | DISPLAY_BG3_ACTIVE);
+
+	vramSetBankA(VRAM_A_MAIN_BG);
+	vramSetBankB(VRAM_B_MAIN_SPRITE);
+	vramSetBankC(VRAM_C_SUB_BG);	 // for backgrounds on subscreen
+	vramSetBankD(VRAM_D_SUB_SPRITE); // for sprites on subscreen
+
+	BGCTRL[0] = BG_TILE_BASE(1) | BG_MAP_BASE(0) | BG_COLOR_256 | BG_32x32 | BG_PRIORITY(3);
+	f = fopen("nitro:/inv.img.bin", "rb");
+	fread((void *)CHAR_BASE_BLOCK(1), 1, invTilesLen, f);
+	fclose(f);
+	dmaFillHalfWords(0, (void *)SCREEN_BASE_BLOCK(0), 2048);
+	BGCTRL[1] = BG_TILE_BASE(2) | BG_MAP_BASE(2) | BG_COLOR_256 | BG_32x32 | BG_PRIORITY(2);
+	f = fopen("nitro:/items.img.bin", "rb");
+	fread((void *)CHAR_BASE_BLOCK(2), 1, itemsTilesLen, f);
+	fclose(f);
+	dmaFillHalfWords(63, (void *)SCREEN_BASE_BLOCK(2), 2048);
+
+	f = fopen("nitro:/inv.pal.bin", "rb");
+	fread((void *)BG_PALETTE, 1, invPalLen, f);
+	fclose(f);
+
+	oamInit(&oamMain, SpriteMapping_1D_128, false);
+
+	inventorySelectionSprite = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_256Color);
+	f = fopen("nitro:/ui.img.bin", "rb");
+	fread(inventorySelectionSprite, 1, uiTilesLen, f);
+	fclose(f);
+
+	f = fopen("nitro:/ui.pal.bin", "rb");
+	fread((void *)SPRITE_PALETTE, 1, uiPalLen, f);
+	fclose(f);
+
+	oamInit(&oamSub, SpriteMapping_1D_128, false);
+
+	u16 *nullSprite = oamAllocateGfx(&oamSub, SpriteSize_16x16, SpriteColorFormat_256Color);
+	dmaFillHalfWords(0, nullSprite, 16 * 16);
+
+	player.sprite_gfx_mem = oamAllocateGfx(&oamSub, SpriteSize_32x64, SpriteColorFormat_256Color);
+	f = fopen("nitro:/sprites.img.bin", "rb");
+	fread(player.sprite_gfx_mem, 1, 32 * 64, f);
+	fclose(f);
+
+	itemHandSprite = oamAllocateGfx(&oamSub, SpriteSize_16x16, SpriteColorFormat_256Color);
+
+	f = fopen("nitro:/tilemap.img.bin", "rb");
+	fseek(f, 0, SEEK_SET);
+	fread(itemHandSprite, 1, 16 * 16, f);
+	fclose(f);
+
+	for (int i = 0; i < MAX_ITEMS; i++)
+	{
+		item[i].sprite_gfx_mem = oamAllocateGfx(&oamSub, SpriteSize_16x16, SpriteColorFormat_256Color);
+		// No need to copy anything, we'll do that later when we summon the item
+	}
+
+	f = fopen("nitro:/sprites.pal.bin", "rb");
+	fread((void *)SPRITE_PALETTE_SUB, 1, spritesPalLen, f);
+	fclose(f);
+
 	audioFile = fopen("nitro:/2.pcm", "rb");
 	mmStreamOpen(&mystream);
 
@@ -2133,7 +2209,10 @@ Press B to load a world if possible.");
 			}
 		}
 
-		dmaCopy(spritesTiles + player.anim_frame * 16 * 32, player.sprite_gfx_mem, 32 * 64);
+		f = fopen("nitro:/sprites.img.bin", "rb");
+		fseek(f, 32 * 64 * player.anim_frame, SEEK_SET);
+		fread(player.sprite_gfx_mem, 1, 32 * 64, f);
+		fclose(f);
 
 		oamSet(&oamSub, 0, player.renderX - player.sizeX / 2, player.renderY - player.sizeY / 2, 1, 0, SpriteSize_32x64, SpriteColorFormat_256Color, player.sprite_gfx_mem, 0, false, false, player.isLookingLeft, false, false);
 		// oamSet(&oamSub, 1, player.renderX, player.renderY, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, itemHandSprite, -1, false, false, player.isLookingLeft, false, false);
