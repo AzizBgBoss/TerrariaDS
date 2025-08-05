@@ -26,7 +26,9 @@ You can either compile the game yourself (for nightly releases) or wait for stab
 | Nintendo DSi (TM++)              | Excellent                 | None                  | Make sure to set launcher as Default                                                                 |
 | Nintendo 3DS (TM++)              | Not tested yet            | Not tested yet        | Should work fine as long as you're using TW++ since it basically becomes a DSi at that point               |
 | Flashcarts (DS/DS Lite/DSi)      | Not tested yet            | Not tested yet        | You should probably patch the .nds rom with the proper DLDI patch depending on your flashcart type (e.g., R4) |
-| Emulators                        | Bad                       | Too many to list tbh  | You can try some if you want, but I don't recommend it.                                              |
+| NO$GBA (Emulator)                | Medium                    | No ability to save + Choppy sound | The emulator doesn't have DLDI support.                                         |
+| desMuMe (Emulator)               | Non-functional            | Game doesn't even start |                                                                             |
+| melonDS (Emulator)               | Bad                       | No ability to save + No sound | The emulator *has* DLDI support but it doesn't work with this game, maybe they'll fix it in a future update. Also for some reason NitroFS won't work with melonDS. |
 
 *The game should probably work fine on all platforms, the only thing that can vary is speed/graphical glitches (very unlikely) and ability to save and load. More platforms will be tested soon.*
 
@@ -54,6 +56,7 @@ Initial commit with basic project structure.
 - More testing and bug fixing needed, game proof-of-concept is going to be released soon.
 
 ### Version 0.1 (Plans):
+- Move all the data to the Nitro Filesystem, less memory usage and the ability to load so much content.
 - Add special tiles (tiles that need interaction and are not 1:1, like doors, crafting benches, chests...)
 - Add ores.
 - Add health.
