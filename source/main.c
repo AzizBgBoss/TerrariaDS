@@ -1536,11 +1536,6 @@ You shall press START to continue, with no saving abilities, or no music.");
 
 	dmaCopy(spritesPal, SPRITE_PALETTE_SUB, spritesPalLen);
 
-	print(0, 0, "Welcome to TerrariaDS by AzizBgBoss\n\
-https://github.com/AzizBgBoss/TerrariaDS\n\
-Press A to generate a new world.\n\
-Press B to load a world if possible.");
-
 	audioFile = fopen("nitro:/1.pcm", "rb");
 
 	mm_stream mystream;
@@ -1551,6 +1546,23 @@ Press B to load a world if possible.");
 	mystream.timer = MM_TIMER0;
 	mystream.manual = true;
 	mmStreamOpen(&mystream);
+
+	clearPrint();
+	print(0, 0, "AzizBgBoss presents: TerrariaDS\n\
+Version 0.0alpha\n\
+https://github.com/AzizBgBoss/TerrariaDS\n");
+
+	for (int i = 0; i < 560; i++)
+	{
+		swiWaitForVBlank();
+		mmStreamUpdate();
+	}
+
+	clearPrint();
+	print(0, 0, "Welcome to TerrariaDS by AzizBgBoss\n\
+https://github.com/AzizBgBoss/TerrariaDS\n\
+Press A to generate a new world.\n\
+Press B to load a world if possible.");
 
 	int x = 0;
 
