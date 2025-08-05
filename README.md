@@ -58,12 +58,10 @@ Initial commit with basic project structure.
 ### Version 0.1 (Plans):
 - Move all the data to the Nitro Filesystem, less memory usage and the ability to load so much content.
 - Add special tiles (tiles that need interaction and are not 1:1, like doors, crafting benches, chests...)
-- Add ores.
 - Add health.
 - Add menus.
 - Add ability to change button mappings (since many DS'es (including mine) have malfunctioning shoulder buttons because of dust accumulation under them over the years).
 - Add entities (NPCs, enemies, etc.) to the game world.
-- Add interactive tiles (chests, doors, etc.).
 - Add ores and more items to the game.
 - Add more biomes (desert, jungle, etc.).
 - Add crimson/corruption.
