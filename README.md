@@ -43,7 +43,7 @@ You can either compile the game yourself (for nightly releases) or wait for stab
 - A+B+X+Y: Toggle debug mode
 
 ## Changelog and Features
-- Version naming follows the Terraria PC versioning system, with a "pre" suffix for incomplete versions.
+- Don't get your hopes really up, but with time, I'm sure the game will feel much more like terraria.
 ### Version 0.0alpha (Working on it):
 Initial commit with basic project structure.
 - Basic tile rendering and scrolling. ***(done)***

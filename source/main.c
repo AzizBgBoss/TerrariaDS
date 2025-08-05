@@ -1548,9 +1548,12 @@ You shall press START to continue, with no saving abilities, or no music.");
 	mmStreamOpen(&mystream);
 
 	clearPrint();
-	print(0, 0, "AzizBgBoss presents: TerrariaDS\n\
+	print(0, 0, "AzizBgBoss presents: TerrariaDS\n\n\
 Version 0.0alpha\n\
-https://github.com/AzizBgBoss/TerrariaDS\n");
+https://github.com/AzizBgBoss/TerrariaDS\n\n\
+This program is totally free and open source.\n\
+If you paid for this (which I doubt lol), you got scammed.\n\
+Check LICENCE for more info.");
 
 	for (int i = 0; i < 560; i++)
 	{
