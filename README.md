@@ -18,7 +18,7 @@ If you want to try the latest changes, you can compile the project yourself, or 
 This project is not affiliated with Re-Logic or Terraria in any way. It is a fan-made project and is not intended for commercial use. All assets used in this project are use for educational and entertainment purposes only. If you're a party of Re-Logic and owner of any assets used in this project and want them removed, please contact me.
 
 ## Installation:
-You can either compile the game yourself (for nightly releases) or wait for stable releases in the Releases page. Please check the Tested devices part before starting.
+You can either compile the game yourself (for nightly releases) or check for stable releases in the Releases page. Please check the Tested devices part before starting.
 
 ### Tested devices:
 | System                           | Functionality             | Cons                  | Notes                                                                                                       |
@@ -44,7 +44,7 @@ You can either compile the game yourself (for nightly releases) or wait for stab
 
 ## Changelog and Features
 - Don't get your hopes really up, but with time, I'm sure the game will feel much more like terraria.
-### Version 0.0alpha (Working on it):
+### Version 0.0alpha ([Download](https://github.com/AzizBgBoss/TerrariaDS/releases/tag/0.0alpha)):
 Initial commit with basic project structure.
 - Basic tile rendering and scrolling. ***(done)***
 - Touch input handling for world interaction and inventory interaction. ***(done)***
