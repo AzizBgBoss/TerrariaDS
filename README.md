@@ -109,3 +109,12 @@ This will create a `TerrariaDS.nds` file in the root directory of the project.
 - DS(i) Mode Customization! Discord server for being very helpful and provide me with resources to understand how the DS works.
 - The Terraria Wiki for being the best source to understand how blocks and all Terraria mechanics work.
 - Re-Logic for making such a great game.
+
+## Screenshots:
+![Screenshot 1](media/screenshot%20(1).png)
+![Screenshot 2](media/screenshot%20(2).png)
+![Screenshot 3](media/screenshot%20(3).png)
+![Screenshot 4](media/screenshot%20(4).png)
+![Screenshot 5](media/screenshot%20(5).png)
+![Screenshot 6](media/screenshot%20(6).png)
+![Screenshot 7](media/screenshot%20(7).png)
