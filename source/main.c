@@ -1408,6 +1408,11 @@ void generateMap()
 			printDirect(".");
 		}
 	}
+
+	printDirect("Giving you some tools to start with...");
+	giveInventory(ITEM_SWORD, 1);
+	giveInventory(ITEM_AXE, 1);
+	giveInventory(ITEM_PICKAXE, 1);
 }
 
 FILE *audioFile;
@@ -1733,9 +1738,6 @@ You shall press START to continue, with no saving abilities.");
 
 	// Setup inventory
 	inventorySetHotbar();
-	giveInventory(ITEM_SWORD, 1);
-	giveInventory(ITEM_AXE, 1);
-	giveInventory(ITEM_PICKAXE, 1);
 	setInventorySelection(0);
 
 	while (pmMainLoop())

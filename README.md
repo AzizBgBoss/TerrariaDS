@@ -23,8 +23,8 @@ You can either compile the game yourself (for nightly releases) or wait for stab
 ### Tested devices:
 | System                           | Functionality             | Cons                  | Notes                                                                                                       |
 |----------------------------------|---------------------------|-----------------------|-------------------------------------------------------------------------------------------------------------|
-| Nintendo DSi (TM++)              | Excellent                 | None                  | Make sure to set launcher as Default                                                                 |
-| Nintendo 3DS (TM++)              | Not tested yet            | Not tested yet        | Should work fine as long as you're using TW++ since it basically becomes a DSi at that point               |
+| Nintendo DSi (XL) (TM++)         | Excellent                 | None                  | Make sure to set launcher as Default                                                                 |
+| Nintendo 3DS (XL) (TM++)         | Excellent                 | None                  | Should work fine as long as you're using TW++ since it basically becomes a DSi at that point               |
 | Flashcarts (DS/DS Lite/DSi)      | Not tested yet            | Not tested yet        | You should probably patch the .nds rom with the proper DLDI patch depending on your flashcart type (e.g., R4) |
 | NO$GBA (Windows Emulator)        | Medium                    | No ability to save + Choppy sound | The emulator doesn't have DLDI support.                                         |
 | desMuMe (Windows Emulator)       | Non-functional            | Game doesn't even start |                                                                             |
