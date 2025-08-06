@@ -30,7 +30,7 @@ You can either compile the game yourself (for nightly releases) or wait for stab
 | desMuMe (Windows Emulator)       | Non-functional            | Game doesn't even start |                                                                             |
 | melonDS (Windows Emulator)       | Non-functional            | No nitroFS              | The emulator *has* DLDI support but it doesn't work with this game, maybe they'll fix it in a future update. But for some reason NitroFS won't work with melonDS. |
 
-*The game should probably work fine on all platforms, the only thing that can vary is speed/graphical glitches (very unlikely) and ability to save and load. More platforms will be tested soon.*
+*More platforms will be tested soon.*
 
 ## Gameplay:
 - A: Jump
