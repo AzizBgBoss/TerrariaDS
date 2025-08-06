@@ -1,6 +1,6 @@
 ![TerrariaDS Logo](media/logo.png)
 # TerrariaDS
-A terraria remake (not port) for the Nintendo DS made by AzizBgBoss.<br>
+A terraria remake (not port) for the Nintendo DS made by AzizBgBoss, started on the 26th of July 2025.<br>
 
 I'm a 17 y/o that's obsessed with programming, I'm also into Terraria! I love the freedom you get in the game and the endless possibilities it has to offer. Another thing I love is the Nintendo DS, it's a great console and I wondered if I can fuse the 3 thing I love together, so I programmed Terraria into the DS! TerrariaDS!<br>
 <br>
@@ -56,7 +56,6 @@ Initial commit with basic project structure.
 - More testing and bug fixing needed, game proof-of-concept is going to be released soon.
 
 ### Version 0.1 (Plans):
-- Move all the data to the Nitro Filesystem, less memory usage and the ability to load so much content.
 - Add special tiles (tiles that need interaction and are not 1:1, like doors, crafting benches, chests...)
 - Add health.
 - Add menus.
@@ -80,7 +79,7 @@ Initial commit with basic project structure.
 Again, I'm open to suggestions and contributions, so if you have any ideas or want to help, feel free to open a pull request or an issue.
 
 ## Compile it yourself
-To compile this project, you need to have devkitPro installed. You can find instructions on how to install it on the [devkitPro website](https://devkitpro.org/wiki/Getting_Started) (Note: devkitPro NDS compilation only works on Windows as far as I know, or x86_64 architectures in general).
+To compile this project, you need to have devkitPro installed. You can find instructions on how to install it on the [devkitPro website](https://devkitpro.org/wiki/Getting_Started) (Note: devkitPro NDS compilation only works on Windows as far as I know, or x86_64 architectures in general), I also always hear about some BlocksDS, I think that causes errors.
 
 Once you have devkitPro installed, you can clone this repository by running:
 ```bash
@@ -90,6 +89,11 @@ git clone https://github.com/AzizBgBoss/TerrariaDS.git
 Then, navigate to the project directory:
 ```bash
 cd TerrariaDS
+```
+
+For good measure, clean the place first:
+```bash
+make clean
 ```
 
 Now, you can compile the project by running:
