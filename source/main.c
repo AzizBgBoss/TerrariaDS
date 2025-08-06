@@ -754,16 +754,13 @@ void inventorySetHotbar()
 	print(0, 0, "TerrariaDS v0.0alpha\n\
 By AzizBgBoss\n\
 https://github.com/AzizBgBoss/TerrariaDS\n\
-Jump: A\n\
-Move: Left/Right\n\
 A: Jump\n\
 Left/Right: Move\n\
 Up/Down: Zoom in/out\n\
 X/Y: Switch items\n\
 R: Open inventory\n\
 Start: Save map\n\
-Select: Load map\n\
-A+B+X+Y: Toggle debug mode\n");
+Select: Load map\n");
 	renderInventory();
 	mmEffect(SFX_ENU_CLOSE);
 }
