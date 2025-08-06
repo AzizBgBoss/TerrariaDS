@@ -705,19 +705,22 @@ void renderInventory()
 
 void renderCrafting()
 {
-	Bg1UpFill(63);
-	setCraftingSelection(craftingSelection);
-	int tilesToRender = (sizeof(craftingRecipes) / sizeof(craftingRecipes[0]) <= 16) ? sizeof(craftingRecipes) / sizeof(craftingRecipes[0]) : 16;
-	for (int i = 0; i < tilesToRender; i++)
+	if (craftingOpen)
 	{
-		Bg1UpSetTile((i % 4) * 4 + 1, (i / 4) * -4 + 21, getItemTile(craftingRecipes[i].item) + 0);
-		Bg1UpSetTile((i % 4) * 4 + 2, (i / 4) * -4 + 21, getItemTile(craftingRecipes[i].item) + 1);
-		Bg1UpSetTile((i % 4) * 4 + 1, (i / 4) * -4 + 22, getItemTile(craftingRecipes[i].item) + 2);
-		Bg1UpSetTile((i % 4) * 4 + 2, (i / 4) * -4 + 22, getItemTile(craftingRecipes[i].item) + 3);
-		print((i % 4) * 4 + 1, (i / 4) * -4 + 23, "   ");
-		if (craftingRecipes[i].quantity > 1)
+		Bg1UpFill(63);
+		setCraftingSelection(craftingSelection);
+		int tilesToRender = (sizeof(craftingRecipes) / sizeof(craftingRecipes[0]) <= 16) ? sizeof(craftingRecipes) / sizeof(craftingRecipes[0]) : 16;
+		for (int i = 0; i < tilesToRender; i++)
 		{
-			printVal((i % 4) * 4 + 1, (i / 4) * -4 + 23, craftingRecipes[i].quantity);
+			Bg1UpSetTile((i % 4) * 4 + 1, (i / 4) * -4 + 21, getItemTile(craftingRecipes[i].item) + 0);
+			Bg1UpSetTile((i % 4) * 4 + 2, (i / 4) * -4 + 21, getItemTile(craftingRecipes[i].item) + 1);
+			Bg1UpSetTile((i % 4) * 4 + 1, (i / 4) * -4 + 22, getItemTile(craftingRecipes[i].item) + 2);
+			Bg1UpSetTile((i % 4) * 4 + 2, (i / 4) * -4 + 22, getItemTile(craftingRecipes[i].item) + 3);
+			print((i % 4) * 4 + 1, (i / 4) * -4 + 23, "   ");
+			if (craftingRecipes[i].quantity > 1)
+			{
+				printVal((i % 4) * 4 + 1, (i / 4) * -4 + 23, craftingRecipes[i].quantity);
+			}
 		}
 	}
 }
@@ -1744,6 +1747,10 @@ You shall press START to continue, with no saving abilities.");
 				setInventorySelection(inventorySelection - 1);
 			else
 				setInventorySelection(8 * 4 - 1);
+		}
+
+		if (held & KEY_B)
+		{
 		}
 
 		if (held & KEY_DOWN)
