@@ -28,7 +28,7 @@ You can either compile the game yourself (for nightly releases) or wait for stab
 | Flashcarts (DS/DS Lite/DSi)      | Not tested yet            | Not tested yet        | You should probably patch the .nds rom with the proper DLDI patch depending on your flashcart type (e.g., R4) |
 | NO$GBA (Emulator)                | Medium                    | No ability to save + Choppy sound | The emulator doesn't have DLDI support.                                         |
 | desMuMe (Emulator)               | Non-functional            | Game doesn't even start |                                                                             |
-| melonDS (Emulator)               | Bad                       | No ability to save + No sound | The emulator *has* DLDI support but it doesn't work with this game, maybe they'll fix it in a future update. Also for some reason NitroFS won't work with melonDS. |
+| melonDS (Emulator)               | Non-functional            | No nitroFS              | The emulator *has* DLDI support but it doesn't work with this game, maybe they'll fix it in a future update. But for some reason NitroFS won't work with melonDS. |
 
 *The game should probably work fine on all platforms, the only thing that can vary is speed/graphical glitches (very unlikely) and ability to save and load. More platforms will be tested soon.*
 

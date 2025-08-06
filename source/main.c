@@ -1749,10 +1749,6 @@ You shall press START to continue, with no saving abilities.");
 				setInventorySelection(8 * 4 - 1);
 		}
 
-		if (held & KEY_B)
-		{
-		}
-
 		if (held & KEY_DOWN)
 			scale *= 1.01;
 		if (held & KEY_UP)
