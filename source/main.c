@@ -1431,7 +1431,49 @@ mm_word on_stream_request(mm_word length, mm_addr dest, mm_stream_formats format
 	return length;
 }
 
-//---------------------------------------------------------------------------------
+#define PALETTE_LEN 256
+
+u16 originalPalette[PALETTE_LEN];
+
+void storeOriginalPalette()
+{
+	// Copy the BG palette to a buffer
+	for (int i = 0; i < PALETTE_LEN; i++)
+	{
+		originalPalette[i] = BG_PALETTE[i];
+	}
+}
+
+void fadeInPalette(int steps, int delay)
+{
+	for (int s = 0; s <= steps; s++)
+	{
+		for (int i = 0; i < PALETTE_LEN; i++)
+		{
+			u16 color = originalPalette[i];
+
+			int r = color & 0x1F;
+			int g = (color >> 5) & 0x1F;
+			int b = (color >> 10) & 0x1F;
+
+			// Scale each component
+			int r2 = (r * s) / steps;
+			int g2 = (g * s) / steps;
+			int b2 = (b * s) / steps;
+
+			BG_PALETTE[i] = (b2 << 10) | (g2 << 5) | r2;
+		}
+
+		swiWaitForVBlank();
+		mmStreamUpdate();
+		for (int d = 0; d < delay; d++)
+		{
+			swiWaitForVBlank();
+			mmStreamUpdate();
+		}
+	}
+}
+
 int main(void)
 {
 	scanKeys();
@@ -1531,11 +1573,8 @@ You shall press START to continue, with no saving abilities.");
 	fread((void *)BG_PALETTE, 1, introPalLen, f);
 	fclose(f);
 
-	for (int i = 0; i < 560; i++)
-	{
-		swiWaitForVBlank();
-		mmStreamUpdate();
-	}
+	storeOriginalPalette();
+	fadeInPalette(64, 8);
 
 	f = fopen("nitro:/mainscreenbg.img.bin", "rb");
 	fread((void *)CHAR_BASE_BLOCK(1), 1, mainscreenbgTilesLen, f);
