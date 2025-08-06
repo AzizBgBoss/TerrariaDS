@@ -923,7 +923,7 @@ void dropItem(int x, int y, int tile, int quantity)
 	item[index].quantity = quantity;
 
 	f = fopen("nitro:/items.img.bin", "rb");
-	fseek(f, 4 * 4 * getItemTile(tile), SEEK_SET);
+	fseek(f, 8 * 8 * getItemTile(tile), SEEK_SET);
 	fread(item[index].sprite_gfx_mem, 1, 16 * 16, f);
 	fclose(f);
 }
