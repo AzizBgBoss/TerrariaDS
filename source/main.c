@@ -142,7 +142,7 @@ CraftingRecipe craftingRecipes[] = {
 		ITEM_COPPER_HAMMER,
 		1,
 		2,
-		{TILE_PLANKS, TILE_STONE},
+		{TILE_PLANKS, TILE_COPPER_ORE},
 		{1, 1},
 	},
 	{
@@ -1335,7 +1335,7 @@ void generateMap()
 		{
 			if (y >= stoneSurface[x])
 			{
-				float caveNoise = fractalPerlin2D(x, y, 5, 0.4f, 0.05f, seed + 69);
+				float caveNoise = fractalPerlin2D(x, y, 6, 0.4f, 0.05f, seed + 69);
 				if (caveNoise < -0.2f) // Adjust this threshold to control ores density
 				{
 					setGameTerrain(x, y, TILE_COPPER_ORE); // Create a cave
@@ -1356,7 +1356,7 @@ void generateMap()
 		{
 			if (y >= grassSurface[x])
 			{
-				float caveNoise = fractalPerlin2D(x, y, 6, 0.4f, 0.01f, seed);
+				float caveNoise = fractalPerlin2D(x, y, 6, 0.4f, 0.02f, seed);
 				if (caveNoise < -0.15f) // Adjust this threshold to control cave density
 				{
 					setGameTerrain(x, y, TILE_AIR); // Create a cave
