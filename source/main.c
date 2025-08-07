@@ -316,6 +316,17 @@ static int clamp(int val, int min, int max)
 	return val;
 }
 
+char *randomSplash(int n) {
+	switch (n) {
+		case 0:
+			return "Does this work?";
+		case 1:
+			return "Definetly not inspired by a small game called Terraria?!";
+		default:
+			return "By AzizBgBoss, for the DS community!";
+	}
+}
+
 int getElementTile(int tile, int x, int y) // Tile will change based on surrounding tiles
 {
 	int tileabove = (y > 0) ? gameTerrain[x + (y - 1) * MAP_WIDTH] : TILE_AIR;
@@ -1655,6 +1666,8 @@ You shall press START to continue, with no saving abilities.");
 	f = fopen("nitro:/bg.pal.bin", "rb");
 	fread((void *)BG_PALETTE_SUB, 1, bgPalLen, f);
 	fclose(f);
+
+	print(0, 17, randomSplash(rando(0,10)));
 
 	int x = 0;
 
