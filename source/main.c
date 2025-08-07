@@ -328,6 +328,8 @@ char *randomSplash(int n) {
 			return "bazinga";
 		case 4:
 			return "Yeah no wonder they didn't make a version for the DS...";
+		case 5:
+			return "Ain't that fantastic?";
 		default:
 			return "By AzizBgBoss, for the DS community!";
 	}
