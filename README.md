@@ -65,16 +65,19 @@ Initial commit with basic project structure.
 - Add menus.
 - Add ability to change button mappings (since many DS'es (including mine) have malfunctioning shoulder buttons because of dust accumulation under them over the years).
 - Add entities (NPCs, enemies, etc.) to the game world.
-- Add ores and more items to the game.
-- Add more biomes (desert, jungle, etc.).
+- Add ores. ***(done: Copper)***
+- Add more items.
 - Add crimson/corruption.
 - Support for maps with more height (limit is 64 for now, that means chunking should happen in both X and Y axes).
 - Add breaking animation.
 - Organize my messy code and split it to many files, won't change anything but will make it easier to add features.
 
+### Version 0.2 (Plans):
+- Add lighting.
+- Add more biomes (desert, jungle, etc.).
+
 ## Planed Features for the future:
 - Multiplayer support.
-- Ability to change the map size.
 - Skins (or changeable player styles).
 - Add mana and magic items.
 - Add bosses.

@@ -52,10 +52,10 @@ AzizBgBoss - https://github.com/AzizBgBoss
 
 #define TILE_COPPER_ORE 11
 
-#define ITEM_PICKAXE 101
-#define ITEM_AXE 102
-#define ITEM_SWORD 103
-#define ITEM_HAMMER 104
+#define ITEM_COPPER_PICKAXE 101
+#define ITEM_COPPER_AXE 102
+#define ITEM_COPPER_LONGSWORD 103
+#define ITEM_COPPER_HAMMER 104
 
 // Define animation
 #define ANIM_NONE 0
@@ -139,7 +139,7 @@ Item item[64] = {{0, 0, 0, 0, NULL, 8, 8, false, 60, 0, 0}};
 // Define crafting recipes
 CraftingRecipe craftingRecipes[] = {
 	{
-		ITEM_HAMMER,
+		ITEM_COPPER_HAMMER,
 		1,
 		2,
 		{TILE_PLANKS, TILE_STONE},
@@ -475,13 +475,13 @@ int getItemTile(int item)
 {
 	switch (item)
 	{
-	case ITEM_SWORD:
+	case ITEM_COPPER_LONGSWORD:
 		return 0;
-	case ITEM_PICKAXE:
+	case ITEM_COPPER_PICKAXE:
 		return 4;
-	case ITEM_AXE:
+	case ITEM_COPPER_AXE:
 		return 8;
-	case ITEM_HAMMER:
+	case ITEM_COPPER_HAMMER:
 		return 12;
 	case TILE_DIRT:
 		return 16;
@@ -534,14 +534,14 @@ char *getElementName(int element)
 		return "Wood Wall";
 	case TILE_COPPER_ORE:
 		return "Copper Ore";
-	case ITEM_PICKAXE:
-		return "Pickaxe";
-	case ITEM_SWORD:
-		return "Sword";
-	case ITEM_AXE:
-		return "Axe";
-	case ITEM_HAMMER:
-		return "Hammer";
+	case ITEM_COPPER_PICKAXE:
+		return "Copper Pickaxe";
+	case ITEM_COPPER_LONGSWORD:
+		return "Copper Long Sword";
+	case ITEM_COPPER_AXE:
+		return "Copper Axe";
+	case ITEM_COPPER_HAMMER:
+		return "Copper Hammer";
 	default:
 		return "";
 	}
@@ -593,13 +593,13 @@ bool isToolCompatible(int tool, int tile)
 {
 	switch (tool)
 	{
-	case ITEM_PICKAXE:
+	case ITEM_COPPER_PICKAXE:
 		return tile == TILE_STONE || tile == TILE_DIRT || tile == TILE_PLANKS || tile == TILE_MUSHROOM || tile == TILE_DEMONITE_BRICK || tile == TILE_COPPER_ORE;
-	case ITEM_AXE:
+	case ITEM_COPPER_AXE:
 		return tile == TILE_WOODLOG || tile == TILE_LEAVES || tile == TILE_MUSHROOM;
-	case ITEM_SWORD:
+	case ITEM_COPPER_LONGSWORD:
 		return tile == TILE_MUSHROOM; // Can break mushrooms
-	case ITEM_HAMMER:
+	case ITEM_COPPER_HAMMER:
 		return tile == TILE_DIRT_WALL || tile == TILE_STONE_WALL || tile == TILE_WOOD_WALL; // Can break walls
 	default:
 		return false;
@@ -1443,9 +1443,9 @@ void generateMap()
 	}
 
 	printDirect("Giving you some tools to start with...");
-	giveInventory(ITEM_SWORD, 1);
-	giveInventory(ITEM_AXE, 1);
-	giveInventory(ITEM_PICKAXE, 1);
+	giveInventory(ITEM_COPPER_LONGSWORD, 1);
+	giveInventory(ITEM_COPPER_AXE, 1);
+	giveInventory(ITEM_COPPER_PICKAXE, 1);
 }
 
 FILE *audioFile;
