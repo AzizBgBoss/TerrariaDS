@@ -57,9 +57,8 @@ Initial commit with basic project structure.
 - Camera zooming. ***(done)***
 - Basic crafting system. ***(done)***
 - Add music. ***(done)***
-- More testing and bug fixing needed, game proof-of-concept is going to be released soon.
 
-### Version 0.1 (Plans):
+### Version 0.1 (Working on it):
 - Add special tiles (tiles that need interaction and are not 1:1, like doors, crafting benches, chests...)
 - Add health.
 - Add menus.
