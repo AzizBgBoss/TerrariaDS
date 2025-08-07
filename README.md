@@ -32,6 +32,10 @@ You can either compile the game yourself (for nightly releases) or check for sta
 
 *More platforms will be tested soon.*
 
+## Download the latest version (QR code scannable with DSi Downloader)
+
+![QR](media/frame.png)
+
 ## Gameplay:
 - A: Jump
 - Left/Right: Move
