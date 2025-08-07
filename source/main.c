@@ -322,6 +322,8 @@ char *randomSplash(int n) {
 			return "Does this work?";
 		case 1:
 			return "Definetly not inspired by a small game called Terraria?!";
+		case 2:
+			return "Always patch the ROM kids, you don't want to meet him...";
 		default:
 			return "By AzizBgBoss, for the DS community!";
 	}
