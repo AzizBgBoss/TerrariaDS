@@ -324,6 +324,10 @@ char *randomSplash(int n) {
 			return "Definetly not inspired by a small game called Terraria?!";
 		case 2:
 			return "Always patch the ROM kids, you don't want to meet him...";
+		case 3:
+			return "bazinga";
+		case 4:
+			return "Yeah no wonder they didn't make a version for the DS...";
 		default:
 			return "By AzizBgBoss, for the DS community!";
 	}
@@ -1294,7 +1298,7 @@ void generateMap()
 	}
 
 	// remove 1 block spikes, i fucking hate them
-	printDirect("\nRemoving spikes because they are annoying...\n");
+	printDirect("Removing spikes because they are annoying...\n");
 	for (int x = 1; x < MAP_WIDTH - 1; x++)
 	{
 		if (grassSurface[x - 1] != grassSurface[x] && grassSurface[x + 1] != grassSurface[x])
@@ -1308,7 +1312,7 @@ void generateMap()
 	}
 
 	// Generate stone height surface
-	printDirect("\nGenerating stone surface...\n");
+	printDirect("Generating stone surface...\n");
 	for (int x = 0; x < MAP_WIDTH; x++)
 	{
 		float wave = fractalPerlin1D(x, 4, 0.4f, 0.01f, seed + 1) * 20.0f;
@@ -1320,7 +1324,7 @@ void generateMap()
 	}
 
 	// Place terrain
-	printDirect("\nPlacing terrain...\n");
+	printDirect("Placing terrain...\n");
 	for (int x = 0; x < MAP_WIDTH; x++)
 	{
 		for (int y = 0; y < MAP_HEIGHT; y++)
@@ -1341,7 +1345,7 @@ void generateMap()
 	}
 
 	// Generate ores
-	printDirect("\nGenerating ores...\n");
+	printDirect("Generating ores...\n");
 	for (int x = 0; x < MAP_WIDTH; x++)
 	{
 		for (int y = 0; y < MAP_HEIGHT; y++)
@@ -1362,7 +1366,7 @@ void generateMap()
 	}
 
 	// Generate caves
-	printDirect("\nGenerating caves...\n");
+	printDirect("Generating caves...\n");
 	for (int x = 0; x < MAP_WIDTH; x++)
 	{
 		for (int y = 0; y < MAP_HEIGHT; y++)
@@ -1383,7 +1387,7 @@ void generateMap()
 	}
 
 	// Adding walls
-	printDirect("\nAdding walls...\n");
+	printDirect("Adding walls...\n");
 	for (int x = 0; x < MAP_WIDTH; x++)
 	{
 		for (int y = 0; y < MAP_HEIGHT; y++)
@@ -1403,7 +1407,7 @@ void generateMap()
 	}
 
 	// Place trees
-	printDirect("\nPlacing trees...\n");
+	printDirect("Placing trees...\n");
 	for (int x = 1; x < MAP_WIDTH - 1; x++)
 	{
 		if (rando(0, TREE_CHANCE) == 0 && gameTerrain[x + (grassSurface[x] + 1) * MAP_WIDTH] == TILE_DIRT)
@@ -1431,7 +1435,7 @@ void generateMap()
 	}
 
 	// Place mushrooms
-	printDirect("\nPlacing mushrooms...\n");
+	printDirect("Placing mushrooms...\n");
 	for (int x = 1; x < MAP_WIDTH - 1; x++)
 	{
 		if (rando(0, MUSHROOM_CHANCE) == 0 && gameTerrain[x + grassSurface[x] * MAP_WIDTH] == TILE_DIRT && gameTerrain[x + (grassSurface[x] - 1) * MAP_WIDTH] == TILE_AIR)
@@ -1445,7 +1449,7 @@ void generateMap()
 	}
 
 	// Place demonite bricks to limit the world
-	printDirect("\nPlacing demonite bricks at the bottom so you don't escape >:) ...\n");
+	printDirect("Placing demonite bricks at the bottom so you don't escape >:) ...\n");
 	for (int x = 0; x < MAP_WIDTH - 1; x++)
 	{
 		setGameTerrain(x, MAP_HEIGHT - 1, TILE_DEMONITE_BRICK);
