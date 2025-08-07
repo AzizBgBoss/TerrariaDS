@@ -50,6 +50,8 @@ AzizBgBoss - https://github.com/AzizBgBoss
 
 #define TILE_WOOD_WALL 10
 
+#define TILE_COPPER_ORE 11
+
 #define ITEM_PICKAXE 101
 #define ITEM_AXE 102
 #define ITEM_SWORD 103
@@ -350,6 +352,9 @@ int getElementTile(int tile, int x, int y) // Tile will change based on surround
 	case TILE_WOOD_WALL:
 		offset = 8;
 		break;
+	case TILE_COPPER_ORE:
+		offset = 9;
+		break;
 	case TILE_WOODLOG:
 		return 2;
 	case TILE_MUSHROOM:
@@ -496,6 +501,8 @@ int getItemTile(int item)
 		return 44;
 	case TILE_WOOD_WALL:
 		return 48;
+	case TILE_COPPER_ORE:
+		return 52;
 	default:
 		return 56;
 	}
@@ -525,6 +532,8 @@ char *getElementName(int element)
 		return "Demonite Brick";
 	case TILE_WOOD_WALL:
 		return "Wood Wall";
+	case TILE_COPPER_ORE:
+		return "Copper Ore";
 	case ITEM_PICKAXE:
 		return "Pickaxe";
 	case ITEM_SWORD:
@@ -562,6 +571,8 @@ int getElementHealth(int element)
 		return INFINITY;
 	case TILE_WOOD_WALL:
 		return 100;
+	case TILE_COPPER_ORE:
+		return 200;
 	default:
 		return 0;
 	}
@@ -583,7 +594,7 @@ bool isToolCompatible(int tool, int tile)
 	switch (tool)
 	{
 	case ITEM_PICKAXE:
-		return tile == TILE_STONE || tile == TILE_DIRT || tile == TILE_PLANKS || tile == TILE_MUSHROOM || tile == TILE_DEMONITE_BRICK;
+		return tile == TILE_STONE || tile == TILE_DIRT || tile == TILE_PLANKS || tile == TILE_MUSHROOM || tile == TILE_DEMONITE_BRICK || tile == TILE_COPPER_ORE;
 	case ITEM_AXE:
 		return tile == TILE_WOODLOG || tile == TILE_LEAVES || tile == TILE_MUSHROOM;
 	case ITEM_SWORD:
@@ -603,6 +614,7 @@ bool isTileSolid(int tile)
 	case TILE_STONE:
 	case TILE_PLANKS:
 	case TILE_DEMONITE_BRICK:
+	case TILE_COPPER_ORE:
 		return true;
 	default:
 		return false;
@@ -754,7 +766,7 @@ void inventorySetHotbar()
 		}
 	}
 	clearPrint();
-	print(0, 0, "TerrariaDS v0.0alpha\n\
+	print(0, 0, "TerrariaDS v0.1\n\
 By AzizBgBoss\n\
 https://github.com/AzizBgBoss/TerrariaDS\n\
 A: Jump\n\
@@ -886,7 +898,7 @@ bool giveInventory(int item, int quantity)
 {
 	for (int i = 0; i < 8 * 4; i++)
 	{
-		if (inventory[i] == item && inventoryQuantity[i] < 99 - quantity)
+		if (inventory[i] == item && inventoryQuantity[i] < 100 - quantity)
 		{
 			setInventory(i, item, inventoryQuantity[i] + quantity);
 			return true;
@@ -1315,6 +1327,27 @@ void generateMap()
 		}
 	}
 
+	// Generate ores
+	printDirect("\nGenerating ores...\n");
+	for (int x = 0; x < MAP_WIDTH; x++)
+	{
+		for (int y = 0; y < MAP_HEIGHT; y++)
+		{
+			if (y >= stoneSurface[x])
+			{
+				float caveNoise = fractalPerlin2D(x, y, 5, 0.4f, 0.05f, seed + 69);
+				if (caveNoise < -0.2f) // Adjust this threshold to control ores density
+				{
+					setGameTerrain(x, y, TILE_COPPER_ORE); // Create a cave
+				}
+			}
+		}
+		if (x % (MAP_WIDTH / 32) == 0)
+		{
+			printDirect(".");
+		}
+	}
+
 	// Generate caves
 	printDirect("\nGenerating caves...\n");
 	for (int x = 0; x < MAP_WIDTH; x++)
@@ -1555,7 +1588,7 @@ You shall press START to continue, with no saving abilities.");
 	mystream.manual = true;
 	mmStreamOpen(&mystream);
 
-	videoSetMode(MODE_0_2D | DISPLAY_BG0_ACTIVE | DISPLAY_BG3_ACTIVE);
+	videoSetMode(MODE_0_2D | DISPLAY_BG0_ACTIVE);
 	videoSetModeSub(MODE_3_2D | DISPLAY_BG0_ACTIVE | DISPLAY_BG1_ACTIVE);
 	vramSetBankA(VRAM_A_MAIN_BG);
 	vramSetBankC(VRAM_C_SUB_BG);
@@ -1568,18 +1601,20 @@ You shall press START to continue, with no saving abilities.");
 	fread((void *)SCREEN_BASE_BLOCK(0), 1, introMapLen, f);
 	fclose(f);
 
+	f = fopen("nitro:/intro.pal.bin", "rb");
+	fread((void *)BG_PALETTE, 1, introPalLen, f);
+
+	storeOriginalPalette();
+	fadeInPalette(64, 8);
+	fclose(f);
+
+	videoSetMode(MODE_0_2D | DISPLAY_BG0_ACTIVE | DISPLAY_BG3_ACTIVE);
+
 	BGCTRL[3] = BG_TILE_BASE(3) | BG_MAP_BASE(3) | BG_COLOR_256 | BG_32x32 | BG_PRIORITY(0);
 	f = fopen("nitro:/font.img.bin", "rb");
 	fread((void *)CHAR_BASE_BLOCK(3), 1, fontTilesLen, f);
 	fclose(f);
 	dmaFillHalfWords(0, (void *)SCREEN_BASE_BLOCK(3), 2048);
-
-	f = fopen("nitro:/intro.pal.bin", "rb");
-	fread((void *)BG_PALETTE, 1, introPalLen, f);
-	fclose(f);
-
-	storeOriginalPalette();
-	fadeInPalette(64, 8);
 
 	f = fopen("nitro:/mainscreenbg.img.bin", "rb");
 	fread((void *)CHAR_BASE_BLOCK(1), 1, mainscreenbgTilesLen, f);
