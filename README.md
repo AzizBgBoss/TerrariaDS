@@ -17,6 +17,9 @@ If you want to try the latest changes, you can compile the project yourself, or 
 ### Disclaimer
 This project is not affiliated with Re-Logic or Terraria in any way. It is a fan-made project and is not intended for commercial use. All assets used in this project are use for educational and entertainment purposes only. If you're a party of Re-Logic and owner of any assets used in this project and want them removed, please contact me.
 
+### Bad news:
+I freaking broke my DSi, and my broke ass doesn't have money for a new system yet (thinking about a 3DS). Expect development to slow down.
+
 ## Installation:
 You can either compile the game yourself (for nightly releases) or check for stable releases in the Releases page. Please check the Tested devices part before starting.<br><br>
 [![Downloads](https://img.shields.io/github/downloads/AzizBgBoss/TerrariaDS/total.svg?label=downloads)](https://github.com/AzizBgBoss/TerrariaDS/releases)

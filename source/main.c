@@ -52,6 +52,10 @@ AzizBgBoss - https://github.com/AzizBgBoss
 
 #define TILE_COPPER_ORE 11
 
+#define TILE_DOOR_1 12
+#define TILE_DOOR_2 13
+#define TILE_DOOR_3 14
+
 #define ITEM_COPPER_PICKAXE 101
 #define ITEM_COPPER_AXE 102
 #define ITEM_COPPER_LONGSWORD 103
@@ -204,6 +208,15 @@ CraftingRecipe craftingRecipes[] = {
 	 },
 	 {
 		 4,
+	 }},
+	{TILE_DOOR_3,
+	 1,
+	 1,
+	 {
+		 TILE_PLANKS,
+	 },
+	 {
+		 6,
 	 }}};
 
 u16 *bg2Map;
@@ -316,22 +329,24 @@ static int clamp(int val, int min, int max)
 	return val;
 }
 
-char *randomSplash(int n) {
-	switch (n) {
-		case 0:
-			return "Does this work?";
-		case 1:
-			return "Definetly not inspired by a small game called Terraria?!";
-		case 2:
-			return "Always patch the ROM kids, you don't want to meet him...";
-		case 3:
-			return "bazinga";
-		case 4:
-			return "Yeah no wonder they didn't make a version for the DS...";
-		case 5:
-			return "Ain't that fantastic?";
-		default:
-			return "By AzizBgBoss, for the DS community!";
+char *randomSplash(int n)
+{
+	switch (n)
+	{
+	case 0:
+		return "Does this work?";
+	case 1:
+		return "Definetly not inspired by a small game called Terraria?!";
+	case 2:
+		return "Always patch the ROM kids, you don't want to meet him...";
+	case 3:
+		return "bazinga";
+	case 4:
+		return "Yeah no wonder they didn't make a version for the DS...";
+	case 5:
+		return "Ain't that fantastic?";
+	default:
+		return "By AzizBgBoss, for the DS community!";
 	}
 }
 
@@ -378,6 +393,12 @@ int getElementTile(int tile, int x, int y) // Tile will change based on surround
 		return 2;
 	case TILE_MUSHROOM:
 		return 1;
+	case TILE_DOOR_1:
+		return 92;
+	case TILE_DOOR_2:
+		return 95;
+	case TILE_DOOR_3:
+		return 98;
 	default:
 		return 8;
 	}
@@ -522,6 +543,8 @@ int getItemTile(int item)
 		return 48;
 	case TILE_COPPER_ORE:
 		return 52;
+	case TILE_DOOR_3:
+		return 64;
 	default:
 		return 56;
 	}
@@ -561,6 +584,8 @@ char *getElementName(int element)
 		return "Copper Axe";
 	case ITEM_COPPER_HAMMER:
 		return "Copper Hammer";
+	case TILE_DOOR_3:
+		return "Wooden Door";
 	default:
 		return "";
 	}
@@ -592,6 +617,10 @@ int getElementHealth(int element)
 		return 100;
 	case TILE_COPPER_ORE:
 		return 200;
+	case TILE_DOOR_1:
+	case TILE_DOOR_2:
+	case TILE_DOOR_3:
+		return 50;
 	default:
 		return 0;
 	}
@@ -613,7 +642,7 @@ bool isToolCompatible(int tool, int tile)
 	switch (tool)
 	{
 	case ITEM_COPPER_PICKAXE:
-		return tile == TILE_STONE || tile == TILE_DIRT || tile == TILE_PLANKS || tile == TILE_MUSHROOM || tile == TILE_DEMONITE_BRICK || tile == TILE_COPPER_ORE;
+		return tile == TILE_STONE || tile == TILE_DIRT || tile == TILE_PLANKS || tile == TILE_MUSHROOM || tile == TILE_DEMONITE_BRICK || tile == TILE_COPPER_ORE || tile == TILE_DOOR_1 || tile == TILE_DOOR_2 || tile == TILE_DOOR_3;
 	case ITEM_COPPER_AXE:
 		return tile == TILE_WOODLOG || tile == TILE_LEAVES || tile == TILE_MUSHROOM;
 	case ITEM_COPPER_LONGSWORD:
@@ -634,6 +663,9 @@ bool isTileSolid(int tile)
 	case TILE_PLANKS:
 	case TILE_DEMONITE_BRICK:
 	case TILE_COPPER_ORE:
+	case TILE_DOOR_1:
+	case TILE_DOOR_2:
+	case TILE_DOOR_3:
 		return true;
 	default:
 		return false;
@@ -873,24 +905,36 @@ void playerPutGameTerrain(int x, int y, int tile)
 
 	// The difference is that we check the surrounding tiles to prevent placing tiles out of thin air
 	bool canPlace = false;
-	for (int dx = -1; dx <= 1; dx++)
+	if (tile == TILE_DOOR_3)
 	{
-		for (int dy = -1; dy <= 1; dy++)
+		if (isTileSolid(gameTerrain[x + (y+1) * MAP_WIDTH]) && isTileSolid(gameTerrain[x + (y-3) * MAP_WIDTH]))
 		{
-			if (dx == 0 && dy == 0)
-				continue; // Skip the tile itself
-			int nx = x + dx;
-			int ny = y + dy;
-			if (nx < 0 || nx >= MAP_WIDTH || ny < 0 || ny >= MAP_HEIGHT)
-				continue; // Out of bounds
-			if (gameTerrain[nx + ny * MAP_WIDTH] != TILE_AIR)
-			{
+			if (!isTileSolid(gameTerrain[x + y * MAP_WIDTH]) && !isTileSolid(gameTerrain[x + (y-1) * MAP_WIDTH]) && !isTileSolid(gameTerrain[x + (y-2) * MAP_WIDTH])) {
 				canPlace = true;
-				break;
 			}
 		}
-		if (canPlace)
-			break;
+	}
+	else
+	{
+		for (int dx = -1; dx <= 1; dx++)
+		{
+			for (int dy = -1; dy <= 1; dy++)
+			{
+				if (dx == 0 && dy == 0)
+					continue; // Skip the tile itself
+				int nx = x + dx;
+				int ny = y + dy;
+				if (nx < 0 || nx >= MAP_WIDTH || ny < 0 || ny >= MAP_HEIGHT)
+					continue; // Out of bounds
+				if (gameTerrain[nx + ny * MAP_WIDTH] != TILE_AIR)
+				{
+					canPlace = true;
+					break;
+				}
+			}
+			if (canPlace)
+				break;
+		}
 	}
 	if (!canPlace)
 		return; // Cannot place tile if no surrounding tiles are solid
@@ -899,6 +943,10 @@ void playerPutGameTerrain(int x, int y, int tile)
 	inventoryQuantity[inventorySelection]--;
 	setInventory(inventorySelection, inventory[inventorySelection], inventoryQuantity[inventorySelection]);
 	setGameTerrain(x, y, tile);
+	if (tile == TILE_DOOR_3) {
+		setGameTerrain(x, y - 1, TILE_DOOR_2);
+		setGameTerrain(x, y - 2, TILE_DOOR_1);
+	}
 	switch (rando(0, 2))
 	{
 	case 0:
@@ -1675,7 +1723,7 @@ You shall press START to continue, with no saving abilities.");
 	fread((void *)BG_PALETTE_SUB, 1, bgPalLen, f);
 	fclose(f);
 
-	print(0, 17, randomSplash(rando(0,10)));
+	print(0, 17, randomSplash(rando(0, 10)));
 
 	int x = 0;
 
