@@ -52,9 +52,16 @@ AzizBgBoss - https://github.com/AzizBgBoss
 
 #define TILE_COPPER_ORE 11
 
-#define TILE_DOOR_1 12
-#define TILE_DOOR_2 13
-#define TILE_DOOR_3 14
+#define TILE_WOODEN_DOOR_CLOSED_1 12
+#define TILE_WOODEN_DOOR_CLOSED_2 13
+#define TILE_WOODEN_DOOR_CLOSED_3 14
+
+#define TILE_WOODEN_DOOR_OPEN_1 15
+#define TILE_WOODEN_DOOR_OPEN_2 16
+#define TILE_WOODEN_DOOR_OPEN_3 17
+#define TILE_WOODEN_DOOR_OPEN_4 18
+#define TILE_WOODEN_DOOR_OPEN_5 19
+#define TILE_WOODEN_DOOR_OPEN_6 20
 
 #define ITEM_COPPER_PICKAXE 101
 #define ITEM_COPPER_AXE 102
@@ -209,7 +216,7 @@ CraftingRecipe craftingRecipes[] = {
 	 {
 		 4,
 	 }},
-	{TILE_DOOR_3,
+	{TILE_WOODEN_DOOR_CLOSED_3,
 	 1,
 	 1,
 	 {
@@ -393,12 +400,24 @@ int getElementTile(int tile, int x, int y) // Tile will change based on surround
 		return 2;
 	case TILE_MUSHROOM:
 		return 1;
-	case TILE_DOOR_1:
+	case TILE_WOODEN_DOOR_CLOSED_1:
 		return 92;
-	case TILE_DOOR_2:
+	case TILE_WOODEN_DOOR_CLOSED_2:
 		return 95;
-	case TILE_DOOR_3:
+	case TILE_WOODEN_DOOR_CLOSED_3:
 		return 98;
+	case TILE_WOODEN_DOOR_OPEN_1:
+		return 90;
+	case TILE_WOODEN_DOOR_OPEN_2:
+		return 91;
+	case TILE_WOODEN_DOOR_OPEN_3:
+		return 93;
+	case TILE_WOODEN_DOOR_OPEN_4:
+		return 94;
+	case TILE_WOODEN_DOOR_OPEN_5:
+		return 96;
+	case TILE_WOODEN_DOOR_OPEN_6:
+		return 97;
 	default:
 		return 8;
 	}
@@ -543,7 +562,7 @@ int getItemTile(int item)
 		return 48;
 	case TILE_COPPER_ORE:
 		return 52;
-	case TILE_DOOR_3:
+	case TILE_WOODEN_DOOR_CLOSED_3:
 		return 64;
 	default:
 		return 56;
@@ -584,7 +603,7 @@ char *getElementName(int element)
 		return "Copper Axe";
 	case ITEM_COPPER_HAMMER:
 		return "Copper Hammer";
-	case TILE_DOOR_3:
+	case TILE_WOODEN_DOOR_CLOSED_3:
 		return "Wooden Door";
 	default:
 		return "";
@@ -617,9 +636,15 @@ int getElementHealth(int element)
 		return 100;
 	case TILE_COPPER_ORE:
 		return 200;
-	case TILE_DOOR_1:
-	case TILE_DOOR_2:
-	case TILE_DOOR_3:
+	case TILE_WOODEN_DOOR_CLOSED_1:
+	case TILE_WOODEN_DOOR_CLOSED_2:
+	case TILE_WOODEN_DOOR_CLOSED_3:
+	case TILE_WOODEN_DOOR_OPEN_1:
+	case TILE_WOODEN_DOOR_OPEN_2:
+	case TILE_WOODEN_DOOR_OPEN_3:
+	case TILE_WOODEN_DOOR_OPEN_4:
+	case TILE_WOODEN_DOOR_OPEN_5:
+	case TILE_WOODEN_DOOR_OPEN_6:
 		return 50;
 	default:
 		return 0;
@@ -632,6 +657,16 @@ int getElementDrop(int element)
 	{
 	case TILE_WOODLOG:
 		return TILE_PLANKS; // Drops planks when broken
+	case TILE_WOODEN_DOOR_CLOSED_1:
+	case TILE_WOODEN_DOOR_CLOSED_2:
+	case TILE_WOODEN_DOOR_CLOSED_3:
+	case TILE_WOODEN_DOOR_OPEN_1:
+	case TILE_WOODEN_DOOR_OPEN_2:
+	case TILE_WOODEN_DOOR_OPEN_3:
+	case TILE_WOODEN_DOOR_OPEN_4:
+	case TILE_WOODEN_DOOR_OPEN_5:
+	case TILE_WOODEN_DOOR_OPEN_6:
+		return TILE_WOODEN_DOOR_CLOSED_3;
 	default:
 		return element; // Drops itself
 	}
@@ -642,7 +677,7 @@ bool isToolCompatible(int tool, int tile)
 	switch (tool)
 	{
 	case ITEM_COPPER_PICKAXE:
-		return tile == TILE_STONE || tile == TILE_DIRT || tile == TILE_PLANKS || tile == TILE_MUSHROOM || tile == TILE_DEMONITE_BRICK || tile == TILE_COPPER_ORE || tile == TILE_DOOR_1 || tile == TILE_DOOR_2 || tile == TILE_DOOR_3;
+		return tile == TILE_STONE || tile == TILE_DIRT || tile == TILE_PLANKS || tile == TILE_MUSHROOM || tile == TILE_DEMONITE_BRICK || tile == TILE_COPPER_ORE || tile == TILE_WOODEN_DOOR_CLOSED_1 || tile == TILE_WOODEN_DOOR_CLOSED_2 || tile == TILE_WOODEN_DOOR_CLOSED_3 || tile == TILE_WOODEN_DOOR_OPEN_1 || tile == TILE_WOODEN_DOOR_OPEN_2 || tile == TILE_WOODEN_DOOR_OPEN_3 || TILE_WOODEN_DOOR_OPEN_4 || TILE_WOODEN_DOOR_OPEN_5 || TILE_WOODEN_DOOR_OPEN_6;
 	case ITEM_COPPER_AXE:
 		return tile == TILE_WOODLOG || tile == TILE_LEAVES || tile == TILE_MUSHROOM;
 	case ITEM_COPPER_LONGSWORD:
@@ -663,9 +698,9 @@ bool isTileSolid(int tile)
 	case TILE_PLANKS:
 	case TILE_DEMONITE_BRICK:
 	case TILE_COPPER_ORE:
-	case TILE_DOOR_1:
-	case TILE_DOOR_2:
-	case TILE_DOOR_3:
+	case TILE_WOODEN_DOOR_CLOSED_1:
+	case TILE_WOODEN_DOOR_CLOSED_2:
+	case TILE_WOODEN_DOOR_CLOSED_3:
 		return true;
 	default:
 		return false;
@@ -905,7 +940,7 @@ void playerPutGameTerrain(int x, int y, int tile)
 
 	// The difference is that we check the surrounding tiles to prevent placing tiles out of thin air
 	bool canPlace = false;
-	if (tile == TILE_DOOR_3)
+	if (tile == TILE_WOODEN_DOOR_CLOSED_3)
 	{
 		if (isTileSolid(gameTerrain[x + (y+1) * MAP_WIDTH]) && isTileSolid(gameTerrain[x + (y-3) * MAP_WIDTH]))
 		{
@@ -943,9 +978,9 @@ void playerPutGameTerrain(int x, int y, int tile)
 	inventoryQuantity[inventorySelection]--;
 	setInventory(inventorySelection, inventory[inventorySelection], inventoryQuantity[inventorySelection]);
 	setGameTerrain(x, y, tile);
-	if (tile == TILE_DOOR_3) {
-		setGameTerrain(x, y - 1, TILE_DOOR_2);
-		setGameTerrain(x, y - 2, TILE_DOOR_1);
+	if (tile == TILE_WOODEN_DOOR_CLOSED_3) {
+		setGameTerrain(x, y - 1, TILE_WOODEN_DOOR_CLOSED_2);
+		setGameTerrain(x, y - 2, TILE_WOODEN_DOOR_CLOSED_1);
 	}
 	switch (rando(0, 2))
 	{
@@ -1053,8 +1088,18 @@ void breakTile(int x, int y, int speed)
 				}
 			}
 		}
+		else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_CLOSED_1) {
+			setGameTerrain(x, y + 1, TILE_AIR);
+			setGameTerrain(x, y + 2, TILE_AIR);
+		} else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_CLOSED_2) {
+			setGameTerrain(x, y - 1, TILE_AIR);
+			setGameTerrain(x, y + 1, TILE_AIR);
+		} else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_CLOSED_3) {
+			setGameTerrain(x, y - 1, TILE_AIR);
+			setGameTerrain(x, y - 2, TILE_AIR);
+		}
 		dropItem(x, y, getElementDrop(gameTerrain[x + y * MAP_WIDTH]), 1);
-		setGameTerrain(x, y, 0);
+		setGameTerrain(x, y, TILE_AIR);
 		gameTerrainHealth[x + y * MAP_WIDTH] = 0;
 	}
 	// Random sound effect for breaking tiles
