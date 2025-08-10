@@ -888,16 +888,9 @@ void inventorySetHotbar()
 		}
 	}
 	clearPrint();
-	/*print(0, 0, "TerrariaDS v0.1\n\
+	print(0, 5, "TerrariaDS v0.1\n\
 By AzizBgBoss\n\
-https://github.com/AzizBgBoss/TerrariaDS\n\
-A: Jump\n\
-Left/Right: Move\n\
-Up/Down: Zoom in/out\n\
-X/Y: Switch items\n\
-R: Open inventory\n\
-Start: Save map\n\
-Select: Load map\n");*/
+https://github.com/AzizBgBoss/TerrariaDS");
 	renderInventory();
 	mmEffect(SFX_ENU_CLOSE);
 }
@@ -917,11 +910,6 @@ void inventorySetFull()
 	for (int j = 0; j < 16; j++)
 		Bg0UpSetTile(27 + j % 4, j / 4, 32 + j);
 	clearPrint();
-	/*print(0, 0, "Tap on a slot to select it.\n\
-Hold and move an item to change it's slot.\n\
-Press R to close inventory\n\
-You can still move the player with the other buttons.\n\
-Tap on the crafting icon on the top right to craft.	");*/
 	renderInventory();
 	mmEffect(SFX_ENU_OPEN);
 }
