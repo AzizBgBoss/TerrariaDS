@@ -1,4 +1,5 @@
-![TerrariaDS Logo](media/logo.png)
+![TerrariaDS Logo](media/logo.png)<br>
+[![Downloads](https://img.shields.io/github/downloads/AzizBgBoss/TerrariaDS/total.svg?label=downloads)](https://github.com/AzizBgBoss/TerrariaDS/releases)
 # TerrariaDS
 A terraria remake (not port) for the Nintendo DS made by AzizBgBoss, started on the 26th of July 2025.<br>
 
