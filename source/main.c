@@ -93,6 +93,8 @@ u16 *itemHandSprite;
 bool debug = false;
 bool inventoryOpen = false;
 bool craftingOpen = false;
+bool interacting;
+int touchFrame;
 
 FILE *f;
 
@@ -942,9 +944,10 @@ void playerPutGameTerrain(int x, int y, int tile)
 	bool canPlace = false;
 	if (tile == TILE_WOODEN_DOOR_CLOSED_3)
 	{
-		if (isTileSolid(gameTerrain[x + (y+1) * MAP_WIDTH]) && isTileSolid(gameTerrain[x + (y-3) * MAP_WIDTH]))
+		if (isTileSolid(gameTerrain[x + (y + 1) * MAP_WIDTH]) && isTileSolid(gameTerrain[x + (y - 3) * MAP_WIDTH]))
 		{
-			if (!isTileSolid(gameTerrain[x + y * MAP_WIDTH]) && !isTileSolid(gameTerrain[x + (y-1) * MAP_WIDTH]) && !isTileSolid(gameTerrain[x + (y-2) * MAP_WIDTH])) {
+			if (!isTileSolid(gameTerrain[x + y * MAP_WIDTH]) && !isTileSolid(gameTerrain[x + (y - 1) * MAP_WIDTH]) && !isTileSolid(gameTerrain[x + (y - 2) * MAP_WIDTH]))
+			{
 				canPlace = true;
 			}
 		}
@@ -978,7 +981,8 @@ void playerPutGameTerrain(int x, int y, int tile)
 	inventoryQuantity[inventorySelection]--;
 	setInventory(inventorySelection, inventory[inventorySelection], inventoryQuantity[inventorySelection]);
 	setGameTerrain(x, y, tile);
-	if (tile == TILE_WOODEN_DOOR_CLOSED_3) {
+	if (tile == TILE_WOODEN_DOOR_CLOSED_3)
+	{
 		setGameTerrain(x, y - 1, TILE_WOODEN_DOOR_CLOSED_2);
 		setGameTerrain(x, y - 2, TILE_WOODEN_DOOR_CLOSED_1);
 	}
@@ -1088,15 +1092,68 @@ void breakTile(int x, int y, int speed)
 				}
 			}
 		}
-		else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_CLOSED_1) {
+		else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_CLOSED_1)
+		{
 			setGameTerrain(x, y + 1, TILE_AIR);
 			setGameTerrain(x, y + 2, TILE_AIR);
-		} else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_CLOSED_2) {
+		}
+		else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_CLOSED_2)
+		{
 			setGameTerrain(x, y - 1, TILE_AIR);
 			setGameTerrain(x, y + 1, TILE_AIR);
-		} else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_CLOSED_3) {
+		}
+		else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_CLOSED_3)
+		{
 			setGameTerrain(x, y - 1, TILE_AIR);
 			setGameTerrain(x, y - 2, TILE_AIR);
+		}
+		else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_1)
+		{
+			setGameTerrain(x + 1, y, TILE_AIR);
+			setGameTerrain(x, y + 1, TILE_AIR);
+			setGameTerrain(x + 1, y + 1, TILE_AIR);
+			setGameTerrain(x, y + 2, TILE_AIR);
+			setGameTerrain(x + 1, y + 2, TILE_AIR);
+		}
+		else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_2)
+		{
+			setGameTerrain(x - 1, y, TILE_AIR);
+			setGameTerrain(x, y + 1, TILE_AIR);
+			setGameTerrain(x - 1, y + 1, TILE_AIR);
+			setGameTerrain(x, y + 2, TILE_AIR);
+			setGameTerrain(x - 1, y + 2, TILE_AIR);
+		}
+		else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_3)
+		{
+			setGameTerrain(x, y - 1, TILE_AIR);
+			setGameTerrain(x + 1, y - 1, TILE_AIR);
+			setGameTerrain(x + 1, y, TILE_AIR);
+			setGameTerrain(x, y + 1, TILE_AIR);
+			setGameTerrain(x + 1, y + 1, TILE_AIR);
+		}
+		else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_4)
+		{
+			setGameTerrain(x - 1, y, TILE_AIR);
+			setGameTerrain(x, y - 1, TILE_AIR);
+			setGameTerrain(x - 1, y - 1, TILE_AIR);
+			setGameTerrain(x, y + 1, TILE_AIR);
+			setGameTerrain(x - 1, y + 1, TILE_AIR);
+		}
+		else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_5)
+		{
+			setGameTerrain(x, y - 2, TILE_AIR);
+			setGameTerrain(x + 1, y - 2, TILE_AIR);
+			setGameTerrain(x + 1, y - 1, TILE_AIR);
+			setGameTerrain(x, y, TILE_AIR);
+			setGameTerrain(x + 1, y, TILE_AIR);
+		}
+		else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_6)
+		{
+			setGameTerrain(x - 1, y - 2, TILE_AIR);
+			setGameTerrain(x, y - 2, TILE_AIR);
+			setGameTerrain(x - 1, y - 1, TILE_AIR);
+			setGameTerrain(x, y, TILE_AIR);
+			setGameTerrain(x - 1, y, TILE_AIR);
 		}
 		dropItem(x, y, getElementDrop(gameTerrain[x + y * MAP_WIDTH]), 1);
 		setGameTerrain(x, y, TILE_AIR);
@@ -1117,6 +1174,106 @@ void breakTile(int x, int y, int speed)
 			mmEffect(SFX_IG_2);
 			break;
 		}
+	}
+}
+
+void interact(int x, int y)
+{
+	if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_CLOSED_1)
+	{
+		if (gameTerrain[x - 1 + y * MAP_WIDTH] == TILE_AIR &&
+			gameTerrain[x - 1 + (y + 1) * MAP_WIDTH] == TILE_AIR &&
+			gameTerrain[x - 1 + (y + 2) * MAP_WIDTH] == TILE_AIR)
+		{
+			setGameTerrain(x - 1, y, TILE_WOODEN_DOOR_OPEN_1);
+			setGameTerrain(x, y, TILE_WOODEN_DOOR_OPEN_2);
+			setGameTerrain(x - 1, y + 1, TILE_WOODEN_DOOR_OPEN_3);
+			setGameTerrain(x, y + 1, TILE_WOODEN_DOOR_OPEN_4);
+			setGameTerrain(x - 1, y + 2, TILE_WOODEN_DOOR_OPEN_5);
+			setGameTerrain(x, y + 2, TILE_WOODEN_DOOR_OPEN_6);
+		}
+	}
+	else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_CLOSED_2)
+	{
+		if (gameTerrain[x - 1 + (y - 1) * MAP_WIDTH] == TILE_AIR &&
+			gameTerrain[x - 1 + y * MAP_WIDTH] == TILE_AIR &&
+			gameTerrain[x - 1 + (y + 1) * MAP_WIDTH] == TILE_AIR)
+		{
+			setGameTerrain(x - 1, y - 1, TILE_WOODEN_DOOR_OPEN_1);
+			setGameTerrain(x, y - 1, TILE_WOODEN_DOOR_OPEN_2);
+			setGameTerrain(x - 1, y, TILE_WOODEN_DOOR_OPEN_3);
+			setGameTerrain(x, y, TILE_WOODEN_DOOR_OPEN_4);
+			setGameTerrain(x - 1, y + 1, TILE_WOODEN_DOOR_OPEN_5);
+			setGameTerrain(x, y + 1, TILE_WOODEN_DOOR_OPEN_6);
+		}
+	}
+	else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_CLOSED_3)
+	{
+		if (gameTerrain[x - 1 + (y - 2) * MAP_WIDTH] == TILE_AIR &&
+			gameTerrain[x - 1 + (y - 1) * MAP_WIDTH] == TILE_AIR &&
+			gameTerrain[x - 1 + y * MAP_WIDTH] == TILE_AIR)
+		{
+			setGameTerrain(x - 1, y - 2, TILE_WOODEN_DOOR_OPEN_1);
+			setGameTerrain(x, y - 2, TILE_WOODEN_DOOR_OPEN_2);
+			setGameTerrain(x - 1, y - 1, TILE_WOODEN_DOOR_OPEN_3);
+			setGameTerrain(x, y - 1, TILE_WOODEN_DOOR_OPEN_4);
+			setGameTerrain(x - 1, y, TILE_WOODEN_DOOR_OPEN_5);
+			setGameTerrain(x, y, TILE_WOODEN_DOOR_OPEN_6);
+		}
+	}
+	else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_1)
+	{
+		setGameTerrain(x, y, TILE_AIR);
+		setGameTerrain(x, y + 1, TILE_AIR);
+		setGameTerrain(x, y + 2, TILE_AIR);
+		setGameTerrain(x + 1, y, TILE_WOODEN_DOOR_CLOSED_1);
+		setGameTerrain(x + 1, y + 1, TILE_WOODEN_DOOR_CLOSED_2);
+		setGameTerrain(x + 1, y + 2, TILE_WOODEN_DOOR_CLOSED_3);
+	}
+	else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_2)
+	{
+		setGameTerrain(x - 1, y, TILE_AIR);
+		setGameTerrain(x - 1, y + 1, TILE_AIR);
+		setGameTerrain(x - 1, y + 2, TILE_AIR);
+		setGameTerrain(x, y, TILE_WOODEN_DOOR_CLOSED_1);
+		setGameTerrain(x, y + 1, TILE_WOODEN_DOOR_CLOSED_2);
+		setGameTerrain(x, y + 2, TILE_WOODEN_DOOR_CLOSED_3);
+	}
+	else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_3)
+	{
+		setGameTerrain(x, y - 1, TILE_AIR);
+		setGameTerrain(x, y, TILE_AIR);
+		setGameTerrain(x, y + 1, TILE_AIR);
+		setGameTerrain(x + 1, y - 1, TILE_WOODEN_DOOR_CLOSED_1);
+		setGameTerrain(x + 1, y, TILE_WOODEN_DOOR_CLOSED_2);
+		setGameTerrain(x + 1, y + 1, TILE_WOODEN_DOOR_CLOSED_3);
+	}
+	else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_4)
+	{
+		setGameTerrain(x - 1, y - 1, TILE_AIR);
+		setGameTerrain(x - 1, y, TILE_AIR);
+		setGameTerrain(x - 1, y + 1, TILE_AIR);
+		setGameTerrain(x, y - 1, TILE_WOODEN_DOOR_CLOSED_1);
+		setGameTerrain(x, y, TILE_WOODEN_DOOR_CLOSED_2);
+		setGameTerrain(x, y + 1, TILE_WOODEN_DOOR_CLOSED_3);
+	}
+	else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_5)
+	{
+		setGameTerrain(x, y - 2, TILE_AIR);
+		setGameTerrain(x, y - 1, TILE_AIR);
+		setGameTerrain(x, y, TILE_AIR);
+		setGameTerrain(x + 1, y - 2, TILE_WOODEN_DOOR_CLOSED_1);
+		setGameTerrain(x + 1, y - 1, TILE_WOODEN_DOOR_CLOSED_2);
+		setGameTerrain(x + 1, y, TILE_WOODEN_DOOR_CLOSED_3);
+	}
+	else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_6)
+	{
+		setGameTerrain(x - 1, y - 2, TILE_AIR);
+		setGameTerrain(x - 1, y - 1, TILE_AIR);
+		setGameTerrain(x - 1, y, TILE_AIR);
+		setGameTerrain(x, y - 2, TILE_WOODEN_DOOR_CLOSED_1);
+		setGameTerrain(x, y - 1, TILE_WOODEN_DOOR_CLOSED_2);
+		setGameTerrain(x, y, TILE_WOODEN_DOOR_CLOSED_3);
 	}
 }
 
@@ -2190,6 +2347,11 @@ You shall press START to continue, with no saving abilities.");
 		}
 		else
 		{ // Game world interaction on sub-screen
+			if (pressed & KEY_TOUCH)
+			{
+				interacting = true;
+				touchFrame = frame;
+			}
 			if (held & KEY_TOUCH)
 			{
 				touchRead(&touch);
@@ -2209,33 +2371,44 @@ You shall press START to continue, with no saving abilities.");
 					if (worldTouchX >= TLCtileX - player.tileRange && worldTouchX <= TRCtileX + player.tileRange &&
 						worldTouchY >= TLCtileY - player.tileRange && worldTouchY <= BRCtileY + player.tileRange)
 					{
-						if (inventory[inventorySelection] >= 1 && inventory[inventorySelection] < 100 // Object is a tile, not an item
-							&& inventoryQuantity[inventorySelection])
+						if (frame - touchFrame > 10)
 						{
-							if (!gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH])
+							if (inventory[inventorySelection] >= 1 && inventory[inventorySelection] < 100 // Object is a tile, not an item
+								&& inventoryQuantity[inventorySelection])
 							{
-								if (!(worldTouchX >= TLCtileX && worldTouchX <= TRCtileX && worldTouchY >= TLCtileY && worldTouchY <= BLCtileY))
+								if (!gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH])
 								{
-									playerPutGameTerrain(worldTouchX, worldTouchY, inventory[inventorySelection]);
-								}
-								else
-								{
-									if (!isTileSolid(inventory[inventorySelection]))
+									if (!(worldTouchX >= TLCtileX && worldTouchX <= TRCtileX && worldTouchY >= TLCtileY && worldTouchY <= BLCtileY))
+									{
 										playerPutGameTerrain(worldTouchX, worldTouchY, inventory[inventorySelection]);
+									}
+									else
+									{
+										if (!isTileSolid(inventory[inventorySelection]))
+											playerPutGameTerrain(worldTouchX, worldTouchY, inventory[inventorySelection]);
+									}
+								}
+								else if (isElementWall(gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH]) && gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH] != inventory[inventorySelection])
+								{
+									breakTile(worldTouchX, worldTouchY, 1);
 								}
 							}
-							else if (isElementWall(gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH]) && gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH] != inventory[inventorySelection])
+							else if (inventory[inventorySelection] >= 100 && inventory[inventorySelection] < 200 // Object is an item, not a tile
+									 && inventoryQuantity[inventorySelection])
 							{
-								breakTile(worldTouchX, worldTouchY, 1);
+								if (isToolCompatible(inventory[inventorySelection], gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH])) // Check if the tool can break the tile
+								{
+									if (gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH])
+										breakTile(worldTouchX, worldTouchY, 1);
+								}
 							}
 						}
-						else if (inventory[inventorySelection] >= 100 && inventory[inventorySelection] < 200 // Object is an item, not a tile
-								 && inventoryQuantity[inventorySelection])
+						else
 						{
-							if (isToolCompatible(inventory[inventorySelection], gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH])) // Check if the tool can break the tile
+							if (interacting == true)
 							{
-								if (gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH])
-									breakTile(worldTouchX, worldTouchY, 1);
+								interact(worldTouchX, worldTouchY);
+								interacting = false;
 							}
 						}
 					}

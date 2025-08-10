@@ -64,6 +64,7 @@ Initial commit with basic project structure.
 - Add music. ***(done)***
 
 ### Version 0.1 (Working on it):
+- Probably converting all tile handling data to a struct.
 - Add special tiles (tiles that need interaction and are not 1:1, like doors, crafting benches, chests...)
 - Add health.
 - Add menus.
