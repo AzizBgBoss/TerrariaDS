@@ -102,6 +102,8 @@ bool craftingOpen = false;
 bool interacting;
 int touchFrame;
 
+u16 *nullSprite;
+
 FILE *f;
 
 typedef struct
@@ -118,6 +120,8 @@ typedef struct
 	bool isOnGround;	 // Is the player on the ground
 	bool isLookingLeft;
 	int tileRange;
+	int health;
+	int fall;
 	u8 animation;
 } Player;
 
@@ -150,7 +154,7 @@ typedef struct
 } CraftingRecipe;
 
 // Define the player entity
-Player player = {MAP_WIDTH * 8 / 2, 0, 0, 0, 0, NULL, 16, 24, false, true, 1, 0, true, false, 4, ANIM_NONE};
+Player player = {MAP_WIDTH * 8 / 2, 0, 0, 0, 0, NULL, 16, 24, false, true, 1, 0, true, false, 4, 100, 0, ANIM_NONE};
 
 // Define 64 slots for item entities
 Item item[64] = {{0, 0, 0, 0, NULL, 8, 8, false, 60, 0, 0}};
@@ -884,7 +888,7 @@ void inventorySetHotbar()
 		}
 	}
 	clearPrint();
-	print(0, 0, "TerrariaDS v0.1\n\
+	/*print(0, 0, "TerrariaDS v0.1\n\
 By AzizBgBoss\n\
 https://github.com/AzizBgBoss/TerrariaDS\n\
 A: Jump\n\
@@ -893,7 +897,7 @@ Up/Down: Zoom in/out\n\
 X/Y: Switch items\n\
 R: Open inventory\n\
 Start: Save map\n\
-Select: Load map\n");
+Select: Load map\n");*/
 	renderInventory();
 	mmEffect(SFX_ENU_CLOSE);
 }
@@ -913,11 +917,11 @@ void inventorySetFull()
 	for (int j = 0; j < 16; j++)
 		Bg0UpSetTile(27 + j % 4, j / 4, 32 + j);
 	clearPrint();
-	print(0, 0, "Tap on a slot to select it.\n\
+	/*print(0, 0, "Tap on a slot to select it.\n\
 Hold and move an item to change it's slot.\n\
 Press R to close inventory\n\
 You can still move the player with the other buttons.\n\
-Tap on the crafting icon on the top right to craft.	");
+Tap on the crafting icon on the top right to craft.	");*/
 	renderInventory();
 	mmEffect(SFX_ENU_OPEN);
 }
@@ -1516,6 +1520,43 @@ bool loadMapFromFile(const char *filename)
 	return true;
 }
 
+void playerDamage(int damage)
+{
+	damage = clamp(damage, 0, 400);
+	player.health -= damage;
+	if (player.health < 0)
+		player.health = 0; // Virtually should never happen but just in case
+	switch (rando(0, 2))
+	{
+	case 0:
+		mmEffect(SFX_LAYER_HIT_0);
+		break;
+	case 1:
+		mmEffect(SFX_LAYER_HIT_1);
+		break;
+	case 2:
+		mmEffect(SFX_LAYER_HIT_2);
+		break;
+	}
+	if (player.health == 0) { // Player is ded
+		mmEffect(SFX_LAYER_KILLED);
+		clearPrint();
+		print(0, 0, "You died lol");
+		oamSet(&oamSub, 0, 0, 0, 0, 0, SpriteSize_8x8, SpriteColorFormat_256Color, nullSprite, -1, false, false, false, false, false);
+		oamUpdate(&oamSub);
+		for (int i = 0; i < 600; i++) {
+			printVal(0, 1, 10 - i / 60);
+			printDirect(" ");
+			swiWaitForVBlank();
+			mmStreamUpdate();
+		}
+		clearPrint();
+		player.x = MAP_WIDTH * 8 / 2;
+		player.y = 0;
+		player.health = 100;
+	}
+}
+
 // Hash function
 static inline uint32_t murmur_32_scramble(uint32_t k)
 {
@@ -1966,6 +2007,10 @@ int main(void)
 	mmLoadEffect(SFX_ENU_OPEN);
 	mmLoadEffect(SFX_ENU_CLOSE);
 	mmLoadEffect(SFX_ENU_TICK);
+	mmLoadEffect(SFX_LAYER_HIT_0);
+	mmLoadEffect(SFX_LAYER_HIT_1);
+	mmLoadEffect(SFX_LAYER_HIT_2);
+	mmLoadEffect(SFX_LAYER_KILLED);
 
 	if (!nitroFSInit(NULL))
 	{
@@ -2184,7 +2229,7 @@ You shall press START to continue, with no saving abilities.");
 
 	oamInit(&oamSub, SpriteMapping_1D_128, false);
 
-	u16 *nullSprite = oamAllocateGfx(&oamSub, SpriteSize_16x16, SpriteColorFormat_256Color);
+	nullSprite = oamAllocateGfx(&oamSub, SpriteSize_16x16, SpriteColorFormat_256Color);
 	dmaFillHalfWords(0, nullSprite, 16 * 16);
 
 	player.sprite_gfx_mem = oamAllocateGfx(&oamSub, SpriteSize_32x64, SpriteColorFormat_256Color);
@@ -2286,6 +2331,7 @@ You shall press START to continue, with no saving abilities.");
 				player.velocity = -8; // Set a negative velocity for jumping
 				player.isOnGround = false;
 				player.animation = ANIM_JUMP;
+				player.fall = player.y;
 			}
 		}
 
@@ -2588,24 +2634,40 @@ You shall press START to continue, with no saving abilities.");
 		// Check if player is on the ground
 		if (isTileSolid(gameTerrain[BLCtileX + BLCtileY * MAP_WIDTH]))
 		{
-			player.isOnGround = true;
-			player.isJumping = false;
-			player.velocity = 0; // Reset velocity when on the ground
-			player.y = BLCtileY * 8 - player.sizeY;
+			if (player.isOnGround == false)
+			{
+				player.isOnGround = true;
+				player.isJumping = false;
+				player.velocity = 0; // Reset velocity when on the ground
+				player.y = BLCtileY * 8 - player.sizeY;
+				int h = (player.y - player.fall) / 8;
+				if (h > 25)
+					playerDamage(10 * h);
+			}
 		}
 
 		if (isTileSolid(gameTerrain[BRCtileX + BRCtileY * MAP_WIDTH]))
 		{
-			player.isOnGround = true;
-			player.isJumping = false;
-			player.velocity = 0; // Reset velocity when on the ground
-			player.y = BRCtileY * 8 - player.sizeY;
+			if (player.isOnGround == false)
+			{
+				player.isOnGround = true;
+				player.isJumping = false;
+				player.velocity = 0; // Reset velocity when on the ground
+				player.y = BRCtileY * 8 - player.sizeY;
+				int h = (player.y - player.fall) / 8;
+				if (h > 25)
+					playerDamage(10 * h);
+			}
 		}
 
 		if (!isTileSolid(gameTerrain[BLCtileX + BLCtileY * MAP_WIDTH]) && !isTileSolid(gameTerrain[BRCtileX + BRCtileY * MAP_WIDTH]))
 		{
-			player.isOnGround = false;
-			player.isJumping = true;
+			if (player.isOnGround)
+			{
+				player.isOnGround = false;
+				player.isJumping = true;
+				player.fall = player.y;
+			}
 		}
 
 		scrollX = player.x - SCREEN_WIDTH / 2 + player.sizeX / 2;
@@ -2660,28 +2722,9 @@ You shall press START to continue, with no saving abilities.");
 			}
 		}
 
-		if (debug)
-		{
-			char buffer[4] = "    ";
-			itoa(player.x / 8, buffer, 10);
-			print(0, 0, "X: ");
-			print(3, 0, buffer);
-			itoa(player.y / 8, buffer, 10);
-			print(0, 1, "Y: ");
-			print(3, 1, buffer);
-			itoa(chunk, buffer, 10);
-			print(0, 2, "Chunk: ");
-			print(7, 2, buffer);
-			itoa(scrollX, buffer, 10);
-			print(0, 3, "ScrollX: ");
-			print(9, 3, buffer);
-			itoa(scrollY, buffer, 10);
-			print(0, 4, "ScrollY: ");
-			print(9, 4, buffer);
-			itoa(scale, buffer, 10);
-			print(0, 5, "Scale: ");
-			print(7, 5, buffer);
-		}
+		print(0, 0, "Health: ");
+		printValDirect(player.health);
+		printDirect("/100");
 
 		// Compute screen-relative render coordinates
 		player.renderX = player.x - scrollX;
