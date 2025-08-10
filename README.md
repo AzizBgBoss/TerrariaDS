@@ -65,12 +65,12 @@ Initial commit with basic project structure.
 
 ### Version 0.1 (Working on it):
 - Probably converting all tile handling data to a struct.
-- Add special tiles (tiles that need interaction and are not 1:1, like doors, crafting benches, chests...)
-- Add health.
+- Add special tiles (tiles that need interaction and are not 1:1, like doors, crafting benches, chests...) ***(done for now: Doors)***
+- Add health. ***(done)***
 - Add menus.
 - Add ability to change button mappings (since many DS'es (including mine) have malfunctioning shoulder buttons because of dust accumulation under them over the years).
 - Add entities (NPCs, enemies, etc.) to the game world.
-- Add ores. ***(done: Copper)***
+- Add ores. ***(done for now: Copper)***
 - Add more items.
 - Add crimson/corruption.
 - Support for maps with more height (limit is 64 for now, that means chunking should happen in both X and Y axes).
