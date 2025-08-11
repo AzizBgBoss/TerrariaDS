@@ -69,10 +69,17 @@ AzizBgBoss - https://github.com/AzizBgBoss
 #define TILE_WOODEN_DOOR_OPEN_RIGHT_5 25
 #define TILE_WOODEN_DOOR_OPEN_RIGHT_6 26
 
+#define TILE_TIN_ORE 27
+
 #define ITEM_COPPER_PICKAXE 101
 #define ITEM_COPPER_AXE 102
 #define ITEM_COPPER_LONGSWORD 103
 #define ITEM_COPPER_HAMMER 104
+
+#define ITEM_TIN_PICKAXE 105
+#define ITEM_TIN_AXE 106
+#define ITEM_TIN_LONGSWORD 107
+#define ITEM_TIN_HAMMER 108
 
 // Define animation
 #define ANIM_NONE 0
@@ -165,8 +172,14 @@ CraftingRecipe craftingRecipes[] = {
 		ITEM_COPPER_HAMMER,
 		1,
 		2,
-		{TILE_PLANKS, TILE_COPPER_ORE},
-		{1, 1},
+		{
+			TILE_PLANKS,
+			TILE_COPPER_ORE,
+		},
+		{
+			1,
+			1,
+		},
 	},
 	{
 		TILE_WOOD_WALL,
@@ -201,42 +214,103 @@ CraftingRecipe craftingRecipes[] = {
 			1,
 		},
 	},
-	{TILE_PLANKS,
-	 1,
-	 1,
-	 {
-		 TILE_WOOD_WALL,
-	 },
-	 {
-		 4,
-	 }},
-	{TILE_STONE,
-	 1,
-	 1,
-	 {
-		 TILE_STONE_WALL,
-	 },
-	 {
-		 4,
-	 }},
-	{TILE_DIRT,
-	 1,
-	 1,
-	 {
-		 TILE_DIRT_WALL,
-	 },
-	 {
-		 4,
-	 }},
-	{TILE_WOODEN_DOOR_CLOSED_3,
-	 1,
-	 1,
-	 {
-		 TILE_PLANKS,
-	 },
-	 {
-		 6,
-	 }}};
+	{
+		TILE_PLANKS,
+		1,
+		1,
+		{
+			TILE_WOOD_WALL,
+		},
+		{
+			4,
+		},
+	},
+	{
+		TILE_STONE,
+		1,
+		1,
+		{
+			TILE_STONE_WALL,
+		},
+		{
+			4,
+		},
+	},
+	{
+		TILE_DIRT,
+		1,
+		1,
+		{
+			TILE_DIRT_WALL,
+		},
+		{
+			4,
+		},
+	},
+	{
+		TILE_WOODEN_DOOR_CLOSED_3,
+		1,
+		1,
+		{
+			TILE_PLANKS,
+		},
+		{
+			6,
+		},
+	},
+	{
+		ITEM_TIN_PICKAXE,
+		1,
+		2,
+		{
+			TILE_PLANKS,
+			TILE_TIN_ORE,
+		},
+		{
+			1,
+			3,
+		},
+	},
+	{
+		ITEM_TIN_AXE,
+		1,
+		2,
+		{
+			TILE_PLANKS,
+			TILE_TIN_ORE,
+		},
+		{
+			1,
+			3,
+		},
+	},
+	{
+		ITEM_TIN_LONGSWORD,
+		1,
+		2,
+		{
+			TILE_PLANKS,
+			TILE_TIN_ORE,
+		},
+		{
+			1,
+			3,
+		},
+	},
+	{
+		ITEM_TIN_HAMMER,
+		1,
+		2,
+		{
+			TILE_PLANKS,
+			TILE_TIN_ORE,
+		},
+		{
+			1,
+			1,
+		},
+	},
+};
 
 u16 *bg2Map;
 
@@ -407,6 +481,9 @@ int getElementTile(int tile, int x, int y) // Tile will change based on surround
 		break;
 	case TILE_COPPER_ORE:
 		offset = 9;
+		break;
+	case TILE_TIN_ORE:
+		offset = 12;
 		break;
 	case TILE_WOODLOG:
 		return 2;
@@ -588,6 +665,16 @@ int getItemTile(int item)
 		return 52;
 	case TILE_WOODEN_DOOR_CLOSED_3:
 		return 64;
+	case TILE_TIN_ORE:
+		return 68;
+	case ITEM_TIN_LONGSWORD:
+		return 80;
+	case ITEM_TIN_PICKAXE:
+		return 84;
+	case ITEM_TIN_AXE:
+		return 88;
+	case ITEM_TIN_HAMMER:
+		return 92;
 	default:
 		return 56;
 	}
@@ -627,6 +714,16 @@ char *getElementName(int element)
 		return "Copper Axe";
 	case ITEM_COPPER_HAMMER:
 		return "Copper Hammer";
+	case TILE_TIN_ORE:
+		return "Tin Ore";
+	case ITEM_TIN_PICKAXE:
+		return "Tin Pickaxe";
+	case ITEM_TIN_LONGSWORD:
+		return "Tin Long Sword";
+	case ITEM_TIN_AXE:
+		return "Tin Axe";
+	case ITEM_TIN_HAMMER:
+		return "Tin Hammer";
 	case TILE_WOODEN_DOOR_CLOSED_3:
 		return "Wooden Door";
 	default:
@@ -651,14 +748,14 @@ int getElementHealth(int element)
 	case TILE_MUSHROOM:
 		return 10;
 	case TILE_DIRT_WALL:
-		return 100;
 	case TILE_STONE_WALL:
-		return 150;
+		return 100;
 	case TILE_DEMONITE_BRICK:
 		return INFINITY;
 	case TILE_WOOD_WALL:
 		return 100;
 	case TILE_COPPER_ORE:
+	case TILE_TIN_ORE:
 		return 200;
 	case TILE_WOODEN_DOOR_CLOSED_1:
 	case TILE_WOODEN_DOOR_CLOSED_2:
@@ -713,12 +810,16 @@ bool isToolCompatible(int tool, int tile)
 	switch (tool)
 	{
 	case ITEM_COPPER_PICKAXE:
+	case ITEM_TIN_PICKAXE:
 		return tile == TILE_STONE || tile == TILE_DIRT || tile == TILE_PLANKS || tile == TILE_MUSHROOM || tile == TILE_DEMONITE_BRICK || tile == TILE_COPPER_ORE || tile == TILE_WOODEN_DOOR_CLOSED_1 || tile == TILE_WOODEN_DOOR_CLOSED_2 || tile == TILE_WOODEN_DOOR_CLOSED_3 || tile == TILE_WOODEN_DOOR_OPEN_1 || tile == TILE_WOODEN_DOOR_OPEN_2 || tile == TILE_WOODEN_DOOR_OPEN_3 || TILE_WOODEN_DOOR_OPEN_4 || TILE_WOODEN_DOOR_OPEN_5 || TILE_WOODEN_DOOR_OPEN_6;
 	case ITEM_COPPER_AXE:
+	case ITEM_TIN_AXE:
 		return tile == TILE_WOODLOG || tile == TILE_LEAVES || tile == TILE_MUSHROOM;
 	case ITEM_COPPER_LONGSWORD:
+	case ITEM_TIN_LONGSWORD:
 		return tile == TILE_MUSHROOM; // Can break mushrooms
 	case ITEM_COPPER_HAMMER:
+	case ITEM_TIN_HAMMER:
 		return tile == TILE_DIRT_WALL || tile == TILE_STONE_WALL || tile == TILE_WOOD_WALL; // Can break walls
 	default:
 		return false;
@@ -734,6 +835,7 @@ bool isTileSolid(int tile)
 	case TILE_PLANKS:
 	case TILE_DEMONITE_BRICK:
 	case TILE_COPPER_ORE:
+	case TILE_TIN_ORE:
 	case TILE_WOODEN_DOOR_CLOSED_1:
 	case TILE_WOODEN_DOOR_CLOSED_2:
 	case TILE_WOODEN_DOOR_CLOSED_3:
@@ -753,6 +855,25 @@ bool isElementWall(int tile)
 		return true;
 	default:
 		return false;
+	}
+}
+
+int getItemSpeed(int item)
+{
+	switch (item)
+	{
+	case ITEM_COPPER_PICKAXE:
+	case ITEM_COPPER_AXE:
+	case ITEM_COPPER_LONGSWORD:
+	case ITEM_COPPER_HAMMER:
+		return 1;
+	case ITEM_TIN_PICKAXE:
+	case ITEM_TIN_AXE:
+	case ITEM_TIN_LONGSWORD:
+	case ITEM_TIN_HAMMER:
+		return 2;
+	default:
+		return 1;
 	}
 }
 
@@ -1439,7 +1560,7 @@ void interact(int x, int y)
 	}
 }
 
-// I honestly wanted to make a struct of SaveData but i had some problems with its stack memory or whatever it is
+// I honestly wanted to make a struct of SaveData but i had some problems with its stack or whatever it is
 
 bool saveMapToFile(const char *filename)
 {
@@ -1526,13 +1647,15 @@ void playerDamage(int damage)
 		mmEffect(SFX_LAYER_HIT_2);
 		break;
 	}
-	if (player.health == 0) { // Player is ded
+	if (player.health == 0)
+	{ // Player is ded
 		mmEffect(SFX_LAYER_KILLED);
 		clearPrint();
 		print(0, 0, "You died lol");
 		oamSet(&oamSub, 0, 0, 0, 0, 0, SpriteSize_8x8, SpriteColorFormat_256Color, nullSprite, -1, false, false, false, false, false);
 		oamUpdate(&oamSub);
-		for (int i = 0; i < 600; i++) {
+		for (int i = 0; i < 600; i++)
+		{
 			printVal(0, 1, 10 - i / 60);
 			printDirect(" ");
 			swiWaitForVBlank();
@@ -1796,7 +1919,7 @@ void generateMap()
 	}
 
 	// Generate ores
-	printDirect("Generating ores...\n");
+	printDirect("Generating copper...\n");
 	for (int x = 0; x < MAP_WIDTH; x++)
 	{
 		for (int y = 0; y < MAP_HEIGHT; y++)
@@ -1806,7 +1929,26 @@ void generateMap()
 				float caveNoise = fractalPerlin2D(x, y, 6, 0.4f, 0.05f, seed + 69);
 				if (caveNoise < -0.2f) // Adjust this threshold to control ores density
 				{
-					setGameTerrain(x, y, TILE_COPPER_ORE); // Create a cave
+					setGameTerrain(x, y, TILE_COPPER_ORE);
+				}
+			}
+		}
+		if (x % (MAP_WIDTH / 32) == 0)
+		{
+			printDirect(".");
+		}
+	}
+	printDirect("Generating tin...\n");
+	for (int x = 0; x < MAP_WIDTH; x++)
+	{
+		for (int y = 0; y < MAP_HEIGHT; y++)
+		{
+			if (y >= stoneSurface[x])
+			{
+				float caveNoise = fractalPerlin2D(x, y, 6, 0.4f, 0.05f, seed + 420);
+				if (caveNoise < -0.25f) // tin is more rare
+				{
+					setGameTerrain(x, y, TILE_TIN_ORE);
 				}
 			}
 		}
@@ -2603,7 +2745,7 @@ You shall press START to continue, with no saving abilities.");
 								if (isToolCompatible(inventory[inventorySelection], gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH])) // Check if the tool can break the tile
 								{
 									if (gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH])
-										breakTile(worldTouchX, worldTouchY, 1);
+										breakTile(worldTouchX, worldTouchY, getItemSpeed(inventory[inventorySelection]));
 								}
 							}
 						}

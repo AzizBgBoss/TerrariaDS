@@ -70,7 +70,7 @@ Initial commit with basic project structure.
 - Add menus.
 - Add ability to change button mappings (since many DS'es (including mine) have malfunctioning shoulder buttons because of dust accumulation under them over the years).
 - Add entities (NPCs, enemies, etc.) to the game world.
-- Add ores. ***(done for now: Copper)***
+- Add ores. ***(done for now: Copper, Tin)***
 - Add more items.
 - Add crimson/corruption.
 - Support for maps with more height (limit is 64 for now, that means chunking should happen in both X and Y axes).
