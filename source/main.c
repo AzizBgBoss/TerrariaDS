@@ -23,7 +23,9 @@ AzizBgBoss - https://github.com/AzizBgBoss
 #include "von.h"
 #include "items.h"
 #include "intro.h"
+#include "intro2.h"
 #include "mainscreenbg.h"
+#include "mainscreenbg2.h"
 #include "mainscreenui.h"
 
 #include "soundbank.h"
@@ -2191,7 +2193,12 @@ You shall press START to continue, with no saving abilities.");
 
 	touchPosition touch;
 
-	audioFile = fopen("nitro:/1.pcm", "rb");
+	int intro = rando(0, 9);
+
+	if (intro == 0)
+		audioFile = fopen("nitro:/special.pcm", "rb");
+	else
+		audioFile = fopen("nitro:/1.pcm", "rb");
 
 	mm_stream mystream;
 	mystream.sampling_rate = 11025;
@@ -2208,19 +2215,33 @@ You shall press START to continue, with no saving abilities.");
 	vramSetBankC(VRAM_C_SUB_BG);
 	BGCTRL[0] = BG_TILE_BASE(1) | BG_MAP_BASE(0) | BG_COLOR_256 | BG_32x32 | BG_PRIORITY(3);
 
-	f = fopen("nitro:/intro.img.bin", "rb");
-	fread((void *)CHAR_BASE_BLOCK(1), 1, introTilesLen, f);
-	fclose(f);
-	f = fopen("nitro:/intro.map.bin", "rb");
-	fread((void *)SCREEN_BASE_BLOCK(0), 1, introMapLen, f);
-	fclose(f);
-
-	f = fopen("nitro:/intro.pal.bin", "rb");
-	fread((void *)BG_PALETTE, 1, introPalLen, f);
+	if (intro == 0)
+	{
+		f = fopen("nitro:/intro2.img.bin", "rb");
+		fread((void *)CHAR_BASE_BLOCK(1), 1, intro2TilesLen, f);
+		fclose(f);
+		f = fopen("nitro:/intro2.map.bin", "rb");
+		fread((void *)SCREEN_BASE_BLOCK(0), 1, intro2MapLen, f);
+		fclose(f);
+		f = fopen("nitro:/intro2.pal.bin", "rb");
+		fread((void *)BG_PALETTE, 1, intro2PalLen, f);
+		fclose(f);
+	}
+	else
+	{
+		f = fopen("nitro:/intro.img.bin", "rb");
+		fread((void *)CHAR_BASE_BLOCK(1), 1, introTilesLen, f);
+		fclose(f);
+		f = fopen("nitro:/intro.map.bin", "rb");
+		fread((void *)SCREEN_BASE_BLOCK(0), 1, introMapLen, f);
+		fclose(f);
+		f = fopen("nitro:/intro.pal.bin", "rb");
+		fread((void *)BG_PALETTE, 1, introPalLen, f);
+		fclose(f);
+	}
 
 	storeOriginalPalette();
 	fadeInPalette(64, 8);
-	fclose(f);
 
 	videoSetMode(MODE_0_2D | DISPLAY_BG0_ACTIVE | DISPLAY_BG3_ACTIVE);
 
@@ -2230,15 +2251,30 @@ You shall press START to continue, with no saving abilities.");
 	fclose(f);
 	dmaFillHalfWords(0, (void *)SCREEN_BASE_BLOCK(3), 2048);
 
-	f = fopen("nitro:/mainscreenbg.img.bin", "rb");
-	fread((void *)CHAR_BASE_BLOCK(1), 1, mainscreenbgTilesLen, f);
-	fclose(f);
-	f = fopen("nitro:/mainscreenbg.map.bin", "rb");
-	fread((void *)SCREEN_BASE_BLOCK(0), 1, mainscreenbgMapLen, f);
-	fclose(f);
-	f = fopen("nitro:/mainscreenbg.pal.bin", "rb");
-	fread((void *)BG_PALETTE, 1, mainscreenbgPalLen, f);
-	fclose(f);
+	if (intro == 0)
+	{
+		f = fopen("nitro:/mainscreenbg2.img.bin", "rb");
+		fread((void *)CHAR_BASE_BLOCK(1), 1, mainscreenbg2TilesLen, f);
+		fclose(f);
+		f = fopen("nitro:/mainscreenbg2.map.bin", "rb");
+		fread((void *)SCREEN_BASE_BLOCK(0), 1, mainscreenbg2MapLen, f);
+		fclose(f);
+		f = fopen("nitro:/mainscreenbg2.pal.bin", "rb");
+		fread((void *)BG_PALETTE, 1, mainscreenbg2PalLen, f);
+		fclose(f);
+	}
+	else
+	{
+		f = fopen("nitro:/mainscreenbg.img.bin", "rb");
+		fread((void *)CHAR_BASE_BLOCK(1), 1, mainscreenbgTilesLen, f);
+		fclose(f);
+		f = fopen("nitro:/mainscreenbg.map.bin", "rb");
+		fread((void *)SCREEN_BASE_BLOCK(0), 1, mainscreenbgMapLen, f);
+		fclose(f);
+		f = fopen("nitro:/mainscreenbg.pal.bin", "rb");
+		fread((void *)BG_PALETTE, 1, mainscreenbgPalLen, f);
+		fclose(f);
+	}
 
 	BGCTRL_SUB[0] = BG_TILE_BASE(1) | BG_MAP_BASE(0) | BG_COLOR_256 | BG_32x32 | BG_PRIORITY(3);
 	f = fopen("nitro:/bg.img.bin", "rb");
