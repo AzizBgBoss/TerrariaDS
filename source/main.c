@@ -2916,7 +2916,6 @@ You shall press START to continue, with no saving abilities.");
 		BRCtileX = BRCx / 8;
 		BRCtileY = BRCy / 8;
 
-		
 		if (isTileSolid(gameTerrain[BLCtileX + BLCtileY * MAP_WIDTH]))
 		{
 			if (slime.isOnGround == false)
@@ -2954,6 +2953,18 @@ You shall press START to continue, with no saving abilities.");
 			slime.velocity = -7;
 			slime.isOnGround = false;
 			slime.isJumping = true;
+		}
+
+		if (slime.isJumping)
+		{
+			if (player.x > slime.x)
+			{
+				slime.x++;
+			}
+			else
+			{
+				slime.x--;
+			}
 		}
 
 		for (int i = 0; i < 64; i++)
@@ -3078,7 +3089,7 @@ You shall press START to continue, with no saving abilities.");
 		// oamSet(&oamSub, 1, player.renderX, player.renderY, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, itemHandSprite, -1, false, false, player.isLookingLeft, false, false);
 		// Render entities
 		oamSet(&oamSub, 2, slime.x - scrollX - (player.x - slime.x) * 256 / scale + player.x - slime.x, slime.y - scrollY - (player.y - slime.y) * 256 / scale + player.y - slime.y, 1, 0, SpriteSize_32x32, SpriteColorFormat_256Color, slime.sprite_gfx_mem, 0, false, false, false, false, false);
-		
+
 		// Render dropped items
 		u8 renderedItems = 0;
 
