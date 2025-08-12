@@ -136,6 +136,25 @@ typedef struct
 
 typedef struct
 {
+	int x, y; // Player position
+	int renderX, renderY;
+	int anim_frame;		 // Animation frame
+	u16 *sprite_gfx_mem; // Pointer to sprite graphics memory
+	int sizeX, sizeY;	 // Size of the sprite, may be used for collision detection
+	bool isJumping;		 // Is the player jumping
+	bool isSolid;		 // Is the player solid (can collide with other objects)
+	int weight;			 // Zero if not affected by gravity
+	int velocity;		 // Velocity for jumping or falling
+	bool isOnGround;	 // Is the player on the ground
+	bool isLookingLeft;
+	int tileRange;
+	int health;
+	int fall;
+	u8 animation;
+} Entity;
+
+typedef struct
+{
 	int x, y;
 	int renderX, renderY;
 	u16 *sprite_gfx_mem;
@@ -164,6 +183,7 @@ typedef struct
 
 // Define the player entity
 Player player = {MAP_WIDTH * 8 / 2, 0, 0, 0, 0, NULL, 16, 24, false, true, 1, 0, true, false, 4, 100, 0, ANIM_NONE};
+Entity slime = {MAP_WIDTH * 8 / 2, 0, 0, 0, 0, NULL, 16, 16, false, true, 1, 0, true, false, 4, 100, 0, ANIM_NONE};
 
 // Define 64 slots for item entities
 Item item[64] = {{0, 0, 0, 0, NULL, 8, 8, false, 60, 0, 0}};
@@ -2403,6 +2423,11 @@ You shall press START to continue, with no saving abilities.");
 	fread(player.sprite_gfx_mem, 1, 32 * 64, f);
 	fclose(f);
 
+	slime.sprite_gfx_mem = oamAllocateGfx(&oamSub, SpriteSize_32x32, SpriteColorFormat_256Color);
+	f = fopen("nitro:/entities.img.bin", "rb");
+	fread(slime.sprite_gfx_mem, 1, 32 * 32, f);
+	fclose(f);
+
 	itemHandSprite = oamAllocateGfx(&oamSub, SpriteSize_16x16, SpriteColorFormat_256Color);
 
 	f = fopen("nitro:/tilemap.img.bin", "rb");
@@ -2896,11 +2921,15 @@ You shall press START to continue, with no saving abilities.");
 		player.renderX = player.x - scrollX;
 		player.renderY = player.y - scrollY;
 
+		slime.x = player.x + 100;
+		slime.y = player.y;
+
 		// Apply scroll
 		bgSetCenter(bg2, player.renderX + player.sizeX / 2, player.renderY + player.sizeY / 2);
 		bgSetScroll(bg2, scrollX + player.renderX + player.sizeX / 2, scrollY + player.renderY + player.sizeY / 2);
 		bgSetScale(bg2, scale, scale);
 		oamRotateScale(&oamSub, 0, degreesToAngle(0), scale * 2 * (player.isLookingLeft ? -1 : 1), scale * 2);
+		oamRotateScale(&oamSub, 2, degreesToAngle(0), scale * 2 * (slime.isLookingLeft ? -1 : 1), scale * 2);
 		REG_BG0HOFS_SUB = scrollX / 8;
 		REG_BG0VOFS_SUB = scrollY / 8;
 
@@ -2958,6 +2987,9 @@ You shall press START to continue, with no saving abilities.");
 
 		oamSet(&oamSub, 0, player.renderX - player.sizeX / 2, player.renderY - player.sizeY / 2, 1, 0, SpriteSize_32x64, SpriteColorFormat_256Color, player.sprite_gfx_mem, 0, false, false, player.isLookingLeft, false, false);
 		// oamSet(&oamSub, 1, player.renderX, player.renderY, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, itemHandSprite, -1, false, false, player.isLookingLeft, false, false);
+		// Render entities
+		oamSet(&oamSub, 2, slime.x - scrollX - (player.x - slime.x) * 256 / scale + player.x - slime.x, slime.y - scrollY - (player.y - slime.y) * 256 / scale + player.y - slime.y, 1, 0, SpriteSize_32x32, SpriteColorFormat_256Color, slime.sprite_gfx_mem, 0, false, false, false, false, false);
+		
 		// Render dropped items
 		u8 renderedItems = 0;
 
@@ -2971,8 +3003,8 @@ You shall press START to continue, with no saving abilities.");
 					item[i].renderY = item[i].y - scrollY - (player.y - item[i].y) * 256 / scale + player.y - item[i].y; // Adjust for player position
 					if (item[i].renderX >= 0 && item[i].renderX < SCREEN_WIDTH && item[i].renderY >= 0 && item[i].renderY < SCREEN_HEIGHT)
 					{
-						oamRotateScale(&oamSub, renderedItems + 2, degreesToAngle(0), scale * 2, scale * 2);
-						oamSet(&oamSub, renderedItems + 2, item[i].renderX - item[i].sizeX * 256 / scale, item[i].renderY - item[i].sizeY * 256 / scale, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, item[i].sprite_gfx_mem, renderedItems + 2, false, false, false, false, false);
+						oamRotateScale(&oamSub, renderedItems + 16, degreesToAngle(0), scale * 2, scale * 2);
+						oamSet(&oamSub, renderedItems + 16, item[i].renderX - item[i].sizeX * 256 / scale, item[i].renderY - item[i].sizeY * 256 / scale, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, item[i].sprite_gfx_mem, renderedItems + 2, false, false, false, false, false);
 						renderedItems++;
 					}
 				}
@@ -2981,7 +3013,7 @@ You shall press START to continue, with no saving abilities.");
 		// Clean up used sprites
 		for (int i = renderedItems; i < MAX_ITEMS; i++)
 		{
-			oamSet(&oamSub, i + 2, 0, 0, 0, 0, SpriteSize_8x8, SpriteColorFormat_256Color, nullSprite, -1, false, false, false, false, false);
+			oamSet(&oamSub, i + 16, 0, 0, 0, 0, SpriteSize_8x8, SpriteColorFormat_256Color, nullSprite, -1, false, false, false, false, false);
 		}
 
 		oamUpdate(&oamSub);
