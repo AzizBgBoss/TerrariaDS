@@ -183,7 +183,7 @@ typedef struct
 
 // Define the player entity
 Player player = {MAP_WIDTH * 8 / 2, 0, 0, 0, 0, NULL, 16, 24, false, true, 1, 0, true, false, 4, 100, 0, ANIM_NONE};
-Entity slime = {MAP_WIDTH * 8 / 2, 0, 0, 0, 0, NULL, 16, 16, false, true, 1, 0, true, false, 4, 100, 0, ANIM_NONE};
+Entity slime = {MAP_WIDTH * 8 / 2, 0, 0, 0, 0, NULL, 16, 12, false, true, 1, 0, true, false, 4, 100, 0, ANIM_NONE};
 
 // Define 64 slots for item entities
 Item item[64] = {{0, 0, 0, 0, NULL, 8, 8, false, 60, 0, 0}};
@@ -2864,6 +2864,98 @@ You shall press START to continue, with no saving abilities.");
 		scrollX = player.x - SCREEN_WIDTH / 2 + player.sizeX / 2;
 		scrollY = player.y - SCREEN_HEIGHT / 2 + player.sizeY / 2;
 
+		// Handle entity physics
+		if (!slime.isOnGround)
+		{
+			if (isTileSolid(gameTerrain[slime.x / 8 + (slime.y + slime.velocity) / 8 * MAP_WIDTH]))
+			{
+				slime.velocity = 0;
+				slime.y /= 8;
+				slime.y *= 8;
+			}
+			if (isTileSolid(gameTerrain[(slime.x + slime.sizeX - 1) / 8 + (slime.y + slime.velocity) / 8 * MAP_WIDTH]))
+			{
+				slime.velocity = 0;
+				slime.y /= 8;
+				slime.y *= 8;
+			}
+		}
+
+		if (!slime.isOnGround)
+		{
+			slime.velocity += slime.weight; // Apply gravity
+			if (slime.velocity > 7)
+				slime.velocity = 7;
+			slime.y += slime.velocity;
+			slime.animation = ANIM_JUMP; // Fall and jump look the same
+			if (slime.y + slime.sizeY > MAP_HEIGHT * 8)
+			{
+				slime.y = MAP_HEIGHT * 8 - slime.sizeY; // Prevent falling out of the map
+				slime.isOnGround = true;
+				slime.isJumping = false;
+				slime.velocity = 0; // Reset velocity when on the ground
+			}
+		}
+
+		// Collision detection with ground
+		TLCx = slime.x;
+		TLCy = slime.y;
+		TRCx = slime.x + slime.sizeX - 1;
+		TRCy = slime.y;
+		BLCx = slime.x;
+		BLCy = slime.y + slime.sizeY;
+		BRCx = slime.x + slime.sizeX - 1;
+		BRCy = slime.y + slime.sizeY;
+
+		TLCtileX = TLCx / 8;
+		TLCtileY = TLCy / 8;
+		TRCtileX = TRCx / 8;
+		TRCtileY = TRCy / 8;
+		BLCtileX = BLCx / 8;
+		BLCtileY = BLCy / 8;
+		BRCtileX = BRCx / 8;
+		BRCtileY = BRCy / 8;
+
+		
+		if (isTileSolid(gameTerrain[BLCtileX + BLCtileY * MAP_WIDTH]))
+		{
+			if (slime.isOnGround == false)
+			{
+				slime.isOnGround = true;
+				slime.isJumping = false;
+				slime.velocity = 0; // Reset velocity when on the ground
+				slime.y = BLCtileY * 8 - slime.sizeY;
+			}
+		}
+
+		if (isTileSolid(gameTerrain[BRCtileX + BRCtileY * MAP_WIDTH]))
+		{
+			if (slime.isOnGround == false)
+			{
+				slime.isOnGround = true;
+				slime.isJumping = false;
+				slime.velocity = 0; // Reset velocity when on the ground
+				slime.y = BRCtileY * 8 - slime.sizeY;
+			}
+		}
+
+		if (!isTileSolid(gameTerrain[BLCtileX + BLCtileY * MAP_WIDTH]) && !isTileSolid(gameTerrain[BRCtileX + BRCtileY * MAP_WIDTH]))
+		{
+			if (slime.isOnGround)
+			{
+				slime.isOnGround = false;
+				slime.isJumping = true;
+			}
+		}
+
+		// Handle entity AI
+		if (frame % 60 == 0) // Tick
+		{
+			slime.velocity = -7;
+			slime.isOnGround = false;
+			slime.isJumping = true;
+		}
+
 		for (int i = 0; i < 64; i++)
 		{
 			if (item[i].exists)
@@ -2920,9 +3012,6 @@ You shall press START to continue, with no saving abilities.");
 		// Compute screen-relative render coordinates
 		player.renderX = player.x - scrollX;
 		player.renderY = player.y - scrollY;
-
-		slime.x = player.x + 100;
-		slime.y = player.y;
 
 		// Apply scroll
 		bgSetCenter(bg2, player.renderX + player.sizeX / 2, player.renderY + player.sizeY / 2);
