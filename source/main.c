@@ -34,6 +34,7 @@ AzizBgBoss - https://github.com/AzizBgBoss
 #define MAP_HEIGHT 64
 
 #define MAX_ITEMS 16 // Maximum items to be rendered
+#define ENTITY_COUNT 16
 
 // Define game elements
 #define TILE_AIR 0
@@ -183,10 +184,11 @@ typedef struct
 
 // Define the player entity
 Player player = {MAP_WIDTH * 8 / 2, 0, 0, 0, 0, NULL, 16, 24, false, true, 1, 0, true, false, 4, 100, 0, ANIM_NONE};
-Entity slime = {MAP_WIDTH * 8 / 2, 0, 0, 0, 0, NULL, 16, 12, false, true, 1, 0, true, false, 4, 100, 0, ANIM_NONE};
+
+Entity entity[ENTITY_COUNT];
 
 // Define 64 slots for item entities
-Item item[64] = {{0, 0, 0, 0, NULL, 8, 8, false, 60, 0, 0}};
+Item item[64];
 
 // Define crafting recipes
 CraftingRecipe craftingRecipes[] = {
@@ -2423,11 +2425,6 @@ You shall press START to continue, with no saving abilities.");
 	fread(player.sprite_gfx_mem, 1, 32 * 64, f);
 	fclose(f);
 
-	slime.sprite_gfx_mem = oamAllocateGfx(&oamSub, SpriteSize_32x32, SpriteColorFormat_256Color);
-	f = fopen("nitro:/entities.img.bin", "rb");
-	fread(slime.sprite_gfx_mem, 1, 32 * 32, f);
-	fclose(f);
-
 	itemHandSprite = oamAllocateGfx(&oamSub, SpriteSize_16x16, SpriteColorFormat_256Color);
 
 	f = fopen("nitro:/tilemap.img.bin", "rb");
@@ -2451,6 +2448,41 @@ You shall press START to continue, with no saving abilities.");
 	// Setup inventory
 	inventorySetHotbar();
 	setInventorySelection(0);
+	for (int i = 0; i < ENTITY_COUNT; i++)
+	{
+		entity[i].x = MAP_WIDTH * 8 / 2;
+		entity[i].y = 0;
+		entity[i].renderX = 0;
+		entity[i].renderY = 0;
+		entity[i].anim_frame = 0;
+		entity[i].sprite_gfx_mem = NULL;
+		entity[i].sizeX = 16;
+		entity[i].sizeY = 12;
+		entity[i].isJumping = false;
+		entity[i].isSolid = true;
+		entity[i].weight = 1;
+		entity[i].velocity = 0;
+		entity[i].isOnGround = true;
+		entity[i].isLookingLeft = false;
+		entity[i].tileRange = 4;
+		entity[i].health = 100;
+		entity[i].fall = 0;
+		entity[i].animation = ANIM_NONE;
+	}
+
+	for (int i = 0; i < ENTITY_COUNT; i++)
+	{
+		entity[i].sprite_gfx_mem = oamAllocateGfx(&oamSub, SpriteSize_32x32, SpriteColorFormat_256Color);
+		f = fopen("nitro:/entities.img.bin", "rb");
+		fread(entity[i].sprite_gfx_mem, 1, 32 * 32, f);
+		fclose(f);
+	}
+
+	for (int i = 0; i < ENTITY_COUNT; i++)
+	{
+		entity[i].y = player.y;
+		entity[i].x = player.x + i * 10;
+	}
 
 	while (pmMainLoop())
 	{
@@ -2865,105 +2897,108 @@ You shall press START to continue, with no saving abilities.");
 		scrollY = player.y - SCREEN_HEIGHT / 2 + player.sizeY / 2;
 
 		// Handle entity physics
-		if (!slime.isOnGround)
+		for (int i = 0; i < ENTITY_COUNT; i++)
 		{
-			if (isTileSolid(gameTerrain[slime.x / 8 + (slime.y + slime.velocity) / 8 * MAP_WIDTH]))
+			if (!entity[i].isOnGround)
 			{
-				slime.velocity = 0;
-				slime.y /= 8;
-				slime.y *= 8;
+				if (isTileSolid(gameTerrain[entity[i].x / 8 + (entity[i].y + entity[i].velocity) / 8 * MAP_WIDTH]))
+				{
+					entity[i].velocity = 0;
+					entity[i].y /= 8;
+					entity[i].y *= 8;
+				}
+				if (isTileSolid(gameTerrain[(entity[i].x + entity[i].sizeX - 1) / 8 + (entity[i].y + entity[i].velocity) / 8 * MAP_WIDTH]))
+				{
+					entity[i].velocity = 0;
+					entity[i].y /= 8;
+					entity[i].y *= 8;
+				}
 			}
-			if (isTileSolid(gameTerrain[(slime.x + slime.sizeX - 1) / 8 + (slime.y + slime.velocity) / 8 * MAP_WIDTH]))
+
+			if (!entity[i].isOnGround)
 			{
-				slime.velocity = 0;
-				slime.y /= 8;
-				slime.y *= 8;
+				entity[i].velocity += entity[i].weight; // Apply gravity
+				if (entity[i].velocity > 7)
+					entity[i].velocity = 7;
+				entity[i].y += entity[i].velocity;
+				entity[i].animation = ANIM_JUMP; // Fall and jump look the same
+				if (entity[i].y + entity[i].sizeY > MAP_HEIGHT * 8)
+				{
+					entity[i].y = MAP_HEIGHT * 8 - entity[i].sizeY; // Prevent falling out of the map
+					entity[i].isOnGround = true;
+					entity[i].isJumping = false;
+					entity[i].velocity = 0; // Reset velocity when on the ground
+				}
 			}
-		}
 
-		if (!slime.isOnGround)
-		{
-			slime.velocity += slime.weight; // Apply gravity
-			if (slime.velocity > 7)
-				slime.velocity = 7;
-			slime.y += slime.velocity;
-			slime.animation = ANIM_JUMP; // Fall and jump look the same
-			if (slime.y + slime.sizeY > MAP_HEIGHT * 8)
+			// Collision detection with ground
+			TLCx = entity[i].x;
+			TLCy = entity[i].y;
+			TRCx = entity[i].x + entity[i].sizeX - 1;
+			TRCy = entity[i].y;
+			BLCx = entity[i].x;
+			BLCy = entity[i].y + entity[i].sizeY;
+			BRCx = entity[i].x + entity[i].sizeX - 1;
+			BRCy = entity[i].y + entity[i].sizeY;
+
+			TLCtileX = TLCx / 8;
+			TLCtileY = TLCy / 8;
+			TRCtileX = TRCx / 8;
+			TRCtileY = TRCy / 8;
+			BLCtileX = BLCx / 8;
+			BLCtileY = BLCy / 8;
+			BRCtileX = BRCx / 8;
+			BRCtileY = BRCy / 8;
+
+			if (isTileSolid(gameTerrain[BLCtileX + BLCtileY * MAP_WIDTH]))
 			{
-				slime.y = MAP_HEIGHT * 8 - slime.sizeY; // Prevent falling out of the map
-				slime.isOnGround = true;
-				slime.isJumping = false;
-				slime.velocity = 0; // Reset velocity when on the ground
+				if (entity[i].isOnGround == false)
+				{
+					entity[i].isOnGround = true;
+					entity[i].isJumping = false;
+					entity[i].velocity = 0; // Reset velocity when on the ground
+					entity[i].y = BLCtileY * 8 - entity[i].sizeY;
+				}
 			}
-		}
 
-		// Collision detection with ground
-		TLCx = slime.x;
-		TLCy = slime.y;
-		TRCx = slime.x + slime.sizeX - 1;
-		TRCy = slime.y;
-		BLCx = slime.x;
-		BLCy = slime.y + slime.sizeY;
-		BRCx = slime.x + slime.sizeX - 1;
-		BRCy = slime.y + slime.sizeY;
-
-		TLCtileX = TLCx / 8;
-		TLCtileY = TLCy / 8;
-		TRCtileX = TRCx / 8;
-		TRCtileY = TRCy / 8;
-		BLCtileX = BLCx / 8;
-		BLCtileY = BLCy / 8;
-		BRCtileX = BRCx / 8;
-		BRCtileY = BRCy / 8;
-
-		if (isTileSolid(gameTerrain[BLCtileX + BLCtileY * MAP_WIDTH]))
-		{
-			if (slime.isOnGround == false)
+			if (isTileSolid(gameTerrain[BRCtileX + BRCtileY * MAP_WIDTH]))
 			{
-				slime.isOnGround = true;
-				slime.isJumping = false;
-				slime.velocity = 0; // Reset velocity when on the ground
-				slime.y = BLCtileY * 8 - slime.sizeY;
+				if (entity[i].isOnGround == false)
+				{
+					entity[i].isOnGround = true;
+					entity[i].isJumping = false;
+					entity[i].velocity = 0; // Reset velocity when on the ground
+					entity[i].y = BRCtileY * 8 - entity[i].sizeY;
+				}
 			}
-		}
 
-		if (isTileSolid(gameTerrain[BRCtileX + BRCtileY * MAP_WIDTH]))
-		{
-			if (slime.isOnGround == false)
+			if (!isTileSolid(gameTerrain[BLCtileX + BLCtileY * MAP_WIDTH]) && !isTileSolid(gameTerrain[BRCtileX + BRCtileY * MAP_WIDTH]))
 			{
-				slime.isOnGround = true;
-				slime.isJumping = false;
-				slime.velocity = 0; // Reset velocity when on the ground
-				slime.y = BRCtileY * 8 - slime.sizeY;
+				if (entity[i].isOnGround)
+				{
+					entity[i].isOnGround = false;
+					entity[i].isJumping = true;
+				}
 			}
-		}
 
-		if (!isTileSolid(gameTerrain[BLCtileX + BLCtileY * MAP_WIDTH]) && !isTileSolid(gameTerrain[BRCtileX + BRCtileY * MAP_WIDTH]))
-		{
-			if (slime.isOnGround)
+			// Handle entity AI
+			if (frame % 60 == 0) // Tick
 			{
-				slime.isOnGround = false;
-				slime.isJumping = true;
+				entity[i].velocity = -7;
+				entity[i].isOnGround = false;
+				entity[i].isJumping = true;
 			}
-		}
 
-		// Handle entity AI
-		if (frame % 60 == 0) // Tick
-		{
-			slime.velocity = -7;
-			slime.isOnGround = false;
-			slime.isJumping = true;
-		}
-
-		if (slime.isJumping)
-		{
-			if (player.x > slime.x)
+			if (entity[i].isJumping)
 			{
-				slime.x++;
-			}
-			else
-			{
-				slime.x--;
+				if (player.x > entity[i].x)
+				{
+					entity[i].x++;
+				}
+				else
+				{
+					entity[i].x--;
+				}
 			}
 		}
 
@@ -3029,7 +3064,8 @@ You shall press START to continue, with no saving abilities.");
 		bgSetScroll(bg2, scrollX + player.renderX + player.sizeX / 2, scrollY + player.renderY + player.sizeY / 2);
 		bgSetScale(bg2, scale, scale);
 		oamRotateScale(&oamSub, 0, degreesToAngle(0), scale * 2 * (player.isLookingLeft ? -1 : 1), scale * 2);
-		oamRotateScale(&oamSub, 2, degreesToAngle(0), scale * 2 * (slime.isLookingLeft ? -1 : 1), scale * 2);
+		for (int i = 0; i < ENTITY_COUNT; i++)
+			oamRotateScale(&oamSub, 2 + i, degreesToAngle(0), scale * 2 * (entity[i].isLookingLeft ? -1 : 1), scale * 2);
 		REG_BG0HOFS_SUB = scrollX / 8;
 		REG_BG0VOFS_SUB = scrollY / 8;
 
@@ -3088,7 +3124,12 @@ You shall press START to continue, with no saving abilities.");
 		oamSet(&oamSub, 0, player.renderX - player.sizeX / 2, player.renderY - player.sizeY / 2, 1, 0, SpriteSize_32x64, SpriteColorFormat_256Color, player.sprite_gfx_mem, 0, false, false, player.isLookingLeft, false, false);
 		// oamSet(&oamSub, 1, player.renderX, player.renderY, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, itemHandSprite, -1, false, false, player.isLookingLeft, false, false);
 		// Render entities
-		oamSet(&oamSub, 2, slime.x - scrollX - (player.x - slime.x) * 256 / scale + player.x - slime.x, slime.y - scrollY - (player.y - slime.y) * 256 / scale + player.y - slime.y, 1, 0, SpriteSize_32x32, SpriteColorFormat_256Color, slime.sprite_gfx_mem, 0, false, false, false, false, false);
+		for (int i = 0; i < ENTITY_COUNT; i++)
+			oamSet(&oamSub,
+				   i + 2,
+				   entity[i].x - scrollX - (player.x - entity[i].x) * 256 / scale + player.x - entity[i].x,
+				   entity[i].y - scrollY - (player.y - entity[i].y) * 256 / scale + player.y - entity[i].y,
+				   1, 0, SpriteSize_32x32, SpriteColorFormat_256Color, entity[i].sprite_gfx_mem, 0, false, false, false, false, false);
 
 		// Render dropped items
 		u8 renderedItems = 0;
@@ -3103,8 +3144,8 @@ You shall press START to continue, with no saving abilities.");
 					item[i].renderY = item[i].y - scrollY - (player.y - item[i].y) * 256 / scale + player.y - item[i].y; // Adjust for player position
 					if (item[i].renderX >= 0 && item[i].renderX < SCREEN_WIDTH && item[i].renderY >= 0 && item[i].renderY < SCREEN_HEIGHT)
 					{
-						oamRotateScale(&oamSub, renderedItems + 16, degreesToAngle(0), scale * 2, scale * 2);
-						oamSet(&oamSub, renderedItems + 16, item[i].renderX - item[i].sizeX * 256 / scale, item[i].renderY - item[i].sizeY * 256 / scale, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, item[i].sprite_gfx_mem, renderedItems + 2, false, false, false, false, false);
+						oamRotateScale(&oamSub, renderedItems + ENTITY_COUNT + 2, degreesToAngle(0), scale * 2, scale * 2);
+						oamSet(&oamSub, renderedItems + ENTITY_COUNT + 2, item[i].renderX - item[i].sizeX * 256 / scale, item[i].renderY - item[i].sizeY * 256 / scale, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, item[i].sprite_gfx_mem, renderedItems + 2, false, false, false, false, false);
 						renderedItems++;
 					}
 				}
@@ -3113,7 +3154,7 @@ You shall press START to continue, with no saving abilities.");
 		// Clean up used sprites
 		for (int i = renderedItems; i < MAX_ITEMS; i++)
 		{
-			oamSet(&oamSub, i + 16, 0, 0, 0, 0, SpriteSize_8x8, SpriteColorFormat_256Color, nullSprite, -1, false, false, false, false, false);
+			oamSet(&oamSub, i + ENTITY_COUNT + 2, 0, 0, 0, 0, SpriteSize_8x8, SpriteColorFormat_256Color, nullSprite, -1, false, false, false, false, false);
 		}
 
 		oamUpdate(&oamSub);
