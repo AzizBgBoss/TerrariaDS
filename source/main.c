@@ -84,6 +84,11 @@ AzizBgBoss - https://github.com/AzizBgBoss
 #define ITEM_TIN_LONGSWORD 107
 #define ITEM_TIN_HAMMER 108
 
+// Define entities
+#define ENTITY_GREEN_SLIME 0
+#define ENTITY_RED_SLIME 1
+#define ENTITY_BLUE_SLIME 2
+
 // Define animation
 #define ANIM_NONE 0
 #define ANIM_WALK 1
@@ -137,6 +142,8 @@ typedef struct
 
 typedef struct
 {
+	int type;
+	bool exists;
 	int x, y; // Player position
 	int renderX, renderY;
 	int anim_frame;		 // Animation frame
@@ -2448,9 +2455,11 @@ You shall press START to continue, with no saving abilities.");
 	// Setup inventory
 	inventorySetHotbar();
 	setInventorySelection(0);
-	for (int i = 0; i < ENTITY_COUNT; i++)
+	for (int i = 0; i < 2; i++)
 	{
-		entity[i].x = MAP_WIDTH * 8 / 2;
+		entity[i].type = i % 2;
+		entity[i].exists = true;
+		entity[i].x = MAP_WIDTH * 8 / 2 + i * 16;
 		entity[i].y = 0;
 		entity[i].renderX = 0;
 		entity[i].renderY = 0;
@@ -2472,16 +2481,14 @@ You shall press START to continue, with no saving abilities.");
 
 	for (int i = 0; i < ENTITY_COUNT; i++)
 	{
-		entity[i].sprite_gfx_mem = oamAllocateGfx(&oamSub, SpriteSize_32x32, SpriteColorFormat_256Color);
-		f = fopen("nitro:/entities.img.bin", "rb");
-		fread(entity[i].sprite_gfx_mem, 1, 32 * 32, f);
-		fclose(f);
-	}
-
-	for (int i = 0; i < ENTITY_COUNT; i++)
-	{
-		entity[i].y = player.y;
-		entity[i].x = player.x + i * 10;
+		if (entity[i].exists)
+		{
+			entity[i].sprite_gfx_mem = oamAllocateGfx(&oamSub, SpriteSize_32x32, SpriteColorFormat_256Color);
+			f = fopen("nitro:/entities.img.bin", "rb");
+			fseek(f, entity[i].type * 32 * 32, SEEK_SET);
+			fread(entity[i].sprite_gfx_mem, 1, 32 * 32, f);
+			fclose(f);
+		}
 	}
 
 	while (pmMainLoop())
@@ -2899,105 +2906,133 @@ You shall press START to continue, with no saving abilities.");
 		// Handle entity physics
 		for (int i = 0; i < ENTITY_COUNT; i++)
 		{
-			if (!entity[i].isOnGround)
+			if (entity[i].exists == true)
 			{
-				if (isTileSolid(gameTerrain[entity[i].x / 8 + (entity[i].y + entity[i].velocity) / 8 * MAP_WIDTH]))
+				if (entity[i].type == ENTITY_GREEN_SLIME)
 				{
-					entity[i].velocity = 0;
-					entity[i].y /= 8;
-					entity[i].y *= 8;
+					if (!entity[i].isOnGround)
+					{
+						if (isTileSolid(gameTerrain[entity[i].x / 8 + (entity[i].y + entity[i].velocity) / 8 * MAP_WIDTH]))
+						{
+							entity[i].velocity = 0;
+							entity[i].y /= 8;
+							entity[i].y *= 8;
+						}
+						if (isTileSolid(gameTerrain[(entity[i].x + entity[i].sizeX - 1) / 8 + (entity[i].y + entity[i].velocity) / 8 * MAP_WIDTH]))
+						{
+							entity[i].velocity = 0;
+							entity[i].y /= 8;
+							entity[i].y *= 8;
+						}
+					}
+
+					if (!entity[i].isOnGround)
+					{
+						entity[i].velocity += entity[i].weight; // Apply gravity
+						if (entity[i].velocity > 7)
+							entity[i].velocity = 7;
+						entity[i].y += entity[i].velocity;
+						entity[i].animation = ANIM_JUMP; // Fall and jump look the same
+						if (entity[i].y + entity[i].sizeY > MAP_HEIGHT * 8)
+						{
+							entity[i].y = MAP_HEIGHT * 8 - entity[i].sizeY; // Prevent falling out of the map
+							entity[i].isOnGround = true;
+							entity[i].isJumping = false;
+							entity[i].velocity = 0; // Reset velocity when on the ground
+						}
+					}
+
+					// Collision detection with ground
+					TLCx = entity[i].x;
+					TLCy = entity[i].y;
+					TRCx = entity[i].x + entity[i].sizeX - 1;
+					TRCy = entity[i].y;
+					BLCx = entity[i].x;
+					BLCy = entity[i].y + entity[i].sizeY;
+					BRCx = entity[i].x + entity[i].sizeX - 1;
+					BRCy = entity[i].y + entity[i].sizeY;
+
+					TLCtileX = TLCx / 8;
+					TLCtileY = TLCy / 8;
+					TRCtileX = TRCx / 8;
+					TRCtileY = TRCy / 8;
+					BLCtileX = BLCx / 8;
+					BLCtileY = BLCy / 8;
+					BRCtileX = BRCx / 8;
+					BRCtileY = BRCy / 8;
+
+					if (isTileSolid(gameTerrain[BLCtileX + BLCtileY * MAP_WIDTH]))
+					{
+						if (entity[i].isOnGround == false)
+						{
+							entity[i].isOnGround = true;
+							entity[i].isJumping = false;
+							entity[i].velocity = 0; // Reset velocity when on the ground
+							entity[i].y = BLCtileY * 8 - entity[i].sizeY;
+						}
+					}
+
+					if (isTileSolid(gameTerrain[BRCtileX + BRCtileY * MAP_WIDTH]))
+					{
+						if (entity[i].isOnGround == false)
+						{
+							entity[i].isOnGround = true;
+							entity[i].isJumping = false;
+							entity[i].velocity = 0; // Reset velocity when on the ground
+							entity[i].y = BRCtileY * 8 - entity[i].sizeY;
+						}
+					}
+
+					if (!isTileSolid(gameTerrain[BLCtileX + BLCtileY * MAP_WIDTH]) && !isTileSolid(gameTerrain[BRCtileX + BRCtileY * MAP_WIDTH]))
+					{
+						if (entity[i].isOnGround)
+						{
+							entity[i].isOnGround = false;
+							entity[i].isJumping = true;
+						}
+					}
+
+					// Handle entity AI
+					if (frame % 60 == 0) // Tick
+					{
+						entity[i].velocity = -7;
+						entity[i].isOnGround = false;
+						entity[i].isJumping = true;
+					}
+
+					if (entity[i].isJumping)
+					{
+						if (player.x > entity[i].x)
+						{
+							entity[i].x++;
+						}
+						else
+						{
+							entity[i].x--;
+						}
+					}
 				}
-				if (isTileSolid(gameTerrain[(entity[i].x + entity[i].sizeX - 1) / 8 + (entity[i].y + entity[i].velocity) / 8 * MAP_WIDTH]))
+				else if (entity[i].type == ENTITY_RED_SLIME)
 				{
-					entity[i].velocity = 0;
-					entity[i].y /= 8;
-					entity[i].y *= 8;
-				}
-			}
-
-			if (!entity[i].isOnGround)
-			{
-				entity[i].velocity += entity[i].weight; // Apply gravity
-				if (entity[i].velocity > 7)
-					entity[i].velocity = 7;
-				entity[i].y += entity[i].velocity;
-				entity[i].animation = ANIM_JUMP; // Fall and jump look the same
-				if (entity[i].y + entity[i].sizeY > MAP_HEIGHT * 8)
-				{
-					entity[i].y = MAP_HEIGHT * 8 - entity[i].sizeY; // Prevent falling out of the map
-					entity[i].isOnGround = true;
-					entity[i].isJumping = false;
-					entity[i].velocity = 0; // Reset velocity when on the ground
-				}
-			}
-
-			// Collision detection with ground
-			TLCx = entity[i].x;
-			TLCy = entity[i].y;
-			TRCx = entity[i].x + entity[i].sizeX - 1;
-			TRCy = entity[i].y;
-			BLCx = entity[i].x;
-			BLCy = entity[i].y + entity[i].sizeY;
-			BRCx = entity[i].x + entity[i].sizeX - 1;
-			BRCy = entity[i].y + entity[i].sizeY;
-
-			TLCtileX = TLCx / 8;
-			TLCtileY = TLCy / 8;
-			TRCtileX = TRCx / 8;
-			TRCtileY = TRCy / 8;
-			BLCtileX = BLCx / 8;
-			BLCtileY = BLCy / 8;
-			BRCtileX = BRCx / 8;
-			BRCtileY = BRCy / 8;
-
-			if (isTileSolid(gameTerrain[BLCtileX + BLCtileY * MAP_WIDTH]))
-			{
-				if (entity[i].isOnGround == false)
-				{
-					entity[i].isOnGround = true;
-					entity[i].isJumping = false;
-					entity[i].velocity = 0; // Reset velocity when on the ground
-					entity[i].y = BLCtileY * 8 - entity[i].sizeY;
-				}
-			}
-
-			if (isTileSolid(gameTerrain[BRCtileX + BRCtileY * MAP_WIDTH]))
-			{
-				if (entity[i].isOnGround == false)
-				{
-					entity[i].isOnGround = true;
-					entity[i].isJumping = false;
-					entity[i].velocity = 0; // Reset velocity when on the ground
-					entity[i].y = BRCtileY * 8 - entity[i].sizeY;
-				}
-			}
-
-			if (!isTileSolid(gameTerrain[BLCtileX + BLCtileY * MAP_WIDTH]) && !isTileSolid(gameTerrain[BRCtileX + BRCtileY * MAP_WIDTH]))
-			{
-				if (entity[i].isOnGround)
-				{
-					entity[i].isOnGround = false;
-					entity[i].isJumping = true;
-				}
-			}
-
-			// Handle entity AI
-			if (frame % 60 == 0) // Tick
-			{
-				entity[i].velocity = -7;
-				entity[i].isOnGround = false;
-				entity[i].isJumping = true;
-			}
-
-			if (entity[i].isJumping)
-			{
-				if (player.x > entity[i].x)
-				{
-					entity[i].x++;
-				}
-				else
-				{
-					entity[i].x--;
+					if (frame % 60 == 0)
+					{
+						if (player.x > entity[i].x)
+						{
+							entity[i].x++;
+						}
+						else
+						{
+							entity[i].x--;
+						}
+						if (player.y > entity[i].y)
+						{
+							entity[i].y++;
+						}
+						else
+						{
+							entity[i].y--;
+						}
+					}
 				}
 			}
 		}
@@ -3065,7 +3100,12 @@ You shall press START to continue, with no saving abilities.");
 		bgSetScale(bg2, scale, scale);
 		oamRotateScale(&oamSub, 0, degreesToAngle(0), scale * 2 * (player.isLookingLeft ? -1 : 1), scale * 2);
 		for (int i = 0; i < ENTITY_COUNT; i++)
-			oamRotateScale(&oamSub, 2 + i, degreesToAngle(0), scale * 2 * (entity[i].isLookingLeft ? -1 : 1), scale * 2);
+		{
+			if (entity[i].exists)
+			{
+				oamRotateScale(&oamSub, 2 + i, degreesToAngle(0), scale * 2 * (entity[i].isLookingLeft ? -1 : 1), scale * 2);
+			}
+		}
 		REG_BG0HOFS_SUB = scrollX / 8;
 		REG_BG0VOFS_SUB = scrollY / 8;
 
@@ -3124,12 +3164,22 @@ You shall press START to continue, with no saving abilities.");
 		oamSet(&oamSub, 0, player.renderX - player.sizeX / 2, player.renderY - player.sizeY / 2, 1, 0, SpriteSize_32x64, SpriteColorFormat_256Color, player.sprite_gfx_mem, 0, false, false, player.isLookingLeft, false, false);
 		// oamSet(&oamSub, 1, player.renderX, player.renderY, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, itemHandSprite, -1, false, false, player.isLookingLeft, false, false);
 		// Render entities
+		u8 renderedEntities = 0;
+
 		for (int i = 0; i < ENTITY_COUNT; i++)
-			oamSet(&oamSub,
-				   i + 2,
-				   entity[i].x - scrollX - (player.x - entity[i].x) * 256 / scale + player.x - entity[i].x,
-				   entity[i].y - scrollY - (player.y - entity[i].y) * 256 / scale + player.y - entity[i].y,
-				   1, 0, SpriteSize_32x32, SpriteColorFormat_256Color, entity[i].sprite_gfx_mem, 0, false, false, false, false, false);
+		{
+			if (entity[i].exists)
+			{
+				oamSet(&oamSub, i + 2, entity[i].x - scrollX - (player.x - entity[i].x) * 256 / scale + player.x - entity[i].x, entity[i].y - scrollY - (player.y - entity[i].y) * 256 / scale + player.y - entity[i].y, 1, 0, SpriteSize_32x32, SpriteColorFormat_256Color, entity[i].sprite_gfx_mem, 0, false, false, false, false, false);
+				renderedEntities++;
+			}
+		}
+
+		// Clean up unused entity slots
+		for (int i = renderedEntities; i < ENTITY_COUNT; i++)
+		{
+			oamSet(&oamSub, i + 2, 0, 0, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, entity[i].sprite_gfx_mem, 0, false, false, false, false, false);
+		}
 
 		// Render dropped items
 		u8 renderedItems = 0;
