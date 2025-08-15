@@ -2870,8 +2870,8 @@ You shall press START to continue, with no saving abilities.");
 				player.isJumping = false;
 				player.velocity = 0; // Reset velocity when on the ground
 				player.y = BLCtileY * 8 - player.sizeY;
-				int h = (player.y - player.fall) / 8;
-				if (h > 25)
+				int h = (player.y - player.fall) / 8 - 25;
+				if (h > 0)
 					playerDamage(10 * h);
 			}
 		}
@@ -2884,8 +2884,8 @@ You shall press START to continue, with no saving abilities.");
 				player.isJumping = false;
 				player.velocity = 0; // Reset velocity when on the ground
 				player.y = BRCtileY * 8 - player.sizeY;
-				int h = (player.y - player.fall) / 8;
-				if (h > 25)
+				int h = (player.y - player.fall) / 8 - 25;
+				if (h > 0)
 					playerDamage(10 * h);
 			}
 		}
@@ -3014,7 +3014,7 @@ You shall press START to continue, with no saving abilities.");
 				}
 				else if (entity[i].type == ENTITY_RED_SLIME)
 				{
-					if (frame % 60 == 0)
+					if (frame % 2 == 0)
 					{
 						if (player.x > entity[i].x)
 						{
