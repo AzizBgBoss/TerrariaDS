@@ -200,19 +200,6 @@ Item item[64];
 // Define crafting recipes
 CraftingRecipe craftingRecipes[] = {
 	{
-		ITEM_COPPER_HAMMER,
-		1,
-		2,
-		{
-			TILE_PLANKS,
-			TILE_COPPER_ORE,
-		},
-		{
-			1,
-			1,
-		},
-	},
-	{
 		TILE_WOOD_WALL,
 		4,
 		1,
@@ -335,6 +322,58 @@ CraftingRecipe craftingRecipes[] = {
 		{
 			TILE_PLANKS,
 			TILE_TIN_ORE,
+		},
+		{
+			1,
+			1,
+		},
+	},
+	{
+		ITEM_COPPER_PICKAXE,
+		1,
+		2,
+		{
+			TILE_PLANKS,
+			TILE_COPPER_ORE,
+		},
+		{
+			1,
+			3,
+		},
+	},
+	{
+		ITEM_COPPER_AXE,
+		1,
+		2,
+		{
+			TILE_PLANKS,
+			TILE_COPPER_ORE,
+		},
+		{
+			1,
+			3,
+		},
+	},
+	{
+		ITEM_COPPER_LONGSWORD,
+		1,
+		2,
+		{
+			TILE_PLANKS,
+			TILE_COPPER_ORE,
+		},
+		{
+			1,
+			3,
+		},
+	},
+	{
+		ITEM_COPPER_HAMMER,
+		1,
+		2,
+		{
+			TILE_PLANKS,
+			TILE_COPPER_ORE,
 		},
 		{
 			1,
