@@ -14,6 +14,8 @@ Also please note: ***For now***, I'm prioritizing functionality over content. I'
 I'm very open to contributions and suggestions, so if you want to help, feel free to open a pull request or an issue.<br>
 <br>
 If you want to try the latest changes, you can compile the project yourself, or wait for a new release to be published.<br>
+<br>
+You can join my [Discord server](https://discord.gg/zfMwPhvDc4) for more updates and discussions.<br>
 
 ### Disclaimer
 This project is not affiliated with Re-Logic or Terraria in any way. It is a fan-made project and is not intended for commercial use. All assets used in this project are use for educational and entertainment purposes only. If you're a party of Re-Logic and owner of any assets used in this project and want them removed, please contact me.
