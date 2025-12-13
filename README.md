@@ -78,6 +78,7 @@ Initial commit with basic project structure.
 - Support for maps with more height (limit is 64 for now, that means chunking should happen in both X and Y axes).
 - Add breaking animation.
 - Organize my messy code and split it to many files, won't change anything but will make it easier to add features.
+- Fix some screen jittering issues. ***(done: you shouldn't read nitro files in the loop every frame, it makes the scroll changement miss VBlank)***
 
 ### Version 0.2 (Plans):
 - Add lighting.

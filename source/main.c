@@ -155,11 +155,18 @@ typedef struct
 	int velocity;		 // Velocity for jumping or falling
 	bool isOnGround;	 // Is the player on the ground
 	bool isLookingLeft;
-	int tileRange;
 	int health;
 	int fall;
 	u8 animation;
 } Entity;
+
+typedef struct
+{
+	int sizeX;
+	int sizeY;
+	bool isSolid;
+	int weight;
+} EntityProperties;
 
 typedef struct
 {
@@ -193,6 +200,12 @@ typedef struct
 Player player = {MAP_WIDTH * 8 / 2, 0, 0, 0, 0, NULL, 16, 24, false, true, 1, 0, true, false, 4, 100, 0, ANIM_NONE};
 
 Entity entity[ENTITY_COUNT];
+
+EntityProperties entities[3] = {
+	{16, 12, true, 1},
+	{16, 12, true, 1},
+	{16, 12, true, 1},
+};
 
 // Define 64 slots for item entities
 Item item[64];
@@ -1558,20 +1571,18 @@ void interact(int x, int y)
 	else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_5)
 	{
 		setGameTerrain(x, y - 2, TILE_AIR);
-		setGameTerrain(x, y - 1, TILE_AIR);
+		setGameTerrain(x + 1, y - 2, TILE_AIR);
+		setGameTerrain(x + 1, y - 1, TILE_AIR);
 		setGameTerrain(x, y, TILE_AIR);
-		setGameTerrain(x + 1, y - 2, TILE_WOODEN_DOOR_CLOSED_1);
-		setGameTerrain(x + 1, y - 1, TILE_WOODEN_DOOR_CLOSED_2);
-		setGameTerrain(x + 1, y, TILE_WOODEN_DOOR_CLOSED_3);
+		setGameTerrain(x + 1, y, TILE_AIR);
 	}
 	else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_6)
 	{
 		setGameTerrain(x - 1, y - 2, TILE_AIR);
+		setGameTerrain(x, y - 2, TILE_AIR);
 		setGameTerrain(x - 1, y - 1, TILE_AIR);
+		setGameTerrain(x, y, TILE_AIR);
 		setGameTerrain(x - 1, y, TILE_AIR);
-		setGameTerrain(x, y - 2, TILE_WOODEN_DOOR_CLOSED_1);
-		setGameTerrain(x, y - 1, TILE_WOODEN_DOOR_CLOSED_2);
-		setGameTerrain(x, y, TILE_WOODEN_DOOR_CLOSED_3);
 	}
 	// Closing right-opening door
 	else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_RIGHT_1)
@@ -1622,12 +1633,78 @@ void interact(int x, int y)
 	else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_RIGHT_6)
 	{
 		setGameTerrain(x - 1, y - 2, TILE_WOODEN_DOOR_CLOSED_1);
-		setGameTerrain(x - 1, y - 1, TILE_WOODEN_DOOR_CLOSED_2);
-		setGameTerrain(x - 1, y, TILE_WOODEN_DOOR_CLOSED_3);
-		setGameTerrain(x, y - 2, TILE_AIR);
-		setGameTerrain(x, y - 1, TILE_AIR);
+		setGameTerrain(x, y - 2, TILE_WOODEN_DOOR_CLOSED_2);
+		setGameTerrain(x - 1, y - 1, TILE_WOODEN_DOOR_CLOSED_3);
 		setGameTerrain(x, y, TILE_AIR);
+		setGameTerrain(x - 1, y, TILE_AIR);
 	}
+}
+
+int spawnEntity(int type, int x, int y)
+{
+	int i = 0;
+	while (entity[i].exists && i < ENTITY_COUNT)
+		i++;
+	if (i >= ENTITY_COUNT)
+		return -1; // No available entity slot
+
+	entity[i].type = type;
+	entity[i].exists = true;
+	entity[i].x = x;
+	entity[i].y = y;
+	entity[i].renderX = 0;
+	entity[i].renderY = 0;
+	entity[i].anim_frame = 0;
+	entity[i].sizeX = entities[type].sizeX;
+	entity[i].sizeY = entities[type].sizeY;
+	entity[i].isJumping = false;
+	entity[i].isSolid = entities[type].isSolid;
+	entity[i].weight = entities[type].weight;
+	entity[i].velocity = 0;
+	entity[i].isOnGround = true;
+	entity[i].isLookingLeft = false;
+	entity[i].health = 100;
+	entity[i].fall = 0;
+	entity[i].animation = ANIM_NONE;
+
+	entity[i].sprite_gfx_mem = oamAllocateGfx(&oamSub, SpriteSize_32x32, SpriteColorFormat_256Color);
+	f = fopen("nitro:/entities.img.bin", "rb");
+	fseek(f, entity[i].type * 32 * 32, SEEK_SET);
+	fread(entity[i].sprite_gfx_mem, 1, 32 * 32, f);
+	fclose(f);
+
+	return i;
+}
+
+void killEntity(int id)
+{
+	entity[id].exists = false;
+}
+
+void setPlayerAnimFrame(int frame)
+{
+	if (frame == player.anim_frame)
+		return;
+	if (frame < 0)
+		frame = 0;
+	player.anim_frame = frame;
+	f = fopen("nitro:/sprites.img.bin", "rb");
+	fseek(f, 32 * 64 * player.anim_frame, SEEK_SET);
+	fread(player.sprite_gfx_mem, 1, 32 * 64, f);
+	fclose(f);
+}
+
+void setEntityAnimFrame(int id, int frame)
+{
+	if (frame == entity[id].anim_frame)
+		return;
+	if (frame < 0)
+		frame = 0;
+	entity[id].anim_frame = frame;
+	f = fopen("nitro:/entities.img.bin", "rb");
+	fseek(f, entity[id].type * 32 * 32 + entity[id].anim_frame * 32 * 32, SEEK_SET);
+	fread(entity[id].sprite_gfx_mem, 1, 32 * 32, f);
+	fclose(f);
 }
 
 // I honestly wanted to make a struct of SaveData but i had some problems with its stack or whatever it is
@@ -2494,41 +2571,6 @@ You shall press START to continue, with no saving abilities.");
 	// Setup inventory
 	inventorySetHotbar();
 	setInventorySelection(0);
-	for (int i = 0; i < 2; i++)
-	{
-		entity[i].type = i % 2;
-		entity[i].exists = true;
-		entity[i].x = MAP_WIDTH * 8 / 2 + i * 16;
-		entity[i].y = 0;
-		entity[i].renderX = 0;
-		entity[i].renderY = 0;
-		entity[i].anim_frame = 0;
-		entity[i].sprite_gfx_mem = NULL;
-		entity[i].sizeX = 16;
-		entity[i].sizeY = 12;
-		entity[i].isJumping = false;
-		entity[i].isSolid = true;
-		entity[i].weight = 1;
-		entity[i].velocity = 0;
-		entity[i].isOnGround = true;
-		entity[i].isLookingLeft = false;
-		entity[i].tileRange = 4;
-		entity[i].health = 100;
-		entity[i].fall = 0;
-		entity[i].animation = ANIM_NONE;
-	}
-
-	for (int i = 0; i < ENTITY_COUNT; i++)
-	{
-		if (entity[i].exists)
-		{
-			entity[i].sprite_gfx_mem = oamAllocateGfx(&oamSub, SpriteSize_32x32, SpriteColorFormat_256Color);
-			f = fopen("nitro:/entities.img.bin", "rb");
-			fseek(f, entity[i].type * 32 * 32, SEEK_SET);
-			fread(entity[i].sprite_gfx_mem, 1, 32 * 32, f);
-			fclose(f);
-		}
-	}
 
 	while (pmMainLoop())
 	{
@@ -2556,7 +2598,109 @@ You shall press START to continue, with no saving abilities.");
 
 		if (held & KEY_A && held & KEY_B && held & KEY_X && held & KEY_Y)
 		{
-			debug = !debug;
+			// Stop everything and show the debug menu
+			clearPrint();
+			print(0, 0, "Debug menu, bazinga!\n");
+			printDirect("Press X to close debug menu.\n");
+
+			int selection = 0;
+			int maxSelection = 5;
+
+			while (pmMainLoop())
+			{
+				// Menu selection system
+				swiWaitForVBlank();
+				scanKeys();
+
+				int pressed = keysDown();
+				if (pressed & KEY_X)
+				{
+					clearPrint();
+					break;
+				}
+
+				if (pressed & KEY_DOWN)
+					selection++;
+				else if (pressed & KEY_UP)
+					selection--;
+				if (selection < 0)
+					selection = maxSelection;
+				if (selection > maxSelection)
+					selection = 0;
+
+				for (int i = 0; i <= maxSelection; i++)
+				{
+					if (i == selection)
+						print(0, 2 + i, "> ");
+					else
+						print(0, 2 + i, "  ");
+
+					switch (i)
+					{
+					case 0:
+						printDirect("Spawn green slime");
+						break;
+					case 1:
+						printDirect("Spawn red slime");
+						break;
+					case 2:
+						printDirect("Spawn blue slime");
+						break;
+					case 3:
+						printDirect("Set health to max");
+						break;
+					case 4:
+						printDirect("Kill all entities");
+						break;
+					case 5:
+						printDirect("Kill player");
+						break;
+					default:
+						printDirect("---");
+						break;
+					}
+				}
+
+				if (pressed & KEY_A)
+				{
+					switch (selection)
+					{
+					case 0:
+						spawnEntity(ENTITY_GREEN_SLIME, player.x, player.y);
+						printDirect("\nSpawned green slime!");
+						break;
+					case 1:
+						spawnEntity(ENTITY_RED_SLIME, player.x, player.y);
+						printDirect("\nSpawned red slime!");
+						break;
+					case 2:
+						spawnEntity(ENTITY_BLUE_SLIME, player.x, player.y);
+						printDirect("\nSpawned blue slime!");
+						break;
+					case 3:
+						player.health = 400;
+						printDirect("\nHealth set to max!");
+						break;
+					case 4:
+						for (int e = 0; e < ENTITY_COUNT; e++)
+						{
+							if (entity[e].exists)
+							{
+								killEntity(e);
+							}
+						}
+						printDirect("\nAll entities killed!");
+						break;
+					case 5:
+						playerDamage(9999);
+						printDirect("\nPlayer killed!");
+						break;
+					default:
+						printDirect("\nUnknown implementation.");
+						break;
+					}
+				}
+			}
 		}
 
 		if (pressed & KEY_START)
@@ -2980,6 +3124,10 @@ You shall press START to continue, with no saving abilities.");
 							entity[i].velocity = 0; // Reset velocity when on the ground
 						}
 					}
+					else
+					{
+						entity[i].animation = ANIM_NONE;
+					}
 
 					// Collision detection with ground
 					TLCx = entity[i].x;
@@ -3152,14 +3300,34 @@ You shall press START to continue, with no saving abilities.");
 		switch (player.animation)
 		{
 		case ANIM_NONE:
-			player.anim_frame = 0;
+			setPlayerAnimFrame(0);
 			break;
 		case ANIM_WALK:
-			player.anim_frame = (frame / 4) % 8 + 1;
+			setPlayerAnimFrame((frame / 4) % 8 + 1);
 			break;
 		case ANIM_JUMP:
-			player.anim_frame = 9;
+			setPlayerAnimFrame(9);
 			break;
+		}
+
+		for (int i = 0; i < ENTITY_COUNT; i++)
+		{
+			if (entity[i].exists)
+			{
+				if (entity[i].type <= ENTITY_BLUE_SLIME && entity[i].type >= ENTITY_GREEN_SLIME)
+				{
+					// Animate slime
+					switch (entity[i].animation)
+					{
+					case ANIM_NONE:
+						setEntityAnimFrame(i, 4);
+						break;
+					case ANIM_JUMP:
+						setEntityAnimFrame(i, 0);
+						break;
+					}
+				}
+			}
 		}
 
 		// When the player reaches the 3rd quarter of the background, swap the first 4 rows in the bg with the next 4 rows in the map
@@ -3195,11 +3363,6 @@ You shall press START to continue, with no saving abilities.");
 			}
 		}
 
-		f = fopen("nitro:/sprites.img.bin", "rb");
-		fseek(f, 32 * 64 * player.anim_frame, SEEK_SET);
-		fread(player.sprite_gfx_mem, 1, 32 * 64, f);
-		fclose(f);
-
 		oamSet(&oamSub, 0, player.renderX - player.sizeX / 2, player.renderY - player.sizeY / 2, 1, 0, SpriteSize_32x64, SpriteColorFormat_256Color, player.sprite_gfx_mem, 0, false, false, player.isLookingLeft, false, false);
 		// oamSet(&oamSub, 1, player.renderX, player.renderY, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, itemHandSprite, -1, false, false, player.isLookingLeft, false, false);
 		// Render entities
@@ -3209,7 +3372,7 @@ You shall press START to continue, with no saving abilities.");
 		{
 			if (entity[i].exists)
 			{
-				oamSet(&oamSub, i + 2, entity[i].x - scrollX - (player.x - entity[i].x) * 256 / scale + player.x - entity[i].x, entity[i].y - scrollY - (player.y - entity[i].y) * 256 / scale + player.y - entity[i].y, 1, 0, SpriteSize_32x32, SpriteColorFormat_256Color, entity[i].sprite_gfx_mem, 0, false, false, false, false, false);
+				oamSet(&oamSub, i + 2, entity[i].x - scrollX - (player.x - entity[i].x) * 256 / scale + player.x - entity[i].x, entity[i].y - scrollY - (player.y - entity[i].y) * 256 / scale + player.y - entity[i].y, 1, 0, SpriteSize_32x32, SpriteColorFormat_256Color, entity[i].sprite_gfx_mem, i + 2, false, false, entity[i].isLookingLeft, false, false);
 				renderedEntities++;
 			}
 		}
@@ -3217,7 +3380,7 @@ You shall press START to continue, with no saving abilities.");
 		// Clean up unused entity slots
 		for (int i = renderedEntities; i < ENTITY_COUNT; i++)
 		{
-			oamSet(&oamSub, i + 2, 0, 0, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, entity[i].sprite_gfx_mem, 0, false, false, false, false, false);
+			oamSet(&oamSub, i + 2, 0, 0, 0, 0, SpriteSize_8x8, SpriteColorFormat_256Color, nullSprite, -1, false, false, false, false, false);
 		}
 
 		// Render dropped items
