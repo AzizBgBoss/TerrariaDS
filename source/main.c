@@ -137,6 +137,7 @@ typedef struct
 	int tileRange;
 	int health;
 	int fall;
+	int invincibilityFrames;
 	u8 animation;
 } Player;
 
@@ -166,6 +167,7 @@ typedef struct
 	int sizeY;
 	bool isSolid;
 	int weight;
+	int health;
 } EntityProperties;
 
 typedef struct
@@ -197,14 +199,14 @@ typedef struct
 } CraftingRecipe;
 
 // Define the player entity
-Player player = {MAP_WIDTH * 8 / 2, 0, 0, 0, 0, NULL, 16, 24, false, true, 1, 0, true, false, 4, 100, 0, ANIM_NONE};
+Player player = {MAP_WIDTH * 8 / 2, 0, 0, 0, 0, NULL, 16, 24, false, true, 1, 0, true, false, 4, 100, 0, 0, ANIM_NONE};
 
 Entity entity[ENTITY_COUNT];
 
 EntityProperties entities[3] = {
-	{16, 12, true, 1},
-	{16, 12, true, 1},
-	{16, 12, true, 1},
+	{16, 12, true, 1, 20},
+	{16, 12, true, 1, 30},
+	{16, 12, true, 1, 100},
 };
 
 // Define 64 slots for item entities
@@ -962,7 +964,7 @@ int getItemSpeed(int item)
 
 int rando(int min, int max)
 {
-	return rand() % (max - min + 1) + min;
+	return rand() % (max - min + 1) + min; // Max value is inclusive
 }
 
 void setInventorySelection(u8 slot)
@@ -972,8 +974,16 @@ void setInventorySelection(u8 slot)
 	int y = ((slot / 8) * -4 + 20) * 8;
 	if (!craftingOpen)
 	{
-		print(1, 19, "                ");
-		print(1, 19, getElementName(inventory[slot]));
+		if (inventoryOpen)
+		{
+			print(1, 7, "              ");
+			print(1, 7, getElementName(inventory[slot]));
+		}
+		else
+		{
+			print(1, 19, "                ");
+			print(1, 19, getElementName(inventory[slot]));
+		}
 		oamSet(&oamMain, 0, x, y, 0, 0, SpriteSize_32x32, SpriteColorFormat_256Color, inventorySelectionSprite, -1, false, false, false, false, false);
 		oamUpdate(&oamMain);
 	}
@@ -1092,7 +1102,7 @@ void inventorySetHotbar()
 		}
 	}
 	clearPrint();
-	print(0, 5, "TerrariaDS v0.1\n\
+	print(0, 3, "TerrariaDS v0.1\n\
 By AzizBgBoss\n\
 https://github.com/AzizBgBoss/TerrariaDS");
 	renderInventory();
@@ -1663,7 +1673,7 @@ int spawnEntity(int type, int x, int y)
 	entity[i].velocity = 0;
 	entity[i].isOnGround = true;
 	entity[i].isLookingLeft = false;
-	entity[i].health = 100;
+	entity[i].health = entities[type].health;
 	entity[i].fall = 0;
 	entity[i].animation = ANIM_NONE;
 
@@ -1679,6 +1689,46 @@ int spawnEntity(int type, int x, int y)
 void killEntity(int id)
 {
 	entity[id].exists = false;
+}
+
+bool checkPlayerCollision(int x, int y, int sizeX, int sizeY)
+{
+	// AABB collision detection
+	if (player.x < x + sizeX &&
+		player.x + player.sizeX > x &&
+		player.y < y + sizeY &&
+		player.y + player.sizeY > y)
+	{
+		return true;
+	}
+	return false;
+}
+
+int detectEntity(int x, int y)
+{
+	for (int i = 0; i < ENTITY_COUNT; i++)
+	{
+		if (entity[i].exists)
+		{
+			// AABB collision detection
+			if (x < entity[i].x + entity[i].sizeX &&
+				x >= entity[i].x &&
+				y < entity[i].y + entity[i].sizeY &&
+				y >= entity[i].y)
+			{
+				return i;
+			}
+		}
+	}
+	return -1;
+}
+
+void damageEntity(int id, int damage)
+{
+	if (entity[id].exists)
+	{
+		entity[id].health -= damage;
+	}
 }
 
 void setPlayerAnimFrame(int frame)
@@ -1778,6 +1828,8 @@ bool loadMapFromFile(const char *filename)
 
 void playerDamage(int damage)
 {
+	if (player.invincibilityFrames > 0)
+		return; // Player is invincible
 	damage = clamp(damage, 0, 400);
 	player.health -= damage;
 	if (player.health < 0)
@@ -1812,6 +1864,10 @@ void playerDamage(int damage)
 		player.x = MAP_WIDTH * 8 / 2;
 		player.y = 0;
 		player.health = 100;
+	}
+	else
+	{
+		player.invincibilityFrames = 120; // 2 seconds of invincibility
 	}
 }
 
@@ -2976,6 +3032,7 @@ You shall press START to continue, with no saving abilities.");
 		}
 		else
 		{ // Game world interaction on sub-screen
+			// TODO: add entity damaging with swords wow
 			if (pressed & KEY_TOUCH)
 			{
 				interacting = true;
@@ -3036,7 +3093,13 @@ You shall press START to continue, with no saving abilities.");
 						{
 							if (interacting == true)
 							{
-								interact(worldTouchX, worldTouchY);
+								int e = detectEntity(worldX, worldY); // Check if an entity is at the touched location
+								if (e != -1 && inventory[inventorySelection] >= 100 && inventory[inventorySelection] < 200)
+								{
+									damageEntity(e, 5);
+								}
+								else
+									interact(worldTouchX, worldTouchY);
 								interacting = false;
 							}
 						}
@@ -3091,6 +3154,11 @@ You shall press START to continue, with no saving abilities.");
 		{
 			if (entity[i].exists == true)
 			{
+				if (entity[i].health <= 0)
+				{
+					killEntity(i);
+					continue;
+				}
 				if (entity[i].type == ENTITY_GREEN_SLIME)
 				{
 					if (!entity[i].isOnGround)
@@ -3198,6 +3266,11 @@ You shall press START to continue, with no saving abilities.");
 							entity[i].x--;
 						}
 					}
+
+					if (checkPlayerCollision(entity[i].x, entity[i].y, entity[i].sizeX, entity[i].sizeY))
+					{
+						playerDamage(5);
+					}
 				}
 				else if (entity[i].type == ENTITY_RED_SLIME)
 				{
@@ -3273,9 +3346,17 @@ You shall press START to continue, with no saving abilities.");
 			}
 		}
 
+		// Spawn randomly enemy entities
+		if (rando(0, 5000) < 1)
+		{
+			spawnEntity(ENTITY_GREEN_SLIME, scrollX + SCREEN_WIDTH + rando(-SCREEN_WIDTH, SCREEN_WIDTH), scrollY + SCREEN_HEIGHT); // Spawn a green slime at random coordinates in the screen
+		}
+
+		player.invincibilityFrames--;
+
 		print(0, 0, "Health: ");
 		printValDirect(player.health);
-		printDirect("/100");
+		printDirect("/100   ");
 
 		// Compute screen-relative render coordinates
 		player.renderX = player.x - scrollX;
@@ -3363,7 +3444,12 @@ You shall press START to continue, with no saving abilities.");
 			}
 		}
 
-		oamSet(&oamSub, 0, player.renderX - player.sizeX / 2, player.renderY - player.sizeY / 2, 1, 0, SpriteSize_32x64, SpriteColorFormat_256Color, player.sprite_gfx_mem, 0, false, false, player.isLookingLeft, false, false);
+		if (player.invincibilityFrames > 0 && (player.invincibilityFrames / 4) % 2 == 0) // If invincible, flicker every 4 frames
+		{
+			oamSet(&oamSub, 0, -64, -64, 1, 0, SpriteSize_32x64, SpriteColorFormat_256Color, nullSprite, 0, false, false, false, false, false);
+		}
+		else
+			oamSet(&oamSub, 0, player.renderX - player.sizeX / 2, player.renderY - player.sizeY / 2, 1, 0, SpriteSize_32x64, SpriteColorFormat_256Color, player.sprite_gfx_mem, 0, false, false, player.isLookingLeft, false, false);
 		// oamSet(&oamSub, 1, player.renderX, player.renderY, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, itemHandSprite, -1, false, false, player.isLookingLeft, false, false);
 		// Render entities
 		u8 renderedEntities = 0;
@@ -3372,7 +3458,7 @@ You shall press START to continue, with no saving abilities.");
 		{
 			if (entity[i].exists)
 			{
-				oamSet(&oamSub, i + 2, entity[i].x - scrollX - (player.x - entity[i].x) * 256 / scale + player.x - entity[i].x, entity[i].y - scrollY - (player.y - entity[i].y) * 256 / scale + player.y - entity[i].y, 1, 0, SpriteSize_32x32, SpriteColorFormat_256Color, entity[i].sprite_gfx_mem, i + 2, false, false, entity[i].isLookingLeft, false, false);
+				oamSet(&oamSub, renderedEntities + 2, entity[i].x - scrollX - (player.x - entity[i].x) * 256 / scale + player.x - entity[i].x, entity[i].y - scrollY - (player.y - entity[i].y) * 256 / scale + player.y - entity[i].y, 1, 0, SpriteSize_32x32, SpriteColorFormat_256Color, entity[i].sprite_gfx_mem, i + 2, false, false, entity[i].isLookingLeft, false, false);
 				renderedEntities++;
 			}
 		}

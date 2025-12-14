@@ -33,7 +33,7 @@ You can either compile the game yourself (for nightly releases) or check for sta
 | System                           | Functionality             | Cons                  | Notes                                                                                                       |
 |----------------------------------|---------------------------|-----------------------|-------------------------------------------------------------------------------------------------------------|
 | Nintendo DSi (XL) (TM++)         | Excellent                 | None                  | Make sure to set launcher as Default                                                                 |
-| Nintendo 3DS (New) (XL) (TM++)   | Excellent                 | None                  | Should work fine as long as you're using TW++ since it basically becomes a DSi at that point. Also you can just play Terraria 3DS if you're on the New 3DS lol.|
+| Nintendo 3DS (New) (XL) (TM++)   | Excellent                 | None                  | Should work fine as long as you're using TW++ since it basically becomes a DSi at that point. Also you can just play Terraria 3DS lol.|
 | Flashcarts (DS/DS Lite/DSi)      | Not tested yet            | Not tested yet        | You should probably patch the .nds rom with the proper DLDI patch depending on your flashcart type (e.g., R4) |
 | NO$GBA (Windows Emulator)        | Medium                    | No ability to save + Choppy sound | The emulator doesn't have DLDI support.                                         |
 | desMuMe (Windows Emulator)       | Non-functional            | Game doesn't even start |                                                                             |
@@ -73,7 +73,8 @@ Initial commit with basic project structure.
 - Add health. ***(done)***
 - Add menus.
 - Add ability to change button mappings (since many DS'es (including mine) have malfunctioning shoulder buttons because of dust accumulation under them over the years).
-- Add entities (NPCs, enemies, etc.) to the game world.
+- Add entities (NPCs, enemies, etc.) to the game world. ***(done for now: Green Slimes)***
+- Add attacking and damage mechanics for other entities like the stinky winky green slime. ***(done for now: Player can damage an entity thats directly touched with a weapon)***
 - Add ores. ***(done for now: Copper, Tin)***
 - Add more items.
 - Add crimson/corruption.
