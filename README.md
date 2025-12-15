@@ -38,7 +38,7 @@ You can either compile the game yourself (for nightly releases) or check for sta
 | NO$GBA (Windows Emulator)        | Medium                    | No ability to save + Choppy sound | The emulator doesn't have DLDI support.                                         |
 | desMuMe (Windows Emulator)       | Non-functional            | Game doesn't even start |                                                                             |
 | melonDS (Windows Emulator)       | Non-functional            | No nitroFS              | The emulator *has* DLDI support but it doesn't work with this game, maybe they'll fix it in a future update. But for some reason NitroFS won't work with melonDS. |
-
+| melonDS (Special fork)           | Excellent                 | None                  | This is a fork of the original melonDS with NitroFS and FAT support added. You can find it [here](extras/melonDS.exe). I got it somewhere from the DS(i) Mode Customization! Discord server, don't worry it shouldn't contain any malware. But as soon as I find the original link, I'll put it here. | 
 *More platforms will be tested soon.*
 
 ## Download the latest version (QR code scannable with DSi Downloader)
