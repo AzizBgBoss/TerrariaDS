@@ -82,9 +82,10 @@ Initial commit with basic project structure.
 - Add breaking animation.
 - Organize my messy code and split it to many files, won't change anything but will make it easier to add features.
 - Fix some screen jittering issues. ***(done: you shouldn't read nitro files in the loop every frame, it makes the scroll changement miss VBlank)***
+- Add simple day/night cycle (just darken the rear background and start spawning enemies at night).
 
 ### Version 0.2 (Plans):
-- Add lighting.
+- Add improved lighting.
 - Add more biomes (desert, jungle, etc.).
 
 ## Planed Features for the future:
@@ -92,6 +93,7 @@ Initial commit with basic project structure.
 - Skins (or changeable player styles).
 - Add mana and magic items.
 - Add bosses.
+- Unique content for the DS version to make it stand out a bit.
 - Extra content and features for the DSi.
 
 Again, I'm open to suggestions and contributions, so if you have any ideas or want to help, feel free to open a pull request or an issue.
