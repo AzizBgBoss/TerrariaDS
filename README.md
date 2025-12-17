@@ -51,9 +51,8 @@ You can either compile the game yourself (for nightly releases) or check for sta
 - Up/Down: Zoom in/out
 - X/Y: Switch items
 - R: Open inventory
-- Start: Save map
-- Select: Load map
-- A+B+X+Y: Toggle debug mode
+- Start: Pause menu
+- A+B+Y+X: Debug menu
 
 ## Changelog and Features
 - Don't get your hopes really up, but with time, I'm sure the game will feel much more like terraria.

@@ -1,5 +1,10 @@
 /build/
 /junk/
+/extras/*.bin
+/extras/*.idx
+/extras/*.toml
+/nitro/*.bin
+/include/*.h
 /*.nds
 /*.gba
 *.o
