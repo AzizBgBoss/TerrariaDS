@@ -69,9 +69,10 @@ Initial commit with basic project structure.
 
 ### Version 0.1 (Working on it):
 - Probably converting all tile handling data to a struct.
+- Ability to save/load different maps.
 - Add special tiles (tiles that need interaction and are not 1:1, like doors, crafting benches, chests...) ***(done for now: Doors)***
 - Add health. ***(done)***
-- Add menus.
+- Add menus. ***(done for now: Pause menu, debug menu (they don't look the best but do the job for now))***
 - Add ability to change button mappings (since many DS'es (including mine) have malfunctioning shoulder buttons because of dust accumulation under them over the years).
 - Add entities (NPCs, enemies, etc.) to the game world. ***(done for now: Green Slimes)***
 - Add attacking and damage mechanics for other entities like the stinky winky green slime. ***(done for now: Player can damage an entity thats directly touched with a weapon)***
@@ -82,6 +83,7 @@ Initial commit with basic project structure.
 - Add breaking animation.
 - Organize my messy code and split it to many files, won't change anything but will make it easier to add features.
 - Fix some screen jittering issues. ***(done: you shouldn't read nitro files in the loop every frame, it makes the scroll changement miss VBlank)***
+- Fix sprites being offset from their world coordinates. ***(yeah I don't even know how I made a mess that kinda works and now I don't understand it anymore if you can please help me with it)***
 - Add simple day/night cycle (just darken the rear background and start spawning enemies at night).
 
 ### Version 0.2 (Plans):

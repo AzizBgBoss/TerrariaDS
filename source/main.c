@@ -136,6 +136,7 @@ typedef struct
 	bool isLookingLeft;
 	int tileRange;
 	int health;
+	int maxHealth;
 	int fall;
 	int invincibilityFrames;
 	u8 animation;
@@ -199,7 +200,7 @@ typedef struct
 } CraftingRecipe;
 
 // Define the player entity
-Player player = {MAP_WIDTH * 8 / 2, 0, 0, 0, 0, NULL, 16, 24, false, true, 1, 0, true, false, 4, 100, 0, 0, ANIM_NONE};
+Player player = {MAP_WIDTH * 8 / 2, 0, 0, 0, 0, NULL, 16, 24, false, true, 1, 0, true, false, 4, 100, 100, 0, 0, ANIM_NONE};
 
 Entity entity[ENTITY_COUNT];
 
@@ -1091,6 +1092,8 @@ void setInventory(int slot, int item, int quantity)
 
 void inventorySetHotbar()
 {
+	lcdMainOnTop();
+	inventoryOpen = false;
 	craftingOpen = false;
 	Bg0UpFill(0);
 	Bg1UpFill(63);
@@ -1111,6 +1114,8 @@ https://github.com/AzizBgBoss/TerrariaDS");
 
 void inventorySetFull()
 {
+	lcdMainOnBottom();
+	inventoryOpen = true;
 	craftingOpen = false;
 	Bg0UpFill(0);
 	Bg1UpFill(63);
@@ -1130,6 +1135,8 @@ void inventorySetFull()
 
 void inventorySetCrafting()
 {
+	lcdMainOnBottom();
+	inventoryOpen = false;
 	craftingOpen = true;
 	Bg0UpFill(0);
 	Bg1UpFill(63);
@@ -1731,6 +1738,18 @@ void damageEntity(int id, int damage)
 	}
 }
 
+int getHighestTileY(int x)
+{
+	for (int y = 0; y < MAP_HEIGHT; y++)
+	{
+		if (isTileSolid(gameTerrain[x + y * MAP_WIDTH]))
+		{
+			return y;
+		}
+	}
+	return MAP_HEIGHT; // No solid tile found
+}
+
 void setPlayerAnimFrame(int frame)
 {
 	if (frame == player.anim_frame)
@@ -1849,6 +1868,7 @@ void playerDamage(int damage)
 	if (player.health == 0)
 	{ // Player is ded
 		mmEffect(SFX_LAYER_KILLED);
+		inventorySetHotbar();
 		clearPrint();
 		print(0, 0, "You died lol");
 		oamSet(&oamSub, 0, 0, 0, 0, 0, SpriteSize_8x8, SpriteColorFormat_256Color, nullSprite, -1, false, false, false, false, false);
@@ -1864,6 +1884,7 @@ void playerDamage(int damage)
 		player.x = MAP_WIDTH * 8 / 2;
 		player.y = 0;
 		player.health = 100;
+		inventorySetHotbar();
 	}
 	else
 	{
@@ -2640,21 +2661,18 @@ You shall press START to continue, with no saving abilities.");
 		{
 			if (inventoryOpen)
 			{
-				inventoryOpen = false;
-				lcdMainOnTop();
 				inventorySetHotbar();
 			}
 			else
 			{
-				inventoryOpen = true;
-				lcdMainOnBottom();
 				inventorySetFull();
 			}
 		}
 
-		if (held & KEY_A && held & KEY_B && held & KEY_X && held & KEY_Y)
+		if (held & KEY_A && held & KEY_B && held & KEY_X && held & KEY_Y) // Debug menu
 		{
 			// Stop everything and show the debug menu
+			inventorySetHotbar();
 			clearPrint();
 			print(0, 0, "Debug menu, bazinga!\n");
 			printDirect("Press X to close debug menu.\n");
@@ -2666,12 +2684,14 @@ You shall press START to continue, with no saving abilities.");
 			{
 				// Menu selection system
 				swiWaitForVBlank();
+				mmStreamUpdate();
 				scanKeys();
 
 				int pressed = keysDown();
 				if (pressed & KEY_X)
 				{
 					clearPrint();
+					inventorySetHotbar();
 					break;
 				}
 
@@ -2759,10 +2779,84 @@ You shall press START to continue, with no saving abilities.");
 			}
 		}
 
-		if (pressed & KEY_START)
-			saveMapToFile("map.dat");
-		if (pressed & KEY_SELECT)
-			loadMapFromFile("map.dat");
+		if (pressed & KEY_START) // Pause menu
+		{
+			// Stop everything and show the pause menu
+			inventorySetHotbar();
+			clearPrint();
+			print(0, 0, "Game Paused\n");
+			printDirect("Press START to resume.\n");
+
+			int selection = 0;
+			int maxSelection = 2;
+
+			while (pmMainLoop())
+			{
+				// Menu selection system
+				swiWaitForVBlank();
+				mmStreamUpdate();
+				scanKeys();
+
+				int pressed = keysDown();
+				if (pressed & KEY_START)
+				{
+					clearPrint();
+					inventorySetHotbar();
+					break;
+				}
+				if (pressed & KEY_DOWN)
+					selection++;
+				else if (pressed & KEY_UP)
+					selection--;
+				if (selection < 0)
+					selection = maxSelection;
+				if (selection > maxSelection)
+					selection = 0;
+
+				for (int i = 0; i <= maxSelection; i++)
+				{
+					if (i == selection)
+						print(0, 2 + i, "> ");
+					else
+						print(0, 2 + i, "  ");
+					switch (i)
+					{
+					case 0:
+						printDirect("Resume Game");
+						break;
+					case 1:
+						printDirect("Save Game");
+						break;
+					case 2:
+						printDirect("Load Game");
+						break;
+					default:
+						printDirect("---");
+						break;
+					}
+				}
+
+				if (pressed & KEY_A)
+				{
+					switch (selection)
+					{
+					case 0:
+						clearPrint();
+						printDirect("Resuming game...");
+						break;
+					case 1:
+						saveMapToFile("map.dat");
+						break;
+					case 2:
+						loadMapFromFile("map.dat");
+						break;
+					default:
+						printDirect("\nUnknown implementation.");
+						break;
+					}
+				}
+			}
+		}
 
 		if (pressed & KEY_X)
 		{
@@ -3349,14 +3443,29 @@ You shall press START to continue, with no saving abilities.");
 		// Spawn randomly enemy entities
 		if (rando(0, 5000) < 1)
 		{
-			spawnEntity(ENTITY_GREEN_SLIME, scrollX + SCREEN_WIDTH + rando(-SCREEN_WIDTH, SCREEN_WIDTH), scrollY + SCREEN_HEIGHT); // Spawn a green slime at random coordinates in the screen
+			int spawnX = rando(-SCREEN_WIDTH, SCREEN_WIDTH);
+			spawnEntity(ENTITY_GREEN_SLIME, scrollX + SCREEN_WIDTH + spawnX, getHighestTileY(spawnX / 8) - entities[ENTITY_GREEN_SLIME].sizeY); // Spawn a green slime at random coordinates in the screen
 		}
 
-		player.invincibilityFrames--;
+		// Heal player every 3 seconds if not in invincibility frames
+		if (!player.invincibilityFrames && frame % (60 * 3) == 0)
+		{
+			if (player.health < player.maxHealth)
+			{
+				player.health += 1;
+			}
+		}
+
+		if (player.invincibilityFrames > 0)
+			player.invincibilityFrames--;
+
+		// Rendering Part
 
 		print(0, 0, "Health: ");
 		printValDirect(player.health);
-		printDirect("/100   ");
+		printDirect("/");
+		printValDirect(player.maxHealth);
+		printDirect("   ");
 
 		// Compute screen-relative render coordinates
 		player.renderX = player.x - scrollX;
