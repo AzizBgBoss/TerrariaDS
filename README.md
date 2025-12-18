@@ -21,7 +21,7 @@ You can join my [Discord server](https://discord.gg/zfMwPhvDc4) for more updates
 This project is not affiliated with Re-Logic or Terraria in any way. It is a fan-made project and is not intended for commercial use. All assets used in this project are use for educational and entertainment purposes only. If you're a party of Re-Logic and owner of any assets used in this project and want them removed, please contact me.
 
 ### Notes:
-- 500 downloads, I'm so proud and very thankful for anyone that tired TerrariaDS.
+- Almost a 1000 downloads, I never expected it to be this good. Thank you very much for trying my game and I hope you'll enjoy the next updates.
 - This project has huge potential, but I'm having trouble concentrating and keeping attention when working on it. Of course, I'm still going to work on it, but on a slower pace. You can contribute if you want.
 - I also freaking broke my DSi, ~~and my broke ass doesn't have money for a new system yet (thinking about a 3DS). Expect development to slow down.~~ I finally bought a 3DS! This will hopefully help.
 
