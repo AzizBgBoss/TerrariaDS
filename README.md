@@ -55,7 +55,8 @@ You can either compile the game yourself (for nightly releases) or check for sta
 - A+B+Y+X: Debug menu
 
 ## Changelog and Features
-- Don't get your hopes really up, but with time, I'm sure the game will feel much more like terraria.
+Don't get your hopes really up, but with time, I'm sure the game will feel much more like terraria.
+
 ### Version 0.0alpha ([Download](https://github.com/AzizBgBoss/TerrariaDS/releases/tag/0.0alpha)):
 Initial commit with basic project structure.
 - Basic tile rendering and scrolling. ***(done)***
@@ -66,26 +67,28 @@ Initial commit with basic project structure.
 - Basic crafting system. ***(done)***
 - Add music. ***(done)***
 
-### Version 0.1 (Working on it):
-- Probably converting all tile handling data to a struct.
+### Version 0.1 (Working on it, going to be released soon):
 - Ability to save/load different maps.
 - Add special tiles (tiles that need interaction and are not 1:1, like doors, crafting benches, chests...) ***(done for now: Doors)***
 - Add health. ***(done)***
 - Add menus. ***(done for now: Pause menu, debug menu (they don't look the best but do the job for now))***
-- Add ability to change button mappings (since many DS'es (including mine) have malfunctioning shoulder buttons because of dust accumulation under them over the years).
 - Add entities (NPCs, enemies, etc.) to the game world. ***(done for now: Green Slimes)***
 - Add attacking and damage mechanics for other entities like the stinky winky green slime. ***(done for now: Player can damage an entity thats directly touched with a weapon)***
 - Add ores. ***(done for now: Copper, Tin)***
-- Add more items.
-- Add crimson/corruption.
-- Support for maps with more height (limit is 64 for now, that means chunking should happen in both X and Y axes).
-- Add breaking animation.
-- Organize my messy code and split it to many files, won't change anything but will make it easier to add features.
 - Fix some screen jittering issues. ***(done: you shouldn't read nitro files in the loop every frame, it makes the scroll changement miss VBlank)***
 - Fix sprites being offset from their world coordinates. ***(yeah I don't even know how I made a mess that kinda works and now I don't understand it anymore if you can please help me with it)***
-- Add simple day/night cycle (just darken the rear background and start spawning enemies at night).
+- Add simple day/night cycle (just darken the rear background and start spawning enemies at night). ***(done)***
+- Probably add a bit more enemies.
+- Add sound effects. ***(done)***
 
 ### Version 0.2 (Plans):
+- Remember that jittering? I didn't get rid of it completely: When sprites are animated, each new frame is loaded from NitroFS. I need to load all the frames of existing entities to RAM directly so reading from NitroFS won't slow it down.
+- Probably converting all tile handling data to a struct.
+- Organize my messy code and split it to many files, won't change anything but will make it easier to add features.
+- Support for maps with more height (limit is 64 for now, that means chunking should happen in both X and Y axes).
+- Add swinging animation.
+- Add crimson/corruption.
+- Add ability to change button mappings (since many DS'es (including mine) have malfunctioning shoulder buttons because of dust accumulation under them over the years).
 - Add improved lighting.
 - Add more biomes (desert, jungle, etc.).
 

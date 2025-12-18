@@ -100,6 +100,9 @@ int scrollY = 0;
 int scale = 128; // 128 is x2, 256 is x1, 512 is x0.5
 int chunk = 0;
 
+int gametime = 0;
+int darkness = 0;
+
 u8 gameTerrain[MAP_WIDTH * MAP_HEIGHT] = {0};
 int gameTerrainHealth[MAP_WIDTH * MAP_HEIGHT] = {0};
 
@@ -891,6 +894,19 @@ int getElementDrop(int element)
 	}
 }
 
+int getEntityDrop(int entity)
+{
+	switch (entity)
+	{
+	case ENTITY_GREEN_SLIME:
+	case ENTITY_RED_SLIME:
+	case ENTITY_BLUE_SLIME:
+		return TILE_MUSHROOM; // Slimes drop mushrooms for now
+	default:
+		return TILE_AIR;
+	}
+}
+
 bool isToolCompatible(int tool, int tile)
 {
 	switch (tool)
@@ -963,27 +979,28 @@ int getItemSpeed(int item)
 	}
 }
 
-int rando(int min, int max)
+int rando(int min, int max) // Random function, returns a random integer between min and max (max included)
 {
-	return rand() % (max - min + 1) + min; // Max value is inclusive
+	return rand() % (max - min + 1) + min;
 }
 
 void setInventorySelection(u8 slot)
 {
-	inventorySelection = slot;
-	int x = (slot % 8) * 4 * 8;
-	int y = ((slot / 8) * -4 + 20) * 8;
+	slot = slot % (inventoryOpen ? 32 : 8);
+	inventorySelection = inventoryOpen ? clamp(slot, 0, 31) : clamp(slot, 0, 7);
+	int x = (inventorySelection % 8) * 4 * 8;
+	int y = ((inventorySelection / 8) * -4 + 20) * 8;
 	if (!craftingOpen)
 	{
 		if (inventoryOpen)
 		{
 			print(1, 7, "              ");
-			print(1, 7, getElementName(inventory[slot]));
+			print(1, 7, getElementName(inventory[inventorySelection]));
 		}
 		else
 		{
 			print(1, 19, "                ");
-			print(1, 19, getElementName(inventory[slot]));
+			print(1, 19, getElementName(inventory[inventorySelection]));
 		}
 		oamSet(&oamMain, 0, x, y, 0, 0, SpriteSize_32x32, SpriteColorFormat_256Color, inventorySelectionSprite, -1, false, false, false, false, false);
 		oamUpdate(&oamMain);
@@ -1023,7 +1040,7 @@ void renderInventory()
 	if (!craftingOpen)
 	{
 		Bg1UpFill(63);
-		for (int i = 0; i < 8 * 4; i++)
+		for (int i = 0; i < (inventoryOpen ? 8 * 4 : 8); i++) // Only show from the lowest 8 slots if using hotbar mode
 		{
 			if (inventory[i] == 0 || inventoryQuantity[i] == 0)
 			{
@@ -1039,7 +1056,7 @@ void renderInventory()
 				Bg1UpSetTile((i % 8) * 4 + 2, (i / 8) * -4 + 21, getItemTile(inventory[i]) + 1);
 				Bg1UpSetTile((i % 8) * 4 + 1, (i / 8) * -4 + 22, getItemTile(inventory[i]) + 2);
 				Bg1UpSetTile((i % 8) * 4 + 2, (i / 8) * -4 + 22, getItemTile(inventory[i]) + 3);
-				print((i % 8) * 4 + 2, (i / 8) * -4 + 23, "   ");
+				print((i % 8) * 4 + 1, (i / 8) * -4 + 23, "   ");
 				if (inventoryQuantity[i] > 1)
 				{
 					char buffer[3];
@@ -1473,6 +1490,7 @@ void interact(int x, int y)
 {
 	if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_CLOSED_1)
 	{
+		mmEffect(SFX_DOOR_OPEN);
 		// Open to the left
 		if (gameTerrain[x - 1 + y * MAP_WIDTH] == TILE_AIR &&
 			gameTerrain[x - 1 + (y + 1) * MAP_WIDTH] == TILE_AIR &&
@@ -1500,6 +1518,7 @@ void interact(int x, int y)
 	}
 	else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_CLOSED_2)
 	{
+		mmEffect(SFX_DOOR_OPEN);
 		if (gameTerrain[x - 1 + (y - 1) * MAP_WIDTH] == TILE_AIR &&
 			gameTerrain[x - 1 + y * MAP_WIDTH] == TILE_AIR &&
 			gameTerrain[x - 1 + (y + 1) * MAP_WIDTH] == TILE_AIR)
@@ -1525,6 +1544,7 @@ void interact(int x, int y)
 	}
 	else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_CLOSED_3)
 	{
+		mmEffect(SFX_DOOR_OPEN);
 		if (gameTerrain[x - 1 + (y - 2) * MAP_WIDTH] == TILE_AIR &&
 			gameTerrain[x - 1 + (y - 1) * MAP_WIDTH] == TILE_AIR &&
 			gameTerrain[x - 1 + y * MAP_WIDTH] == TILE_AIR)
@@ -1551,6 +1571,7 @@ void interact(int x, int y)
 	// Closing left-opening door
 	else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_1)
 	{
+		mmEffect(SFX_DOOR_CLOSE);
 		setGameTerrain(x, y, TILE_AIR);
 		setGameTerrain(x, y + 1, TILE_AIR);
 		setGameTerrain(x, y + 2, TILE_AIR);
@@ -1560,6 +1581,7 @@ void interact(int x, int y)
 	}
 	else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_2)
 	{
+		mmEffect(SFX_DOOR_CLOSE);
 		setGameTerrain(x - 1, y, TILE_AIR);
 		setGameTerrain(x - 1, y + 1, TILE_AIR);
 		setGameTerrain(x - 1, y + 2, TILE_AIR);
@@ -1569,6 +1591,7 @@ void interact(int x, int y)
 	}
 	else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_3)
 	{
+		mmEffect(SFX_DOOR_CLOSE);
 		setGameTerrain(x, y - 1, TILE_AIR);
 		setGameTerrain(x, y, TILE_AIR);
 		setGameTerrain(x, y + 1, TILE_AIR);
@@ -1578,6 +1601,7 @@ void interact(int x, int y)
 	}
 	else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_4)
 	{
+		mmEffect(SFX_DOOR_CLOSE);
 		setGameTerrain(x - 1, y - 1, TILE_AIR);
 		setGameTerrain(x - 1, y, TILE_AIR);
 		setGameTerrain(x - 1, y + 1, TILE_AIR);
@@ -1587,6 +1611,7 @@ void interact(int x, int y)
 	}
 	else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_5)
 	{
+		mmEffect(SFX_DOOR_CLOSE);
 		setGameTerrain(x, y - 2, TILE_AIR);
 		setGameTerrain(x + 1, y - 2, TILE_AIR);
 		setGameTerrain(x + 1, y - 1, TILE_AIR);
@@ -1595,6 +1620,7 @@ void interact(int x, int y)
 	}
 	else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_6)
 	{
+		mmEffect(SFX_DOOR_CLOSE);
 		setGameTerrain(x - 1, y - 2, TILE_AIR);
 		setGameTerrain(x, y - 2, TILE_AIR);
 		setGameTerrain(x - 1, y - 1, TILE_AIR);
@@ -1604,6 +1630,7 @@ void interact(int x, int y)
 	// Closing right-opening door
 	else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_RIGHT_1)
 	{
+		mmEffect(SFX_DOOR_CLOSE);
 		setGameTerrain(x, y, TILE_WOODEN_DOOR_CLOSED_1);
 		setGameTerrain(x, y + 1, TILE_WOODEN_DOOR_CLOSED_2);
 		setGameTerrain(x, y + 2, TILE_WOODEN_DOOR_CLOSED_3);
@@ -1613,6 +1640,7 @@ void interact(int x, int y)
 	}
 	else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_RIGHT_2)
 	{
+		mmEffect(SFX_DOOR_CLOSE);
 		setGameTerrain(x - 1, y, TILE_WOODEN_DOOR_CLOSED_1);
 		setGameTerrain(x - 1, y + 1, TILE_WOODEN_DOOR_CLOSED_2);
 		setGameTerrain(x - 1, y + 2, TILE_WOODEN_DOOR_CLOSED_3);
@@ -1622,6 +1650,7 @@ void interact(int x, int y)
 	}
 	else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_RIGHT_3)
 	{
+		mmEffect(SFX_DOOR_CLOSE);
 		setGameTerrain(x, y - 1, TILE_WOODEN_DOOR_CLOSED_1);
 		setGameTerrain(x, y, TILE_WOODEN_DOOR_CLOSED_2);
 		setGameTerrain(x, y + 1, TILE_WOODEN_DOOR_CLOSED_3);
@@ -1631,6 +1660,7 @@ void interact(int x, int y)
 	}
 	else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_RIGHT_4)
 	{
+		mmEffect(SFX_DOOR_CLOSE);
 		setGameTerrain(x - 1, y - 1, TILE_WOODEN_DOOR_CLOSED_1);
 		setGameTerrain(x - 1, y, TILE_WOODEN_DOOR_CLOSED_2);
 		setGameTerrain(x - 1, y + 1, TILE_WOODEN_DOOR_CLOSED_3);
@@ -1640,6 +1670,7 @@ void interact(int x, int y)
 	}
 	else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_RIGHT_5)
 	{
+		mmEffect(SFX_DOOR_CLOSE);
 		setGameTerrain(x, y - 2, TILE_WOODEN_DOOR_CLOSED_1);
 		setGameTerrain(x, y - 1, TILE_WOODEN_DOOR_CLOSED_2);
 		setGameTerrain(x, y, TILE_WOODEN_DOOR_CLOSED_3);
@@ -1649,6 +1680,7 @@ void interact(int x, int y)
 	}
 	else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_RIGHT_6)
 	{
+		mmEffect(SFX_DOOR_CLOSE);
 		setGameTerrain(x - 1, y - 2, TILE_WOODEN_DOOR_CLOSED_1);
 		setGameTerrain(x, y - 2, TILE_WOODEN_DOOR_CLOSED_2);
 		setGameTerrain(x - 1, y - 1, TILE_WOODEN_DOOR_CLOSED_3);
@@ -1696,6 +1728,7 @@ int spawnEntity(int type, int x, int y)
 void killEntity(int id)
 {
 	entity[id].exists = false;
+	dropItem(entity[id].x / 8, entity[id].y / 8, getEntityDrop(entity[id].type), rando(1, 3));
 }
 
 bool checkPlayerCollision(int x, int y, int sizeX, int sizeY)
@@ -1734,6 +1767,7 @@ void damageEntity(int id, int damage)
 {
 	if (entity[id].exists)
 	{
+		mmEffect(SFX_HIT);
 		entity[id].health -= damage;
 	}
 }
@@ -1890,6 +1924,14 @@ void playerDamage(int damage)
 	{
 		player.invincibilityFrames = 120; // 2 seconds of invincibility
 	}
+}
+
+void playerHeal(int health)
+{
+	health = clamp(health, 0, 400);
+	player.health += health;
+	if (player.health > player.maxHealth)
+		player.health = player.maxHealth; // Cap at max health
 }
 
 // Hash function
@@ -2365,6 +2407,11 @@ int main(void)
 	mmLoadEffect(SFX_LAYER_HIT_1);
 	mmLoadEffect(SFX_LAYER_HIT_2);
 	mmLoadEffect(SFX_LAYER_KILLED);
+	mmLoadEffect(SFX_MUSHROOM);
+	mmLoadEffect(SFX_SWING);
+	mmLoadEffect(SFX_HIT);
+	mmLoadEffect(SFX_DOOR_OPEN);
+	mmLoadEffect(SFX_DOOR_CLOSE);
 
 	if (!nitroFSInit(NULL))
 	{
@@ -2464,6 +2511,8 @@ You shall press START to continue, with no saving abilities.");
 
 	storeOriginalPalette();
 	fadeInPalette(64, 8);
+
+mainMenu:
 
 	videoSetMode(MODE_0_2D | DISPLAY_BG0_ACTIVE | DISPLAY_BG3_ACTIVE);
 
@@ -2581,8 +2630,8 @@ You shall press START to continue, with no saving abilities.");
 	}
 	fclose(audioFile);
 
-	videoSetMode(MODE_0_2D | DISPLAY_BG0_ACTIVE | DISPLAY_BG1_ACTIVE | DISPLAY_BG3_ACTIVE);
-	videoSetModeSub(MODE_3_2D | DISPLAY_BG0_ACTIVE | DISPLAY_BG3_ACTIVE);
+	videoSetMode(MODE_0_2D | DISPLAY_BG0_ACTIVE | DISPLAY_BG1_ACTIVE | DISPLAY_BG3_ACTIVE);	   // BG0: Background (item slots, etc...), BG1: Item tiles, BG3: Text
+	videoSetModeSub(MODE_3_2D | DISPLAY_BG0_ACTIVE | DISPLAY_BG1_ACTIVE | DISPLAY_BG3_ACTIVE); // BG0: Background, BG1: Black background (to darken bg0), BG3: Game terrain
 
 	vramSetBankA(VRAM_A_MAIN_BG);
 	vramSetBankB(VRAM_B_MAIN_SPRITE);
@@ -2603,6 +2652,20 @@ You shall press START to continue, with no saving abilities.");
 	f = fopen("nitro:/inv.pal.bin", "rb");
 	fread((void *)BG_PALETTE, 1, invPalLen, f);
 	fclose(f);
+
+	dmaFillHalfWords(0, (void *)SCREEN_BASE_BLOCK_SUB(1), 2048);  // Fill the background with tiles 0
+	dmaFillHalfWords(0x6666, (void *)CHAR_BASE_BLOCK_SUB(2), 32); // Fill the tiles data with the color black (index 6 in the palette)
+	BGCTRL_SUB[1] =
+		BG_TILE_BASE(2) |
+		BG_MAP_BASE(1) |
+		BG_COLOR_16 |
+		BG_32x32 |
+		BG_PRIORITY(3); // behind BG0
+
+	REG_BLDCNT_SUB =
+		BLEND_ALPHA |
+		BLEND_SRC_BG0 | // world background
+		BLEND_DST_BG1;	// black BG
 
 	oamInit(&oamMain, SpriteMapping_1D_128, false);
 
@@ -2822,7 +2885,7 @@ You shall press START to continue, with no saving abilities.");
 					switch (i)
 					{
 					case 0:
-						printDirect("Resume Game");
+						printDirect("Quit to main menu");
 						break;
 					case 1:
 						printDirect("Save Game");
@@ -2842,7 +2905,10 @@ You shall press START to continue, with no saving abilities.");
 					{
 					case 0:
 						clearPrint();
-						printDirect("Resuming game...");
+						for (int i = 0; i < 128; i++)
+							oamSet(&oamSub, i, 0, 0, 0, 0, SpriteSize_8x8, SpriteColorFormat_256Color, nullSprite, -1, false, false, false, false, false);
+						oamUpdate(&oamSub);
+						goto mainMenu;
 						break;
 					case 1:
 						saveMapToFile("map.dat");
@@ -2860,18 +2926,12 @@ You shall press START to continue, with no saving abilities.");
 
 		if (pressed & KEY_X)
 		{
-			if (inventorySelection < 8 * 4 - 1)
-				setInventorySelection(inventorySelection + 1);
-			else
-				setInventorySelection(0);
+			setInventorySelection(inventorySelection + 1);
 		}
 
 		if (pressed & KEY_Y)
 		{
-			if (inventorySelection > 0)
-				setInventorySelection(inventorySelection - 1);
-			else
-				setInventorySelection(8 * 4 - 1);
+			setInventorySelection(inventorySelection - 1);
 		}
 
 		if (held & KEY_DOWN)
@@ -3190,10 +3250,20 @@ You shall press START to continue, with no saving abilities.");
 								int e = detectEntity(worldX, worldY); // Check if an entity is at the touched location
 								if (e != -1 && inventory[inventorySelection] >= 100 && inventory[inventorySelection] < 200)
 								{
+									mmEffect(SFX_SWING);
 									damageEntity(e, 5);
 								}
-								else
+								else if (inventory[inventorySelection] == TILE_MUSHROOM && inventoryQuantity[inventorySelection] && player.health < player.maxHealth)
+								{
+									mmEffect(SFX_MUSHROOM);
+									playerHeal(10);
+									setInventory(inventorySelection, inventory[inventorySelection], inventoryQuantity[inventorySelection] - 1);
+								}
+								else if (gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH] != 0)
 									interact(worldTouchX, worldTouchY);
+								else // Make a swing sfx so the user knows the touch is registered but their dumbass can't use it
+									mmEffect(SFX_SWING);
+
 								interacting = false;
 							}
 						}
@@ -3440,13 +3510,6 @@ You shall press START to continue, with no saving abilities.");
 			}
 		}
 
-		// Spawn randomly enemy entities
-		if (rando(0, 5000) < 1)
-		{
-			int spawnX = rando(-SCREEN_WIDTH, SCREEN_WIDTH);
-			spawnEntity(ENTITY_GREEN_SLIME, scrollX + SCREEN_WIDTH + spawnX, getHighestTileY(spawnX / 8) - entities[ENTITY_GREEN_SLIME].sizeY); // Spawn a green slime at random coordinates in the screen
-		}
-
 		// Heal player every 3 seconds if not in invincibility frames
 		if (!player.invincibilityFrames && frame % (60 * 3) == 0)
 		{
@@ -3458,6 +3521,35 @@ You shall press START to continue, with no saving abilities.");
 
 		if (player.invincibilityFrames > 0)
 			player.invincibilityFrames--;
+
+		// Time transitioning: 0 (for a while) -> goes slowly to 16 (full night) -> stays at 16 (for a while) -> goes slowly back to 0 -> repeat
+		// One whole day is about 120 seconds
+
+		if (frame % 60 == 0) // Every second
+		{
+			gametime++;
+			if (gametime >= 120)
+				gametime = 0;
+
+			if (gametime < 60 - 16)
+				darkness = 0; // Day time
+			else if (gametime >= 60 - 16 && gametime < 60)
+				darkness = (gametime - (60 - 16)); // Transition to night
+			else if (gametime >= 60 && gametime < 120 - 16)
+				darkness = 16; // Night time
+			else if (gametime >= 120 - 16 && gametime < 120)
+				darkness = 16 - (gametime - (120 - 16)); // Transition to day
+
+			if (gametime >= 60 && gametime < 120 - 16 && rando(0, 60) < 5) // Night time
+			{
+				int spawnX = rando(-SCREEN_WIDTH, SCREEN_WIDTH);
+				spawnEntity(ENTITY_GREEN_SLIME, scrollX + SCREEN_WIDTH + spawnX, getHighestTileY(spawnX / 8) - entities[ENTITY_GREEN_SLIME].sizeY); // Spawn a green slime at random coordinates in the screen
+			}
+
+			REG_BLDALPHA_SUB =
+				(16 - darkness) | // BG0 weight
+				(darkness << 8);  // BG1 weight
+		}
 
 		// Rendering Part
 
