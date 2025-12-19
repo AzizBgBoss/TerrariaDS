@@ -140,3 +140,11 @@ This will create a `TerrariaDS.nds` file in the root directory of the project.
 This game is totally free and if you enjoy this project and would like to support its development, any donation, no matter how small, would be greatly appreciated. I'm a teenager and I really don't have much time with school and other stuff, so your generosity helps motivate me and dedicate more time to continue working on TerrariaDS and bring new features to life. Thank you for considering a contribution!
 - USDT (TRX20): TVq9gPQP2xTybbA2QtWrXBuQgvxZSVdiXm
 - USDT (ETH): 0x63FCB723F9EaA3100b466f229067227EfA461Bf7
+
+## Screenshots
+![Screenshot 1](media/screenshot%20(1).png)
+![Screenshot 2](media/screenshot%20(2).png)
+![Screenshot 3](media/screenshot%20(3).png)
+![Screenshot 4](media/screenshot%20(4).png)
+![Screenshot 5](media/screenshot%20(5).png)
+![Screenshot 6](media/screenshot%20(6).png)
