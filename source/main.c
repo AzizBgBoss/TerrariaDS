@@ -2419,6 +2419,18 @@ void generateMap()
 		}
 	}
 
+	// Clean Inventory
+
+	for (int i = 0; i < 8 * 4; i++)
+	{
+		inventory[i] = TILE_AIR;
+		inventoryQuantity[i] = 0;
+	}
+
+	player.health = 100;
+	player.maxHealth = 100;
+	player.invincibilityFrames = 300;
+
 	printDirect("Giving you some tools to start with...");
 	giveInventory(ITEM_COPPER_LONGSWORD, 1);
 	giveInventory(ITEM_COPPER_AXE, 1);
