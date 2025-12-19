@@ -2430,6 +2430,7 @@ void generateMap()
 	player.health = 100;
 	player.maxHealth = 100;
 	player.invincibilityFrames = 300;
+	gametime = 0;
 
 	printDirect("Giving you some tools to start with...");
 	giveInventory(ITEM_COPPER_LONGSWORD, 1);
@@ -2829,6 +2830,7 @@ mainMenu:
 					{
 						clearPrint();
 						printDirect("Map loaded successfully!");
+						gametime = 0;
 					}
 					else
 					{
