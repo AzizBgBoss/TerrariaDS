@@ -13,6 +13,8 @@ AzizBgBoss - https://github.com/AzizBgBoss
 #include <stdlib.h>
 #include <time.h>
 #include <filesystem.h>
+#include <dirent.h>
+#include <errno.h>
 
 #include "tilemap.h"
 #include "bg.h"
@@ -24,6 +26,8 @@ AzizBgBoss - https://github.com/AzizBgBoss
 #include "items.h"
 #include "intro.h"
 #include "intro2.h"
+#include "intro3.h"
+#include "intro4.h"
 #include "mainscreenbg.h"
 #include "mainscreenbg2.h"
 #include "mainscreenui.h"
@@ -32,6 +36,8 @@ AzizBgBoss - https://github.com/AzizBgBoss
 
 #define MAP_WIDTH 1024
 #define MAP_HEIGHT 64
+
+#define DAY_LENGTH 600
 
 #define MAX_ITEMS 16 // Maximum items to be rendered
 #define ENTITY_COUNT 16
@@ -103,6 +109,8 @@ int chunk = 0;
 int gametime = 0;
 int darkness = 0;
 
+char worldFileName[64];
+
 u8 gameTerrain[MAP_WIDTH * MAP_HEIGHT] = {0};
 int gameTerrainHealth[MAP_WIDTH * MAP_HEIGHT] = {0};
 
@@ -119,6 +127,37 @@ bool inventoryOpen = false;
 bool craftingOpen = false;
 bool interacting;
 int touchFrame;
+
+const char *titleSplashes[] = {
+	"Does this work?",
+	"Definetly not inspired by a small game called Terraria?!",
+	"Always patch the ROM kids, you don't want to meet him...",
+	"bazinga",
+	"Yeah no wonder they didn't make a version for the DS...",
+	"Ain't that fantastic?",
+	"By AzizBgBoss, for the DS community!",
+	"67",
+	"No braincells harmed while making this",
+	"If this crashes, trust me, it’s a feature",
+	"Now with 2 percent fewer bugs!",
+	"Runs at a positive amount of FPS",
+	"Built with duct tape and hope",
+	"Tested on real hardware (once per leap year)",
+	"Yeah we're good it works on my DS",
+	"Blame libfat not me",
+	"This took way too long",
+	"67, again...",
+	"What? You've never seen trees float before?",
+	"Dig straight down for a (painful) surprise!",
+	"DS homebrew never dies",
+	"Powered by late nights and caffeine",
+	"If you blow real hard under the shoulder buttons, they should work again (make sure any saliva doesn't get there).",
+	"4 megabytes of RAM? How generous!",
+	"Check the other games I made on my github!",
+	"TerrariaDS would be honored to run on your 3DS",
+	"May the long splash screen at the start of the game fix your fish-ass attention span",
+	"1K downloads?! Thanks, I LOVE YOU!",
+};
 
 u16 *nullSprite;
 
@@ -509,27 +548,6 @@ static int clamp(int val, int min, int max)
 	if (val > max)
 		return max;
 	return val;
-}
-
-char *randomSplash(int n)
-{
-	switch (n)
-	{
-	case 0:
-		return "Does this work?";
-	case 1:
-		return "Definetly not inspired by a small game called Terraria?!";
-	case 2:
-		return "Always patch the ROM kids, you don't want to meet him...";
-	case 3:
-		return "bazinga";
-	case 4:
-		return "Yeah no wonder they didn't make a version for the DS...";
-	case 5:
-		return "Ain't that fantastic?";
-	default:
-		return "By AzizBgBoss, for the DS community!";
-	}
 }
 
 int getElementTile(int tile, int x, int y) // Tile will change based on surrounding tiles
@@ -1812,13 +1830,24 @@ void setEntityAnimFrame(int id, int frame)
 
 // I honestly wanted to make a struct of SaveData but i had some problems with its stack or whatever it is
 
-bool saveMapToFile(const char *filename)
+bool saveMapToFile(const char *filen)
 {
-	FILE *file = fopen(filename, "wb"); // "wb" = write binary
 	mmEffect(SFX_ENU_CLOSE);
+
+	if (mkdir("terrarias/", 0777) == -1 && errno != EEXIST)
+	{
+		print(0, 0, "Failed to create directory 'terrarias/'");
+		return false;
+	}
+
+	char filename[128];
+	snprintf(filename, sizeof(filename), "terrarias/%s", filen);
+
+	FILE *file = fopen(filename, "wb"); // "wb" = write binary
 	if (!file)
 	{
-		print(0, 0, "Failed to open file for writing: map.dat");
+		print(0, 0, "Failed to open file for writing: ");
+		printDirect(filename);
 		return false;
 	}
 
@@ -1829,7 +1858,6 @@ bool saveMapToFile(const char *filename)
 	bytesWritten += fwrite(inventory, 1, sizeof(inventory), file);
 	bytesWritten += fwrite(inventoryQuantity, 1, sizeof(inventoryQuantity), file);
 	fclose(file);
-	print(0, 0, "File closed");
 
 	if (bytesWritten != 4 + sizeof(gameTerrain) + sizeof(inventory) + sizeof(inventoryQuantity))
 	{
@@ -1837,17 +1865,23 @@ bool saveMapToFile(const char *filename)
 		return false;
 	}
 
-	print(0, 0, "Map saved to map.dat");
+	print(0, 0, "Map saved to ");
+	printDirect(filename);
 	return true;
 }
 
-bool loadMapFromFile(const char *filename)
+bool loadMapFromFile(const char *filen)
 {
-	FILE *file = fopen(filename, "rb"); // "rb" = read binary
 	mmEffect(SFX_ENU_OPEN);
+
+	char filename[128];
+	snprintf(filename, sizeof(filename), "terrarias/%s", filen);
+
+	FILE *file = fopen(filename, "rb"); // "rb" = read binary
 	if (!file)
 	{
-		print(0, 0, "Failed to open file for reading: map.dat");
+		print(0, 0, "Failed to open file for reading: ");
+		printDirect(filename);
 		return false;
 	}
 
@@ -1856,7 +1890,9 @@ bool loadMapFromFile(const char *filename)
 	size_t bytesRead = fread(&magic, 1, 4, file);
 	if (magic != 0xA212B055)
 	{
-		print(0, 0, "Invalid map file: map.dat");
+		print(0, 0, "Invalid map file: ");
+		printDirect(filename);
+		fclose(file);
 		return false;
 	}
 	bytesRead += fread(gameTerrain, 1, sizeof(gameTerrain), file);
@@ -1875,7 +1911,11 @@ bool loadMapFromFile(const char *filename)
 	chunk = -6;
 	renderInventory();
 	renderCrafting();
-	print(0, 0, "Map loaded from map.dat");
+	print(0, 0, "Map loaded from ");
+	printDirect(filename);
+
+	strcpy(worldFileName, filen);
+
 	return true;
 }
 
@@ -2112,6 +2152,60 @@ float fractalPerlin2D(float x, float y, int octaves, float persistence, float sc
 	return total / maxAmplitude; // normalize to -1..1
 }
 
+void generateWorldName(char *nameBuffer, size_t bufferSize)
+{
+	const char *adjectives[] = {
+		"Lush",
+		"Dark",
+		"Misty",
+		"Silent",
+		"Ancient",
+		"Frozen",
+		"Golden",
+		"Hidden",
+		"Enchanted",
+		"Whispering",
+		"Vast",
+	};
+	const char *nouns[] = {
+		"Valley",
+		"Forest",
+		"Mountain",
+		"River",
+		"Cavern",
+		"Island",
+		"Plains",
+		"Hills",
+		"Swamp",
+		"Desert",
+		"House",
+		"Home",
+	};
+	const char *ofPhrases[] = {
+		"Doom",
+		"Mystery",
+		"Shadows",
+		"Light",
+		"Wonders",
+		"Echoes",
+		"Dreams",
+		"Legends",
+		"Secrets",
+		"Magic",
+		"Happiness",
+		"Joy",
+		"Mischief",
+		"Adventure",
+		"Misery",
+	};
+
+	int adjIndex = rando(0, sizeof(adjectives) / sizeof(adjectives[0]) - 1);
+	int nounIndex = rando(0, sizeof(nouns) / sizeof(nouns[0]) - 1);
+	int ofIndex = rando(0, sizeof(ofPhrases) / sizeof(ofPhrases[0]) - 1);
+
+	snprintf(nameBuffer, bufferSize, "%s %s of %s", adjectives[adjIndex], nouns[nounIndex], ofPhrases[ofIndex]);
+}
+
 #define TREE_CHANCE 10
 #define MUSHROOM_CHANCE 10
 #define MIN_GRASS_HEIGHT 12
@@ -2124,9 +2218,16 @@ void generateMap()
 	u8 grassSurface[MAP_WIDTH];
 	u8 stoneSurface[MAP_WIDTH];
 	int seed = rando(0, 99999999);
-	printDirect("\nSeed: ");
+
+	generateWorldName(worldFileName, sizeof(worldFileName));
+
+	printDirect("Seed: ");
 	printValDirect(seed);
-	printDirect("\nGenerating terrain...\n");
+	printDirect("\nGenerating ");
+	printDirect(worldFileName);
+	printDirect("...\n");
+	strcat(worldFileName, ".ter");
+
 	for (int x = 0; x < MAP_WIDTH; x++)
 	{
 		float wave = fractalPerlin1D(x, 4, 0.4f, 0.01f, seed) * 20.0f;
@@ -2496,6 +2597,30 @@ You shall press START to continue, with no saving abilities.");
 		fread((void *)BG_PALETTE, 1, intro2PalLen, f);
 		fclose(f);
 	}
+	else if (intro < 3)
+	{
+		f = fopen("nitro:/intro3.img.bin", "rb");
+		fread((void *)CHAR_BASE_BLOCK(1), 1, intro3TilesLen, f);
+		fclose(f);
+		f = fopen("nitro:/intro3.map.bin", "rb");
+		fread((void *)SCREEN_BASE_BLOCK(0), 1, intro3MapLen, f);
+		fclose(f);
+		f = fopen("nitro:/intro3.pal.bin", "rb");
+		fread((void *)BG_PALETTE, 1, intro3PalLen, f);
+		fclose(f);
+	}
+	else if (intro < 6)
+	{
+		f = fopen("nitro:/intro4.img.bin", "rb");
+		fread((void *)CHAR_BASE_BLOCK(1), 1, intro4TilesLen, f);
+		fclose(f);
+		f = fopen("nitro:/intro4.map.bin", "rb");
+		fread((void *)SCREEN_BASE_BLOCK(0), 1, intro4MapLen, f);
+		fclose(f);
+		f = fopen("nitro:/intro4.pal.bin", "rb");
+		fread((void *)BG_PALETTE, 1, intro4PalLen, f);
+		fclose(f);
+	}
 	else
 	{
 		f = fopen("nitro:/intro.img.bin", "rb");
@@ -2577,7 +2702,7 @@ mainMenu:
 	fread((void *)BG_PALETTE_SUB, 1, bgPalLen, f);
 	fclose(f);
 
-	print(0, 17, randomSplash(rando(0, 10)));
+	print(0, 17, titleSplashes[rando(0, sizeof(titleSplashes) / sizeof(titleSplashes[0]) - 1)]);
 
 	int x = 0;
 
@@ -2590,6 +2715,12 @@ mainMenu:
 
 		scanKeys();
 		int pressed = keysDown();
+
+		if (pressed & KEY_START)
+		{
+			return 0;
+		}
+
 		if (pressed & KEY_TOUCH)
 		{
 			touchRead(&touch);
@@ -2605,7 +2736,84 @@ mainMenu:
 				mmStreamClose();
 				if (fatInitDefault())
 				{
-					if (loadMapFromFile("map.dat"))
+					// Player wants to load a world:
+					// We open the local ./terrarias/ folder and list every .ter file (world)
+
+					char worldFiles[10][64];
+					int worldFileCount = 0;
+					// List all .ter files in the terrarias directory
+					DIR *dir;
+					struct dirent *ent;
+					if ((dir = opendir("terrarias/")) != NULL)
+					{
+						// printDirect("Found worlds:\n");
+						while ((ent = readdir(dir)) != NULL)
+						{
+							if (strstr(ent->d_name, ".ter") != NULL)
+							{
+								strcpy(worldFiles[worldFileCount], ent->d_name);
+								worldFileCount++;
+								if (worldFileCount >= 10)
+									break; // Max 10 worlds for now
+							}
+						}
+						closedir(dir);
+					}
+					else
+					{
+						// Could not open directory
+						printDirect("Could not open terrarias/ directory!\nFallback to generating map...");
+						generateMap();
+						break;
+					}
+
+					if (worldFileCount == 0)
+					{
+						printDirect("No worlds found in terrarias/ folder!\nFallback to generating map...");
+						generateMap();
+						break;
+					}
+
+					// Let player choose a world
+					int chosenIndex = 0;
+					while (1)
+					{
+						swiWaitForVBlank();
+						mmStreamUpdate();
+						clearPrint();
+						printDirect("Select a world to load:\n\n");
+						for (int i = 0; i < worldFileCount; i++)
+						{
+							if (i == chosenIndex)
+								printDirect("> ");
+							else
+								printDirect("  ");
+							printDirect(worldFiles[i]);
+							printDirect("\n");
+						}
+
+						scanKeys();
+						int down = keysDown();
+
+						if (down & KEY_UP)
+						{
+							chosenIndex--;
+							if (chosenIndex < 0)
+								chosenIndex = worldFileCount - 1;
+						}
+						else if (down & KEY_DOWN)
+						{
+							chosenIndex++;
+							if (chosenIndex >= worldFileCount)
+								chosenIndex = 0;
+						}
+						else if (down & KEY_A)
+						{
+							break; // World chosen
+						}
+					}
+
+					if (loadMapFromFile(worldFiles[chosenIndex]))
 					{
 						clearPrint();
 						printDirect("Map loaded successfully!");
@@ -2847,7 +3055,8 @@ mainMenu:
 			// Stop everything and show the pause menu
 			inventorySetHotbar();
 			clearPrint();
-			print(0, 0, "Game Paused\n");
+			printDirect(worldFileName);
+			printDirect("\nGame Paused\n");
 			printDirect("Press START to resume.\n");
 
 			int selection = 0;
@@ -2879,9 +3088,9 @@ mainMenu:
 				for (int i = 0; i <= maxSelection; i++)
 				{
 					if (i == selection)
-						print(0, 2 + i, "> ");
+						print(0, 4 + i, "> ");
 					else
-						print(0, 2 + i, "  ");
+						print(0, 4 + i, "  ");
 					switch (i)
 					{
 					case 0:
@@ -2911,10 +3120,10 @@ mainMenu:
 						goto mainMenu;
 						break;
 					case 1:
-						saveMapToFile("map.dat");
+						saveMapToFile(worldFileName);
 						break;
 					case 2:
-						loadMapFromFile("map.dat");
+						loadMapFromFile(worldFileName);
 						break;
 					default:
 						printDirect("\nUnknown implementation.");
@@ -3523,24 +3732,24 @@ mainMenu:
 			player.invincibilityFrames--;
 
 		// Time transitioning: 0 (for a while) -> goes slowly to 16 (full night) -> stays at 16 (for a while) -> goes slowly back to 0 -> repeat
-		// One whole day is about 120 seconds
+		// One whole day is about 10 minutes (600 seconds)
 
 		if (frame % 60 == 0) // Every second
 		{
 			gametime++;
-			if (gametime >= 120)
+			if (gametime >= DAY_LENGTH)
 				gametime = 0;
 
-			if (gametime < 60 - 16)
+			if (gametime < DAY_LENGTH / 2 - 16)
 				darkness = 0; // Day time
-			else if (gametime >= 60 - 16 && gametime < 60)
-				darkness = (gametime - (60 - 16)); // Transition to night
-			else if (gametime >= 60 && gametime < 120 - 16)
+			else if (gametime >= DAY_LENGTH / 2 - 16 && gametime < DAY_LENGTH / 2)
+				darkness = (gametime - (DAY_LENGTH / 2 - 16)); // Transition to night
+			else if (gametime >= DAY_LENGTH / 2 && gametime < DAY_LENGTH - 16)
 				darkness = 16; // Night time
-			else if (gametime >= 120 - 16 && gametime < 120)
-				darkness = 16 - (gametime - (120 - 16)); // Transition to day
+			else if (gametime >= DAY_LENGTH - 16 && gametime < DAY_LENGTH)
+				darkness = 16 - (gametime - (DAY_LENGTH - 16)); // Transition to day
 
-			if (gametime >= 60 && gametime < 120 - 16 && rando(0, 60) < 5) // Night time
+			if (gametime >= DAY_LENGTH / 2 && gametime < DAY_LENGTH - 16 && rando(0, 60) < 5) // Night time
 			{
 				int spawnX = rando(-SCREEN_WIDTH, SCREEN_WIDTH);
 				spawnEntity(ENTITY_GREEN_SLIME, scrollX + SCREEN_WIDTH + spawnX, getHighestTileY(spawnX / 8) - entities[ENTITY_GREEN_SLIME].sizeY); // Spawn a green slime at random coordinates in the screen

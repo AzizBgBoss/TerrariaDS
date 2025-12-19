@@ -68,7 +68,7 @@ Initial commit with basic project structure.
 - Add music. ***(done)***
 
 ### Version 0.1 (Working on it, going to be released soon):
-- Ability to save/load different maps.
+- Ability to save/load different maps. ***(done: you can only see 10 maps for now)***
 - Add special tiles (tiles that need interaction and are not 1:1, like doors, crafting benches, chests...) ***(done for now: Doors)***
 - Add health. ***(done)***
 - Add menus. ***(done for now: Pause menu, debug menu (they don't look the best but do the job for now))***
@@ -82,6 +82,7 @@ Initial commit with basic project structure.
 - Add sound effects. ***(done)***
 
 ### Version 0.2 (Plans):
+- Ability to save character data and world data independently.
 - Remember that jittering? I didn't get rid of it completely: When sprites are animated, each new frame is loaded from NitroFS. I need to load all the frames of existing entities to RAM directly so reading from NitroFS won't slow it down.
 - Probably converting all tile handling data to a struct.
 - Organize my messy code and split it to many files, won't change anything but will make it easier to add features.
