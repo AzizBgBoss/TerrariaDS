@@ -1171,7 +1171,7 @@ void inventorySetFull()
 void inventorySetCrafting()
 {
 	lcdMainOnBottom();
-	inventoryOpen = false;
+	inventoryOpen = true;
 	craftingOpen = true;
 	Bg0UpFill(0);
 	Bg1UpFill(63);
