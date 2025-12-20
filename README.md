@@ -56,7 +56,7 @@ You can either compile the game yourself (for nightly releases) or check for sta
 ## Changelog and Features
 Don't get your hopes really up, but with time, I'm sure the game will feel much more like terraria.
 
-### Version 0.0alpha ([![Download](https://img.shields.io/github/downloads/AzizBgBoss/TerrariaDS/0.0alpha.svg?label=Download)](https://github.com/AzizBgBoss/TerrariaDS/releases/tag/0.0alpha)):
+### Version 0.0alpha ([![Download](https://img.shields.io/github/downloads/AzizBgBoss/TerrariaDS/total.svg?label=Download)](https://github.com/AzizBgBoss/TerrariaDS/releases/tag/0.0alpha)):
 Initial commit with basic project structure.
 - Basic tile rendering and scrolling. ***(done)***
 - Touch input handling for world interaction and inventory interaction. ***(done)***
@@ -66,7 +66,7 @@ Initial commit with basic project structure.
 - Basic crafting system. ***(done)***
 - Add music. ***(done)***
 
-### Version 0.1 ([![Download](https://img.shields.io/github/downloads/AzizBgBoss/TerrariaDS/0.1.svg?label=Download)](https://github.com/AzizBgBoss/TerrariaDS/releases/tag/0.1)):
+### Version 0.1 ([![Download](https://img.shields.io/github/downloads/AzizBgBoss/TerrariaDS/total.svg?label=Download)](https://github.com/AzizBgBoss/TerrariaDS/releases/tag/0.1)):
 - Ability to save/load different maps. ***(done: you can only see 10 maps for now)***
 - Add special tiles (tiles that need interaction and are not 1:1, like doors, crafting benches, chests...) ***(done for now: Doors)***
 - Add health. ***(done)***
