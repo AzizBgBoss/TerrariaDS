@@ -1,5 +1,5 @@
 ![TerrariaDS Logo](media/logo.png)<br>
-[![Downloads](https://img.shields.io/github/downloads/AzizBgBoss/TerrariaDS/total.svg?label=downloads)](https://github.com/AzizBgBoss/TerrariaDS/releases)
+[![Downloads](https://img.shields.io/github/downloads/AzizBgBoss/TerrariaDS/total.svg?label=Download)](https://github.com/AzizBgBoss/TerrariaDS/releases)
 # TerrariaDS
 A terraria remake (not port) for the Nintendo DS made by AzizBgBoss, started on the 26th of July 2025.<br>
 
@@ -26,8 +26,7 @@ This project is not affiliated with Re-Logic or Terraria in any way. It is a fan
 - I also freaking broke my DSi, ~~and my broke ass doesn't have money for a new system yet (thinking about a 3DS). Expect development to slow down.~~ I finally bought a 3DS! This will hopefully help.
 
 ## Installation:
-You can either compile the game yourself (for nightly releases) or check for stable releases in the Releases page. Please check the Tested devices part before starting.<br><br>
-[![Downloads](https://img.shields.io/github/downloads/AzizBgBoss/TerrariaDS/total.svg?label=downloads)](https://github.com/AzizBgBoss/TerrariaDS/releases)
+You can either compile the game yourself (for nightly releases) or check for stable releases in the Releases page. Please check the Tested devices part before starting.
 
 ### Tested devices:
 | System                           | Functionality             | Cons                  | Notes                                                                                                       |
@@ -57,7 +56,7 @@ You can either compile the game yourself (for nightly releases) or check for sta
 ## Changelog and Features
 Don't get your hopes really up, but with time, I'm sure the game will feel much more like terraria.
 
-### Version 0.0alpha ([Download](https://github.com/AzizBgBoss/TerrariaDS/releases/tag/0.0alpha)):
+### Version 0.0alpha ([![Download](https://img.shields.io/github/downloads/AzizBgBoss/TerrariaDS/0.0alpha.svg?label=Download)](https://github.com/AzizBgBoss/TerrariaDS/releases/tag/0.0alpha)):
 Initial commit with basic project structure.
 - Basic tile rendering and scrolling. ***(done)***
 - Touch input handling for world interaction and inventory interaction. ***(done)***
@@ -67,7 +66,7 @@ Initial commit with basic project structure.
 - Basic crafting system. ***(done)***
 - Add music. ***(done)***
 
-### Version 0.1 ([Download](https://github.com/AzizBgBoss/TerrariaDS/releases/tag/0.1)):
+### Version 0.1 ([![Download](https://img.shields.io/github/downloads/AzizBgBoss/TerrariaDS/0.1.svg?label=Download)](https://github.com/AzizBgBoss/TerrariaDS/releases/tag/0.1)):
 - Ability to save/load different maps. ***(done: you can only see 10 maps for now)***
 - Add special tiles (tiles that need interaction and are not 1:1, like doors, crafting benches, chests...) ***(done for now: Doors)***
 - Add health. ***(done)***
