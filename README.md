@@ -52,6 +52,7 @@ You can either compile the game yourself (for nightly releases) or check for sta
 - R: Open inventory
 - Start: Pause menu
 - A+B+Y+X: Debug menu
+- Tap/Hold a block: Interact with/break the block (with the appropriate item of course)
 
 ## Changelog and Features
 Don't get your hopes really up, but with time, I'm sure the game will feel much more like terraria.
