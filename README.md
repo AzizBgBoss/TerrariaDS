@@ -21,9 +21,9 @@ You can join my [Discord server](https://discord.gg/zfMwPhvDc4) for more updates
 This project is not affiliated with Re-Logic or Terraria in any way. It is a fan-made project and is not intended for commercial use. All assets used in this project are use for educational and entertainment purposes only. If you're a party of Re-Logic and owner of any assets used in this project and want them removed, please contact me.
 
 ### Notes:
-- Almost a 1000 downloads, I never expected it to be this good. Thank you very much for trying my game and I hope you'll enjoy the next updates.
+- Almost 4000 downloads, man I'm really grateful. Thanks for trying out my simple game.
 - This project has huge potential, but I'm having trouble concentrating and keeping attention when working on it. Of course, I'm still going to work on it, but on a slower pace. You can contribute if you want.
-- I also freaking broke my DSi, ~~and my broke ass doesn't have money for a new system yet (thinking about a 3DS). Expect development to slow down.~~ I finally bought a 3DS! This will hopefully help.
+- I got a bit tired of TerrariaDS, I'm working on another DS game. I'm not going to abandon it, but I'm going to take a tiny break.
 
 ## Installation:
 You can either compile the game yourself (for nightly releases) or check for stable releases in the Releases page. Please check the Tested devices part before starting.
@@ -80,7 +80,8 @@ Initial commit with basic project structure.
 - Add simple day/night cycle (just darken the rear background and start spawning enemies at night). ***(done)***
 - Add sound effects. ***(done)***
 
-### Version 0.2 (Plans):
+### Version 0.2 (In progress):
+- Rework special tiles.
 - Probably add a bit more enemies.
 - Ability to save character data and world data independently.
 - Remember that jittering? I didn't get rid of it completely: When sprites are animated, each new frame is loaded from NitroFS. I need to load all the frames of existing entities to RAM directly so reading from NitroFS won't slow it down.
