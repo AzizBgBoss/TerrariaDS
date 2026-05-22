@@ -71,7 +71,9 @@ const char *titleSplashes[] = {
 	"CPU fan for your DS? Yeah I'm not a fan (get it? lol)",
 	"Implemented corruption! But not the Terraria one",
 	"I'll fix it later (there's never later)",
-	"Please don't sue me :("};
+	"Please don't sue me :(",
+	"The comments are not only for you to understand, but for me to not make the same mistake again...",
+};
 
 u16 *nullSprite;
 

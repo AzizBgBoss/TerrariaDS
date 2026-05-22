@@ -2,6 +2,8 @@
 
 #pragma once // This is a cool thing I learned that allows me to not worry about including this file multiple times
 
+#define VERSION "0.2alpha"
+
 #include <nds.h>
 #include <stdio.h>
 #include <math.h>

@@ -449,6 +449,16 @@ int getItemSpeed(int item)
     }
 }
 
+void changeTextBackground()
+{
+    BGCTRL[0] = BG_TILE_BASE(1) | BG_MAP_BASE(0) | BG_COLOR_256 | BG_32x32 | BG_PRIORITY(3);
+	f = fopen("nitro:/inv.img.bin", "rb");
+	fread((void *)CHAR_BASE_BLOCK(1), 1, invTilesLen, f);
+	fclose(f);
+	dmaFillHalfWords(0, (void *)SCREEN_BASE_BLOCK(0), 2048);
+    Bg0UpFill(0);
+};
+
 void setInventorySelection(u8 slot)
 {
     slot = slot % (inventoryOpen ? 32 : 8);
@@ -587,7 +597,7 @@ void inventorySetHotbar()
         }
     }
     clearPrint();
-    print(0, 3, "TerrariaDS v0.1\n\
+    print(0, 3, "TerrariaDS v" VERSION "\n\
 By AzizBgBoss\n\
 https://github.com/AzizBgBoss/TerrariaDS");
     renderInventory();
@@ -1459,7 +1469,7 @@ void generateMap()
 {
     u8 grassSurface[MAP_WIDTH];
     u8 stoneSurface[MAP_WIDTH];
-    int seed = rando(0, 0xFFFFFFFF);
+    int seed = rando(0, 99999999);
 
     generateWorldName(worldFileName, sizeof(worldFileName));
 

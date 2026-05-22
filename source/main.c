@@ -225,7 +225,7 @@ mainMenu:
 	fread((void *)BG_PALETTE_SUB, 1, bgPalLen, f);
 	fclose(f);
 
-	print(0, 17, titleSplashes[rando(0, sizeof(titleSplashes) / sizeof(titleSplashes[0]) - 1)]);
+	printSmart(0, 17, titleSplashes[rando(0, sizeof(titleSplashes) / sizeof(titleSplashes[0]) - 1)]);
 
 	int x = 0;
 
@@ -247,10 +247,10 @@ mainMenu:
 		if (pressed & KEY_TOUCH)
 		{
 			touchRead(&touch);
-			// TODO: before printing anything, change bg to squared blue
 			if (touch.px >= 56 && touch.px <= 199 && touch.py >= 56 && touch.py <= 87)
 			{
 				mmStreamClose();
+				changeTextBackground();
 				clearPrint();
 				generateMap();
 				break;
@@ -258,6 +258,8 @@ mainMenu:
 			else if (touch.px >= 56 && touch.px <= 199 && touch.py >= 104 && touch.py <= 135)
 			{
 				mmStreamClose();
+				changeTextBackground();
+				clearPrint();
 				if (fatInitDefault())
 				{
 					// Player wants to load a world:
