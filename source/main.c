@@ -252,6 +252,79 @@ mainMenu:
 				mmStreamClose();
 				changeTextBackground();
 				clearPrint();
+
+				// Let player choose a world
+				int chosenIndex = 0;
+				while (1)
+				{
+					swiWaitForVBlank();
+					mmStreamUpdate();
+					clearPrint();
+					printDirect("Select a world size:\n\n");
+					for (int i = 0; i < 4; i++)
+					{
+						if (i == chosenIndex)
+							printDirect("> ");
+						else
+							printDirect("  ");
+						switch (i)
+						{
+						case 0:
+							printDirect("Tiny (128x64)");
+							break;
+						case 1:
+							printDirect("Small (256x64)");
+							break;
+						case 2:
+							printDirect("Medium (512x128)");
+							break;
+						case 3:
+							printDirect("Large (1024x256)");
+							break;
+						}
+						printDirect("\n");
+					}
+
+					scanKeys();
+					int down = keysDown();
+
+					if (down & KEY_UP)
+					{
+						chosenIndex--;
+						if (chosenIndex < 0)
+							chosenIndex = 3;
+					}
+					else if (down & KEY_DOWN)
+					{
+						chosenIndex++;
+						if (chosenIndex >= 4)
+							chosenIndex = 0;
+					}
+					else if (down & KEY_A)
+					{
+						break; // World size chosen
+					}
+				}
+				switch (chosenIndex)
+				{
+				case 0:
+					mapWidth = 128;
+					mapHeight = 64;
+					break;
+				case 1:
+					mapWidth = 256;
+					mapHeight = 64;
+					break;
+				case 2:
+					mapWidth = 512;
+					mapHeight = 128;
+					break;
+				case 3:
+					mapWidth = 1024;
+					mapHeight = 256;
+					break;
+				}
+				clearPrint();
 				generateMap();
 				break;
 			}
@@ -288,15 +361,17 @@ mainMenu:
 					else
 					{
 						// Could not open directory
-						printDirect("Could not open terrarias/ directory!\nFallback to generating map...");
-						generateMap();
+						printDirect("Could not open terrarias/ directory!");
+						delay(1);
+						goto mainMenu;
 						break;
 					}
 
 					if (worldFileCount == 0)
 					{
-						printDirect("No worlds found in terrarias/ folder!\nFallback to generating map...");
-						generateMap();
+						printDirect("No worlds found in terrarias/ folder!");
+						delay(1);
+						goto mainMenu;
 						break;
 					}
 
@@ -348,8 +423,9 @@ mainMenu:
 					else
 					{
 						clearPrint();
-						printDirect("Error loading map!\nFallback to generating map...");
-						generateMap();
+						printDirect("Error loading map!");
+						delay(1);
+						goto mainMenu;
 					}
 				}
 				else
@@ -696,11 +772,11 @@ mainMenu:
 
 		if (held & KEY_RIGHT)
 		{
-			if ((player.x + player.sizeX) / 8 < MAP_WIDTH)
+			if ((player.x + player.sizeX) / 8 < mapWidth)
 			{
-				if (!isTileSolid(gameTerrain[(player.x + player.sizeX) / 8 + player.y / 8 * MAP_WIDTH]) &&
-					!isTileSolid(gameTerrain[(player.x + player.sizeX) / 8 + (player.y + player.sizeY / 2) / 8 * MAP_WIDTH]) &&
-					!isTileSolid(gameTerrain[(player.x + player.sizeX) / 8 + (player.y + player.sizeY - 1) / 8 * MAP_WIDTH]))
+				if (!isTileSolid(gameTerrain[(player.x + player.sizeX) / 8 + player.y / 8 * MAP_WIDTH_MAX]) &&
+					!isTileSolid(gameTerrain[(player.x + player.sizeX) / 8 + (player.y + player.sizeY / 2) / 8 * MAP_WIDTH_MAX]) &&
+					!isTileSolid(gameTerrain[(player.x + player.sizeX) / 8 + (player.y + player.sizeY - 1) / 8 * MAP_WIDTH_MAX]))
 				{
 					player.isLookingLeft = false;
 					player.x++;
@@ -712,9 +788,9 @@ mainMenu:
 		{
 			if (player.x - 1 >= 0)
 			{
-				if (!isTileSolid(gameTerrain[(player.x - 1) / 8 + player.y / 8 * MAP_WIDTH]) &&
-					!isTileSolid(gameTerrain[(player.x - 1) / 8 + (player.y + player.sizeY / 2) / 8 * MAP_WIDTH]) &&
-					!isTileSolid(gameTerrain[(player.x - 1) / 8 + (player.y + player.sizeY - 1) / 8 * MAP_WIDTH]))
+				if (!isTileSolid(gameTerrain[(player.x - 1) / 8 + player.y / 8 * MAP_WIDTH_MAX]) &&
+					!isTileSolid(gameTerrain[(player.x - 1) / 8 + (player.y + player.sizeY / 2) / 8 * MAP_WIDTH_MAX]) &&
+					!isTileSolid(gameTerrain[(player.x - 1) / 8 + (player.y + player.sizeY - 1) / 8 * MAP_WIDTH_MAX]))
 				{
 					player.isLookingLeft = true;
 					player.x--;
@@ -727,13 +803,13 @@ mainMenu:
 
 		if (!player.isOnGround)
 		{
-			if (isTileSolid(gameTerrain[player.x / 8 + (player.y + player.velocity) / 8 * MAP_WIDTH]))
+			if (isTileSolid(gameTerrain[player.x / 8 + (player.y + player.velocity) / 8 * MAP_WIDTH_MAX]))
 			{
 				player.velocity = 0;
 				player.y /= 8;
 				player.y *= 8;
 			}
-			if (isTileSolid(gameTerrain[(player.x + player.sizeX - 1) / 8 + (player.y + player.velocity) / 8 * MAP_WIDTH]))
+			if (isTileSolid(gameTerrain[(player.x + player.sizeX - 1) / 8 + (player.y + player.velocity) / 8 * MAP_WIDTH_MAX]))
 			{
 				player.velocity = 0;
 				player.y /= 8;
@@ -748,9 +824,9 @@ mainMenu:
 				player.velocity = 6;
 			player.y += player.velocity;
 			player.animation = ANIM_JUMP; // Fall and jump look the same
-			if (player.y + player.sizeY > MAP_HEIGHT * 8)
+			if (player.y + player.sizeY > mapHeight * 8)
 			{
-				player.y = MAP_HEIGHT * 8 - player.sizeY; // Prevent falling out of the map
+				player.y = mapHeight * 8 - player.sizeY; // Prevent falling out of the map
 				player.isOnGround = true;
 				player.isJumping = false;
 				player.velocity = 0; // Reset velocity when on the ground
@@ -934,17 +1010,18 @@ mainMenu:
 				int dx = touch.px - SCREEN_WIDTH / 2;
 				int dy = touch.py - SCREEN_HEIGHT / 2;
 
-				int worldX = player.x + player.sizeX / 2 + (dx * scale) / 256;
-				int worldY = player.y + player.sizeY / 2 + (dy * scale) / 256;
+				int worldX = scrollX + SCREEN_WIDTH / 2 + (dx * scale) / 256;
+				int worldY = scrollY + SCREEN_HEIGHT / 2 + (dy * scale) / 256;
 
-				if (worldX >= 0 && worldX < MAP_WIDTH * 8 && worldY >= 0 && worldY < MAP_HEIGHT * 8)
+				if (worldX >= 0 && worldX < mapWidth * 8 && worldY >= 0 && worldY < mapHeight * 8)
 				{
 
 					int worldTouchX = worldX / 8;
 					int worldTouchY = worldY / 8;
 
 					// Check if touch within player range
-					if (worldTouchX >= TLCtileX - player.tileRange && worldTouchX <= TRCtileX + player.tileRange &&
+					if (0 <= worldTouchX && worldTouchX < mapWidth && 0 <= worldTouchY && worldTouchY < mapHeight &&
+						worldTouchX >= TLCtileX - player.tileRange && worldTouchX <= TRCtileX + player.tileRange &&
 						worldTouchY >= TLCtileY - player.tileRange && worldTouchY <= BRCtileY + player.tileRange)
 					{
 						if (frame - touchFrame > 10)
@@ -952,7 +1029,7 @@ mainMenu:
 							if (inventory[inventorySelection] >= 1 && inventory[inventorySelection] < 100 // Object is a tile, not an item
 								&& inventoryQuantity[inventorySelection])
 							{
-								if (!gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH])
+								if (!gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH_MAX])
 								{
 									if (!(worldTouchX >= TLCtileX && worldTouchX <= TRCtileX && worldTouchY >= TLCtileY && worldTouchY <= BLCtileY))
 									{
@@ -964,7 +1041,7 @@ mainMenu:
 											playerPutGameTerrain(worldTouchX, worldTouchY, inventory[inventorySelection]);
 									}
 								}
-								else if (isElementWall(gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH]) && gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH] != inventory[inventorySelection])
+								else if (isElementWall(gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH_MAX]) && gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH_MAX] != inventory[inventorySelection])
 								{
 									breakTile(worldTouchX, worldTouchY, 1);
 								}
@@ -972,9 +1049,9 @@ mainMenu:
 							else if (inventory[inventorySelection] >= 100 && inventory[inventorySelection] < 200 // Object is an item, not a tile
 									 && inventoryQuantity[inventorySelection])
 							{
-								if (isToolCompatible(inventory[inventorySelection], gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH])) // Check if the tool can break the tile
+								if (isToolCompatible(inventory[inventorySelection], gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH_MAX])) // Check if the tool can break the tile
 								{
-									if (gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH])
+									if (gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH_MAX])
 										breakTile(worldTouchX, worldTouchY, getItemSpeed(inventory[inventorySelection]));
 								}
 							}
@@ -995,7 +1072,7 @@ mainMenu:
 									playerHeal(10);
 									setInventory(inventorySelection, inventory[inventorySelection], inventoryQuantity[inventorySelection] - 1);
 								}
-								else if (gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH] != 0)
+								else if (gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH_MAX] != 0)
 									interact(worldTouchX, worldTouchY);
 								else // Make a swing sfx so the user knows the touch is registered but their dumbass can't use it
 									mmEffect(SFX_SWING);
@@ -1004,13 +1081,26 @@ mainMenu:
 							}
 						}
 					}
+					else // if not in player range, we could still use consumables
+					{
+						if (interacting == true)
+						{
+							if (inventory[inventorySelection] == TILE_MUSHROOM && inventoryQuantity[inventorySelection] && player.health < player.maxHealth)
+							{
+								mmEffect(SFX_MUSHROOM);
+								playerHeal(10);
+								setInventory(inventorySelection, inventory[inventorySelection], inventoryQuantity[inventorySelection] - 1);
+							}
+							interacting = false;
+						}
+					}
 				}
 			}
 		}
 		// TODO: do not let player skip over below ground if velocity > tile size
 
 		// Check if player is on the ground
-		if (isTileSolid(gameTerrain[BLCtileX + BLCtileY * MAP_WIDTH]))
+		if (isTileSolid(gameTerrain[BLCtileX + BLCtileY * MAP_WIDTH_MAX]))
 		{
 			if (player.isOnGround == false)
 			{
@@ -1024,7 +1114,7 @@ mainMenu:
 			}
 		}
 
-		if (isTileSolid(gameTerrain[BRCtileX + BRCtileY * MAP_WIDTH]))
+		if (isTileSolid(gameTerrain[BRCtileX + BRCtileY * MAP_WIDTH_MAX]))
 		{
 			if (player.isOnGround == false)
 			{
@@ -1038,7 +1128,7 @@ mainMenu:
 			}
 		}
 
-		if (!isTileSolid(gameTerrain[BLCtileX + BLCtileY * MAP_WIDTH]) && !isTileSolid(gameTerrain[BRCtileX + BRCtileY * MAP_WIDTH]))
+		if (!isTileSolid(gameTerrain[BLCtileX + BLCtileY * MAP_WIDTH_MAX]) && !isTileSolid(gameTerrain[BRCtileX + BRCtileY * MAP_WIDTH_MAX]))
 		{
 			if (player.isOnGround)
 			{
@@ -1048,8 +1138,8 @@ mainMenu:
 			}
 		}
 
-		scrollX = player.x - SCREEN_WIDTH / 2 + player.sizeX / 2;
-		scrollY = player.y - SCREEN_HEIGHT / 2 + player.sizeY / 2;
+		scrollX = clamp(player.x - SCREEN_WIDTH / 2 + player.sizeX / 2, 0, mapWidth * 8 - SCREEN_WIDTH);
+		scrollY = clamp(player.y - SCREEN_HEIGHT / 2 + player.sizeY / 2, 0, mapHeight * 8 - SCREEN_HEIGHT);
 
 		// Handle entity physics
 		for (int i = 0; i < ENTITY_COUNT; i++)
@@ -1065,13 +1155,13 @@ mainMenu:
 				{
 					if (!entity[i].isOnGround)
 					{
-						if (isTileSolid(gameTerrain[entity[i].x / 8 + (entity[i].y + entity[i].velocity) / 8 * MAP_WIDTH]))
+						if (isTileSolid(gameTerrain[entity[i].x / 8 + (entity[i].y + entity[i].velocity) / 8 * MAP_WIDTH_MAX]))
 						{
 							entity[i].velocity = 0;
 							entity[i].y /= 8;
 							entity[i].y *= 8;
 						}
-						if (isTileSolid(gameTerrain[(entity[i].x + entity[i].sizeX - 1) / 8 + (entity[i].y + entity[i].velocity) / 8 * MAP_WIDTH]))
+						if (isTileSolid(gameTerrain[(entity[i].x + entity[i].sizeX - 1) / 8 + (entity[i].y + entity[i].velocity) / 8 * MAP_WIDTH_MAX]))
 						{
 							entity[i].velocity = 0;
 							entity[i].y /= 8;
@@ -1086,9 +1176,9 @@ mainMenu:
 							entity[i].velocity = 7;
 						entity[i].y += entity[i].velocity;
 						entity[i].animation = ANIM_JUMP; // Fall and jump look the same
-						if (entity[i].y + entity[i].sizeY > MAP_HEIGHT * 8)
+						if (entity[i].y + entity[i].sizeY > mapHeight * 8)
 						{
-							entity[i].y = MAP_HEIGHT * 8 - entity[i].sizeY; // Prevent falling out of the map
+							entity[i].y = mapHeight * 8 - entity[i].sizeY; // Prevent falling out of the map
 							entity[i].isOnGround = true;
 							entity[i].isJumping = false;
 							entity[i].velocity = 0; // Reset velocity when on the ground
@@ -1118,7 +1208,7 @@ mainMenu:
 					BRCtileX = BRCx / 8;
 					BRCtileY = BRCy / 8;
 
-					if (isTileSolid(gameTerrain[BLCtileX + BLCtileY * MAP_WIDTH]))
+					if (isTileSolid(gameTerrain[BLCtileX + BLCtileY * MAP_WIDTH_MAX]))
 					{
 						if (entity[i].isOnGround == false)
 						{
@@ -1129,7 +1219,7 @@ mainMenu:
 						}
 					}
 
-					if (isTileSolid(gameTerrain[BRCtileX + BRCtileY * MAP_WIDTH]))
+					if (isTileSolid(gameTerrain[BRCtileX + BRCtileY * MAP_WIDTH_MAX]))
 					{
 						if (entity[i].isOnGround == false)
 						{
@@ -1140,7 +1230,7 @@ mainMenu:
 						}
 					}
 
-					if (!isTileSolid(gameTerrain[BLCtileX + BLCtileY * MAP_WIDTH]) && !isTileSolid(gameTerrain[BRCtileX + BRCtileY * MAP_WIDTH]))
+					if (!isTileSolid(gameTerrain[BLCtileX + BLCtileY * MAP_WIDTH_MAX]) && !isTileSolid(gameTerrain[BRCtileX + BRCtileY * MAP_WIDTH_MAX]))
 					{
 						if (entity[i].isOnGround)
 						{
@@ -1205,7 +1295,7 @@ mainMenu:
 			{
 				// Item falls until it hits a tile
 				// TODO: if item inside a tile, try to get it to the closest side with a non solid tile
-				if (!isTileSolid(gameTerrain[item[i].x / 8 + (item[i].y + 8 + item[i].velocity) / 8 * MAP_WIDTH]))
+				if (!isTileSolid(gameTerrain[item[i].x / 8 + (item[i].y + 8 + item[i].velocity) / 8 * MAP_WIDTH_MAX]))
 				{
 					item[i].velocity = 1;
 				}
@@ -1237,7 +1327,7 @@ mainMenu:
 
 				item[i].y += item[i].velocity;
 
-				if (item[i].y > MAP_HEIGHT * 8)
+				if (item[i].y > mapHeight * 8)
 				{
 					destroyItem(i); // Remove item if it falls out of the map
 					continue;
@@ -1351,36 +1441,48 @@ mainMenu:
 			}
 		}
 
-		// When the player reaches the 3rd quarter of the background, swap the first 4 rows in the bg with the next 4 rows in the map
-		// so when it wraps it gives the illusion of continuity
-		if (player.x > 512 / 8 * 5 + chunk * 32)
+		int camTileX = (scrollX / 8) - 32 + 1;
+		int camTileY = (scrollY / 8) - 32 + 1;
+
+		if (camTileX > lastCamTileX)
 		{
-			if (chunk < MAP_WIDTH / 4 - 1)
+			lastCamTileX++;
+			for (int y = 0; y < 64; y++)
 			{
-				int newTile = (chunk % 16) * 4;
-				for (int x = 0; x < 4; x++)
-				{
-					for (int y = 0; y < MAP_HEIGHT; y++)
-					{
-						Bg1SetTile(newTile + x, y, getElementTile(gameTerrain[64 + chunk * 4 + x + y * MAP_WIDTH], 64 + chunk * 4 + x, y));
-					}
-				}
-				chunk++;
+				int mapX = ((lastCamTileX + 63) % mapWidth + mapWidth) % mapWidth;
+				int mapY = ((camTileY + y) % mapHeight + mapHeight) % mapHeight;
+				Bg1SetTile((63 + lastCamTileX) % 64, (y + camTileY) % 64, getElementTile(gameTerrain[mapX + mapY * MAP_WIDTH_MAX], mapX, mapY));
 			}
 		}
-		else if (player.x < 512 / 8 * 3 + chunk * 32)
+		else if (camTileX < lastCamTileX)
 		{
-			if (chunk > 0)
+			lastCamTileX--;
+			for (int y = 0; y < 64; y++)
 			{
-				chunk--;
-				int newTile = (chunk % 16) * 4;
-				for (int x = 0; x < 4; x++)
-				{
-					for (int y = 0; y < MAP_HEIGHT; y++)
-					{
-						Bg1SetTile(newTile + x, y, getElementTile(gameTerrain[chunk * 4 + x + y * MAP_WIDTH], chunk * 4 + x, y));
-					}
-				}
+				int mapX = ((lastCamTileX) % mapWidth + mapWidth) % mapWidth;
+				int mapY = ((camTileY + y) % mapHeight + mapHeight) % mapHeight;
+				Bg1SetTile((lastCamTileX) % 64, (y + camTileY) % 64, getElementTile(gameTerrain[mapX + mapY * MAP_WIDTH_MAX], mapX, mapY));
+			}
+		}
+
+		if (camTileY > lastCamTileY)
+		{
+			lastCamTileY++;
+			for (int x = 0; x < 64; x++)
+			{
+				int mapX = ((camTileX + x) % mapWidth + mapWidth) % mapWidth;
+				int mapY = ((lastCamTileY + 63) % mapHeight + mapHeight) % mapHeight;
+				Bg1SetTile((x + camTileX) % 64, (63 + lastCamTileY) % 64, getElementTile(gameTerrain[mapX + mapY * MAP_WIDTH_MAX], mapX, mapY));
+			}
+		}
+		else if (camTileY < lastCamTileY)
+		{
+			lastCamTileY--;
+			for (int x = 0; x < 64; x++)
+			{
+				int mapX = ((camTileX + x) % mapWidth + mapWidth) % mapWidth;
+				int mapY = ((lastCamTileY) % mapHeight + mapHeight) % mapHeight;
+				Bg1SetTile((x + camTileX) % 64, (lastCamTileY) % 64, getElementTile(gameTerrain[mapX + mapY * MAP_WIDTH_MAX], mapX, mapY));
 			}
 		}
 

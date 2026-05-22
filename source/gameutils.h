@@ -4,10 +4,10 @@
 
 int getElementTile(int tile, int x, int y) // Tile will change based on surrounding tiles
 {
-    int tileabove = (y > 0) ? gameTerrain[x + (y - 1) * MAP_WIDTH] : TILE_AIR;
-    int tilebelow = (y < MAP_HEIGHT - 1) ? gameTerrain[x + (y + 1) * MAP_WIDTH] : TILE_AIR;
-    int tileleft = (x > 0) ? gameTerrain[x - 1 + y * MAP_WIDTH] : TILE_AIR;
-    int tileright = (x < MAP_WIDTH - 1) ? gameTerrain[x + 1 + y * MAP_WIDTH] : TILE_AIR;
+    int tileabove = (y > 0) ? gameTerrain[x + (y - 1) * MAP_WIDTH_MAX] : TILE_AIR;
+    int tilebelow = (y < mapHeight - 1) ? gameTerrain[x + (y + 1) * MAP_WIDTH_MAX] : TILE_AIR;
+    int tileleft = (x > 0) ? gameTerrain[x - 1 + y * MAP_WIDTH_MAX] : TILE_AIR;
+    int tileright = (x < mapWidth - 1) ? gameTerrain[x + 1 + y * MAP_WIDTH_MAX] : TILE_AIR;
 
     int offset = 0;
     switch (tile)
@@ -452,10 +452,10 @@ int getItemSpeed(int item)
 void changeTextBackground()
 {
     BGCTRL[0] = BG_TILE_BASE(1) | BG_MAP_BASE(0) | BG_COLOR_256 | BG_32x32 | BG_PRIORITY(3);
-	f = fopen("nitro:/inv.img.bin", "rb");
-	fread((void *)CHAR_BASE_BLOCK(1), 1, invTilesLen, f);
-	fclose(f);
-	dmaFillHalfWords(0, (void *)SCREEN_BASE_BLOCK(0), 2048);
+    f = fopen("nitro:/inv.img.bin", "rb");
+    fread((void *)CHAR_BASE_BLOCK(1), 1, invTilesLen, f);
+    fclose(f);
+    dmaFillHalfWords(0, (void *)SCREEN_BASE_BLOCK(0), 2048);
     Bg0UpFill(0);
 };
 
@@ -469,12 +469,12 @@ void setInventorySelection(u8 slot)
     {
         if (inventoryOpen)
         {
-            print(1, 7, "              ");
+            print(1, 7, "                              ");
             print(1, 7, getElementName(inventory[inventorySelection]));
         }
         else
         {
-            print(1, 19, "                ");
+            print(1, 19, "                             ");
             print(1, 19, getElementName(inventory[inventorySelection]));
         }
         oamSet(&oamMain, 0, x, y, 0, 0, SpriteSize_32x32, SpriteColorFormat_256Color, inventorySelectionSprite, -1, false, false, false, false, false);
@@ -653,35 +653,47 @@ void inventorySetCrafting()
 
 void setGameTerrain(int x, int y, int tile)
 {
-    if (x < 0 || x >= MAP_WIDTH || y < 0 || y >= MAP_HEIGHT)
+    if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight)
         return;
 
-    gameTerrain[x + y * MAP_WIDTH] = tile;
+    gameTerrain[x + y * MAP_WIDTH_MAX] = tile;
 
-    if (x < chunk * 4 || x > chunk * 4 + 63)
+    int camTileX = (scrollX / 8) - 32 + 1;
+    int camTileY = (scrollY / 8) - 32 + 1;
+
+    // Check if tile is within the currently rendered 64x64 region
+    int rx = x - camTileX;
+    int ry = y - camTileY;
+    if (rx < 0 || rx >= 64 || ry < 0 || ry >= 64)
         return;
 
-    int rx = x % 64;
-    // Re-render neighboring tiles
-    Bg1SetTile(rx - 1, y, getElementTile(gameTerrain[x - 1 + y * MAP_WIDTH], x - 1, y));
-    Bg1SetTile(rx + 1, y, getElementTile(gameTerrain[x + 1 + y * MAP_WIDTH], x + 1, y));
-    Bg1SetTile(rx, y - 1, getElementTile(gameTerrain[x + (y - 1) * MAP_WIDTH], x, y - 1));
-    Bg1SetTile(rx, y + 1, getElementTile(gameTerrain[x + (y + 1) * MAP_WIDTH], x, y + 1));
-    Bg1SetTile(rx, y, getElementTile(tile, x, y));
+    // Re-render tile and neighbors
+    Bg1SetTile((rx + camTileX % 64) % 64, (ry + camTileY % 64) % 64, getElementTile(tile, x, y));
+    if (rx > 0)
+        Bg1SetTile((rx - 1 + camTileX % 64) % 64, (ry + camTileY % 64) % 64, getElementTile(gameTerrain[(x - 1) + y * MAP_WIDTH_MAX], x - 1, y));
+    if (rx < 63)
+        Bg1SetTile((rx + 1 + camTileX % 64) % 64, (ry + camTileY % 64) % 64, getElementTile(gameTerrain[(x + 1) + y * MAP_WIDTH_MAX], x + 1, y));
+    if (ry > 0)
+        Bg1SetTile((rx + camTileX % 64) % 64, (ry - 1 + camTileY % 64) % 64, getElementTile(gameTerrain[x + (y - 1) * MAP_WIDTH_MAX], x, y - 1));
+    if (ry < 63)
+        Bg1SetTile((rx + camTileX % 64) % 64, (ry + 1 + camTileY % 64) % 64, getElementTile(gameTerrain[x + (y + 1) * MAP_WIDTH_MAX], x, y + 1));
 }
 
 void playerPutGameTerrain(int x, int y, int tile)
 {
-    if (x < 0 || x >= MAP_WIDTH || y < 0 || y >= MAP_HEIGHT)
+    if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight)
         return;
 
     // The difference is that we check the surrounding tiles to prevent placing tiles out of thin air
     bool canPlace = false;
     if (tile == TILE_WOODEN_DOOR_CLOSED_3)
     {
-        if (isTileSolid(gameTerrain[x + (y + 1) * MAP_WIDTH]) && isTileSolid(gameTerrain[x + (y - 3) * MAP_WIDTH]))
+        if (isTileSolid(gameTerrain[x + (y + 1) * MAP_WIDTH_MAX]) &&
+            isTileSolid(gameTerrain[x + (y - 3) * MAP_WIDTH_MAX]))
         {
-            if (!isTileSolid(gameTerrain[x + y * MAP_WIDTH]) && !isTileSolid(gameTerrain[x + (y - 1) * MAP_WIDTH]) && !isTileSolid(gameTerrain[x + (y - 2) * MAP_WIDTH]))
+            if (!isTileSolid(gameTerrain[x + y * MAP_WIDTH_MAX]) &&
+                !isTileSolid(gameTerrain[x + (y - 1) * MAP_WIDTH_MAX]) &&
+                !isTileSolid(gameTerrain[x + (y - 2) * MAP_WIDTH_MAX]))
             {
                 canPlace = true;
             }
@@ -697,9 +709,9 @@ void playerPutGameTerrain(int x, int y, int tile)
                     continue; // Skip the tile itself
                 int nx = x + dx;
                 int ny = y + dy;
-                if (nx < 0 || nx >= MAP_WIDTH || ny < 0 || ny >= MAP_HEIGHT)
+                if (nx < 0 || nx >= mapWidth || ny < 0 || ny >= mapHeight)
                     continue; // Out of bounds
-                if (gameTerrain[nx + ny * MAP_WIDTH] != TILE_AIR)
+                if (gameTerrain[nx + ny * MAP_WIDTH_MAX] != TILE_AIR)
                 {
                     canPlace = true;
                     break;
@@ -791,34 +803,34 @@ void destroyItem(int id)
 
 void breakTile(int x, int y, int speed)
 {
-    gameTerrainHealth[x + y * MAP_WIDTH] += speed;
-    if (gameTerrainHealth[x + y * MAP_WIDTH] >= getElementHealth(gameTerrain[x + y * MAP_WIDTH]))
+    gameTerrainHealth[x + y * MAP_WIDTH_MAX] += speed;
+    if (gameTerrainHealth[x + y * MAP_WIDTH_MAX] >= getElementHealth(gameTerrain[x + y * MAP_WIDTH_MAX]))
     {
         // Special blocks handling
-        if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODLOG)
+        if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODLOG)
         {
             // Trees have special treatment: break all the logs and leaves above it
             for (int i = y - 1; i >= 0; i--)
             {
-                if (gameTerrain[x + i * MAP_WIDTH] == TILE_WOODLOG)
+                if (gameTerrain[x + i * MAP_WIDTH_MAX] == TILE_WOODLOG)
                 {
                     dropItem(x, i, getElementDrop(TILE_WOODLOG), 1);
                     setGameTerrain(x, i, 0);
-                    gameTerrainHealth[x + i * MAP_WIDTH] = 0;
+                    gameTerrainHealth[x + i * MAP_WIDTH_MAX] = 0;
                 }
-                else if (gameTerrain[x + i * MAP_WIDTH] == TILE_LEAVES)
+                else if (gameTerrain[x + i * MAP_WIDTH_MAX] == TILE_LEAVES)
                 { // Leaves don't drop anything if broken from tree
                     setGameTerrain(x, i, 0);
-                    gameTerrainHealth[x + i * MAP_WIDTH] = 0;
-                    if (gameTerrain[x - 1 + i * MAP_WIDTH] == TILE_LEAVES)
+                    gameTerrainHealth[x + i * MAP_WIDTH_MAX] = 0;
+                    if (gameTerrain[x - 1 + i * MAP_WIDTH_MAX] == TILE_LEAVES)
                     {
                         setGameTerrain(x - 1, i, 0);
-                        gameTerrainHealth[x - 1 + i * MAP_WIDTH] = 0;
+                        gameTerrainHealth[x - 1 + i * MAP_WIDTH_MAX] = 0;
                     }
-                    if (gameTerrain[x + 1 + i * MAP_WIDTH] == TILE_LEAVES)
+                    if (gameTerrain[x + 1 + i * MAP_WIDTH_MAX] == TILE_LEAVES)
                     {
                         setGameTerrain(x + 1, i, 0);
-                        gameTerrainHealth[x + 1 + i * MAP_WIDTH] = 0;
+                        gameTerrainHealth[x + 1 + i * MAP_WIDTH_MAX] = 0;
                     }
                 }
                 else
@@ -827,22 +839,22 @@ void breakTile(int x, int y, int speed)
                 }
             }
         }
-        else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_CLOSED_1)
+        else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_CLOSED_1)
         {
             setGameTerrain(x, y + 1, TILE_AIR);
             setGameTerrain(x, y + 2, TILE_AIR);
         }
-        else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_CLOSED_2)
+        else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_CLOSED_2)
         {
             setGameTerrain(x, y - 1, TILE_AIR);
             setGameTerrain(x, y + 1, TILE_AIR);
         }
-        else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_CLOSED_3)
+        else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_CLOSED_3)
         {
             setGameTerrain(x, y - 1, TILE_AIR);
             setGameTerrain(x, y - 2, TILE_AIR);
         }
-        else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_1)
+        else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_1)
         {
             setGameTerrain(x + 1, y, TILE_AIR);
             setGameTerrain(x, y + 1, TILE_AIR);
@@ -850,7 +862,7 @@ void breakTile(int x, int y, int speed)
             setGameTerrain(x, y + 2, TILE_AIR);
             setGameTerrain(x + 1, y + 2, TILE_AIR);
         }
-        else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_2)
+        else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_2)
         {
             setGameTerrain(x - 1, y, TILE_AIR);
             setGameTerrain(x, y + 1, TILE_AIR);
@@ -858,7 +870,7 @@ void breakTile(int x, int y, int speed)
             setGameTerrain(x, y + 2, TILE_AIR);
             setGameTerrain(x - 1, y + 2, TILE_AIR);
         }
-        else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_3)
+        else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_3)
         {
             setGameTerrain(x, y - 1, TILE_AIR);
             setGameTerrain(x + 1, y - 1, TILE_AIR);
@@ -866,7 +878,7 @@ void breakTile(int x, int y, int speed)
             setGameTerrain(x, y + 1, TILE_AIR);
             setGameTerrain(x + 1, y + 1, TILE_AIR);
         }
-        else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_4)
+        else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_4)
         {
             setGameTerrain(x - 1, y, TILE_AIR);
             setGameTerrain(x, y - 1, TILE_AIR);
@@ -874,7 +886,7 @@ void breakTile(int x, int y, int speed)
             setGameTerrain(x, y + 1, TILE_AIR);
             setGameTerrain(x - 1, y + 1, TILE_AIR);
         }
-        else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_5)
+        else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_5)
         {
             setGameTerrain(x, y - 2, TILE_AIR);
             setGameTerrain(x + 1, y - 2, TILE_AIR);
@@ -882,7 +894,7 @@ void breakTile(int x, int y, int speed)
             setGameTerrain(x, y, TILE_AIR);
             setGameTerrain(x + 1, y, TILE_AIR);
         }
-        else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_6)
+        else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_6)
         {
             setGameTerrain(x - 1, y - 2, TILE_AIR);
             setGameTerrain(x, y - 2, TILE_AIR);
@@ -890,7 +902,7 @@ void breakTile(int x, int y, int speed)
             setGameTerrain(x, y, TILE_AIR);
             setGameTerrain(x - 1, y, TILE_AIR);
         }
-        else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_RIGHT_1)
+        else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_RIGHT_1)
         {
             setGameTerrain(x + 1, y, TILE_AIR);
             setGameTerrain(x, y + 1, TILE_AIR);
@@ -898,7 +910,7 @@ void breakTile(int x, int y, int speed)
             setGameTerrain(x, y + 2, TILE_AIR);
             setGameTerrain(x + 1, y + 2, TILE_AIR);
         }
-        else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_RIGHT_2)
+        else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_RIGHT_2)
         {
             setGameTerrain(x - 1, y, TILE_AIR);
             setGameTerrain(x, y + 1, TILE_AIR);
@@ -906,7 +918,7 @@ void breakTile(int x, int y, int speed)
             setGameTerrain(x, y + 2, TILE_AIR);
             setGameTerrain(x - 1, y + 2, TILE_AIR);
         }
-        else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_RIGHT_3)
+        else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_RIGHT_3)
         {
             setGameTerrain(x, y - 1, TILE_AIR);
             setGameTerrain(x + 1, y - 1, TILE_AIR);
@@ -914,7 +926,7 @@ void breakTile(int x, int y, int speed)
             setGameTerrain(x, y + 1, TILE_AIR);
             setGameTerrain(x + 1, y + 1, TILE_AIR);
         }
-        else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_RIGHT_4)
+        else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_RIGHT_4)
         {
             setGameTerrain(x - 1, y, TILE_AIR);
             setGameTerrain(x, y - 1, TILE_AIR);
@@ -922,7 +934,7 @@ void breakTile(int x, int y, int speed)
             setGameTerrain(x, y + 1, TILE_AIR);
             setGameTerrain(x - 1, y + 1, TILE_AIR);
         }
-        else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_RIGHT_5)
+        else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_RIGHT_5)
         {
             setGameTerrain(x, y - 2, TILE_AIR);
             setGameTerrain(x + 1, y - 2, TILE_AIR);
@@ -930,7 +942,7 @@ void breakTile(int x, int y, int speed)
             setGameTerrain(x, y, TILE_AIR);
             setGameTerrain(x + 1, y, TILE_AIR);
         }
-        else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_RIGHT_6)
+        else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_RIGHT_6)
         {
             setGameTerrain(x - 1, y - 2, TILE_AIR);
             setGameTerrain(x, y - 2, TILE_AIR);
@@ -938,9 +950,9 @@ void breakTile(int x, int y, int speed)
             setGameTerrain(x, y, TILE_AIR);
             setGameTerrain(x - 1, y, TILE_AIR);
         }
-        dropItem(x, y, getElementDrop(gameTerrain[x + y * MAP_WIDTH]), 1);
+        dropItem(x, y, getElementDrop(gameTerrain[x + y * MAP_WIDTH_MAX]), 1);
         setGameTerrain(x, y, TILE_AIR);
-        gameTerrainHealth[x + y * MAP_WIDTH] = 0;
+        gameTerrainHealth[x + y * MAP_WIDTH_MAX] = 0;
     }
     // Random sound effect for breaking tiles
     if (frame % 15 == 0) // Play sound every 10 frames
@@ -963,13 +975,13 @@ void breakTile(int x, int y, int speed)
 // FIXME: this feels inefficient, need to fix it
 void interact(int x, int y)
 {
-    if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_CLOSED_1)
+    if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_CLOSED_1)
     {
         mmEffect(SFX_DOOR_OPEN);
         // Open to the left
-        if (gameTerrain[x - 1 + y * MAP_WIDTH] == TILE_AIR &&
-            gameTerrain[x - 1 + (y + 1) * MAP_WIDTH] == TILE_AIR &&
-            gameTerrain[x - 1 + (y + 2) * MAP_WIDTH] == TILE_AIR)
+        if (gameTerrain[x - 1 + y * MAP_WIDTH_MAX] == TILE_AIR &&
+            gameTerrain[x - 1 + (y + 1) * MAP_WIDTH_MAX] == TILE_AIR &&
+            gameTerrain[x - 1 + (y + 2) * MAP_WIDTH_MAX] == TILE_AIR)
         {
             setGameTerrain(x - 1, y, TILE_WOODEN_DOOR_OPEN_1);
             setGameTerrain(x, y, TILE_WOODEN_DOOR_OPEN_2);
@@ -979,9 +991,9 @@ void interact(int x, int y)
             setGameTerrain(x, y + 2, TILE_WOODEN_DOOR_OPEN_6);
         }
         // Open to the right
-        else if (gameTerrain[x + 1 + y * MAP_WIDTH] == TILE_AIR &&
-                 gameTerrain[x + 1 + (y + 1) * MAP_WIDTH] == TILE_AIR &&
-                 gameTerrain[x + 1 + (y + 2) * MAP_WIDTH] == TILE_AIR)
+        else if (gameTerrain[x + 1 + y * MAP_WIDTH_MAX] == TILE_AIR &&
+                 gameTerrain[x + 1 + (y + 1) * MAP_WIDTH_MAX] == TILE_AIR &&
+                 gameTerrain[x + 1 + (y + 2) * MAP_WIDTH_MAX] == TILE_AIR)
         {
             setGameTerrain(x, y, TILE_WOODEN_DOOR_OPEN_RIGHT_1);
             setGameTerrain(x + 1, y, TILE_WOODEN_DOOR_OPEN_RIGHT_2);
@@ -991,12 +1003,12 @@ void interact(int x, int y)
             setGameTerrain(x + 1, y + 2, TILE_WOODEN_DOOR_OPEN_RIGHT_6);
         }
     }
-    else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_CLOSED_2)
+    else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_CLOSED_2)
     {
         mmEffect(SFX_DOOR_OPEN);
-        if (gameTerrain[x - 1 + (y - 1) * MAP_WIDTH] == TILE_AIR &&
-            gameTerrain[x - 1 + y * MAP_WIDTH] == TILE_AIR &&
-            gameTerrain[x - 1 + (y + 1) * MAP_WIDTH] == TILE_AIR)
+        if (gameTerrain[x - 1 + (y - 1) * MAP_WIDTH_MAX] == TILE_AIR &&
+            gameTerrain[x - 1 + y * MAP_WIDTH_MAX] == TILE_AIR &&
+            gameTerrain[x - 1 + (y + 1) * MAP_WIDTH_MAX] == TILE_AIR)
         {
             setGameTerrain(x - 1, y - 1, TILE_WOODEN_DOOR_OPEN_1);
             setGameTerrain(x, y - 1, TILE_WOODEN_DOOR_OPEN_2);
@@ -1005,9 +1017,9 @@ void interact(int x, int y)
             setGameTerrain(x - 1, y + 1, TILE_WOODEN_DOOR_OPEN_5);
             setGameTerrain(x, y + 1, TILE_WOODEN_DOOR_OPEN_6);
         }
-        else if (gameTerrain[x + 1 + (y - 1) * MAP_WIDTH] == TILE_AIR &&
-                 gameTerrain[x + 1 + y * MAP_WIDTH] == TILE_AIR &&
-                 gameTerrain[x + 1 + (y + 1) * MAP_WIDTH] == TILE_AIR)
+        else if (gameTerrain[x + 1 + (y - 1) * MAP_WIDTH_MAX] == TILE_AIR &&
+                 gameTerrain[x + 1 + y * MAP_WIDTH_MAX] == TILE_AIR &&
+                 gameTerrain[x + 1 + (y + 1) * MAP_WIDTH_MAX] == TILE_AIR)
         {
             setGameTerrain(x, y - 1, TILE_WOODEN_DOOR_OPEN_RIGHT_1);
             setGameTerrain(x + 1, y - 1, TILE_WOODEN_DOOR_OPEN_RIGHT_2);
@@ -1017,12 +1029,12 @@ void interact(int x, int y)
             setGameTerrain(x + 1, y + 1, TILE_WOODEN_DOOR_OPEN_RIGHT_6);
         }
     }
-    else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_CLOSED_3)
+    else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_CLOSED_3)
     {
         mmEffect(SFX_DOOR_OPEN);
-        if (gameTerrain[x - 1 + (y - 2) * MAP_WIDTH] == TILE_AIR &&
-            gameTerrain[x - 1 + (y - 1) * MAP_WIDTH] == TILE_AIR &&
-            gameTerrain[x - 1 + y * MAP_WIDTH] == TILE_AIR)
+        if (gameTerrain[x - 1 + (y - 2) * MAP_WIDTH_MAX] == TILE_AIR &&
+            gameTerrain[x - 1 + (y - 1) * MAP_WIDTH_MAX] == TILE_AIR &&
+            gameTerrain[x - 1 + y * MAP_WIDTH_MAX] == TILE_AIR)
         {
             setGameTerrain(x - 1, y - 2, TILE_WOODEN_DOOR_OPEN_1);
             setGameTerrain(x, y - 2, TILE_WOODEN_DOOR_OPEN_2);
@@ -1031,9 +1043,9 @@ void interact(int x, int y)
             setGameTerrain(x - 1, y, TILE_WOODEN_DOOR_OPEN_5);
             setGameTerrain(x, y, TILE_WOODEN_DOOR_OPEN_6);
         }
-        else if (gameTerrain[x + 1 + (y - 2) * MAP_WIDTH] == TILE_AIR &&
-                 gameTerrain[x + 1 + (y - 1) * MAP_WIDTH] == TILE_AIR &&
-                 gameTerrain[x + 1 + y * MAP_WIDTH] == TILE_AIR)
+        else if (gameTerrain[x + 1 + (y - 2) * MAP_WIDTH_MAX] == TILE_AIR &&
+                 gameTerrain[x + 1 + (y - 1) * MAP_WIDTH_MAX] == TILE_AIR &&
+                 gameTerrain[x + 1 + y * MAP_WIDTH_MAX] == TILE_AIR)
         {
             setGameTerrain(x, y - 2, TILE_WOODEN_DOOR_OPEN_RIGHT_1);
             setGameTerrain(x + 1, y - 2, TILE_WOODEN_DOOR_OPEN_RIGHT_2);
@@ -1044,7 +1056,7 @@ void interact(int x, int y)
         }
     }
     // Closing left-opening door
-    else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_1)
+    else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_1)
     {
         mmEffect(SFX_DOOR_CLOSE);
         setGameTerrain(x, y, TILE_AIR);
@@ -1054,7 +1066,7 @@ void interact(int x, int y)
         setGameTerrain(x + 1, y + 1, TILE_WOODEN_DOOR_CLOSED_2);
         setGameTerrain(x + 1, y + 2, TILE_WOODEN_DOOR_CLOSED_3);
     }
-    else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_2)
+    else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_2)
     {
         mmEffect(SFX_DOOR_CLOSE);
         setGameTerrain(x - 1, y, TILE_AIR);
@@ -1064,7 +1076,7 @@ void interact(int x, int y)
         setGameTerrain(x, y + 1, TILE_WOODEN_DOOR_CLOSED_2);
         setGameTerrain(x, y + 2, TILE_WOODEN_DOOR_CLOSED_3);
     }
-    else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_3)
+    else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_3)
     {
         mmEffect(SFX_DOOR_CLOSE);
         setGameTerrain(x, y - 1, TILE_AIR);
@@ -1074,7 +1086,7 @@ void interact(int x, int y)
         setGameTerrain(x + 1, y, TILE_WOODEN_DOOR_CLOSED_2);
         setGameTerrain(x + 1, y + 1, TILE_WOODEN_DOOR_CLOSED_3);
     }
-    else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_4)
+    else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_4)
     {
         mmEffect(SFX_DOOR_CLOSE);
         setGameTerrain(x - 1, y - 1, TILE_AIR);
@@ -1084,7 +1096,7 @@ void interact(int x, int y)
         setGameTerrain(x, y, TILE_WOODEN_DOOR_CLOSED_2);
         setGameTerrain(x, y + 1, TILE_WOODEN_DOOR_CLOSED_3);
     }
-    else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_5)
+    else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_5)
     {
         mmEffect(SFX_DOOR_CLOSE);
         setGameTerrain(x, y - 2, TILE_AIR);
@@ -1093,7 +1105,7 @@ void interact(int x, int y)
         setGameTerrain(x, y, TILE_AIR);
         setGameTerrain(x + 1, y, TILE_AIR);
     }
-    else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_6)
+    else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_6)
     {
         mmEffect(SFX_DOOR_CLOSE);
         setGameTerrain(x - 1, y - 2, TILE_AIR);
@@ -1103,7 +1115,7 @@ void interact(int x, int y)
         setGameTerrain(x - 1, y, TILE_AIR);
     }
     // Closing right-opening door
-    else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_RIGHT_1)
+    else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_RIGHT_1)
     {
         mmEffect(SFX_DOOR_CLOSE);
         setGameTerrain(x, y, TILE_WOODEN_DOOR_CLOSED_1);
@@ -1113,7 +1125,7 @@ void interact(int x, int y)
         setGameTerrain(x + 1, y + 1, TILE_AIR);
         setGameTerrain(x + 1, y + 2, TILE_AIR);
     }
-    else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_RIGHT_2)
+    else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_RIGHT_2)
     {
         mmEffect(SFX_DOOR_CLOSE);
         setGameTerrain(x - 1, y, TILE_WOODEN_DOOR_CLOSED_1);
@@ -1123,7 +1135,7 @@ void interact(int x, int y)
         setGameTerrain(x, y + 1, TILE_AIR);
         setGameTerrain(x, y + 2, TILE_AIR);
     }
-    else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_RIGHT_3)
+    else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_RIGHT_3)
     {
         mmEffect(SFX_DOOR_CLOSE);
         setGameTerrain(x, y - 1, TILE_WOODEN_DOOR_CLOSED_1);
@@ -1133,7 +1145,7 @@ void interact(int x, int y)
         setGameTerrain(x + 1, y, TILE_AIR);
         setGameTerrain(x + 1, y + 1, TILE_AIR);
     }
-    else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_RIGHT_4)
+    else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_RIGHT_4)
     {
         mmEffect(SFX_DOOR_CLOSE);
         setGameTerrain(x - 1, y - 1, TILE_WOODEN_DOOR_CLOSED_1);
@@ -1143,7 +1155,7 @@ void interact(int x, int y)
         setGameTerrain(x, y, TILE_AIR);
         setGameTerrain(x, y + 1, TILE_AIR);
     }
-    else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_RIGHT_5)
+    else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_RIGHT_5)
     {
         mmEffect(SFX_DOOR_CLOSE);
         setGameTerrain(x, y - 2, TILE_WOODEN_DOOR_CLOSED_1);
@@ -1153,7 +1165,7 @@ void interact(int x, int y)
         setGameTerrain(x + 1, y - 1, TILE_AIR);
         setGameTerrain(x + 1, y, TILE_AIR);
     }
-    else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_RIGHT_6)
+    else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_RIGHT_6)
     {
         mmEffect(SFX_DOOR_CLOSE);
         setGameTerrain(x - 1, y - 2, TILE_WOODEN_DOOR_CLOSED_1);
@@ -1249,14 +1261,14 @@ void damageEntity(int id, int damage)
 
 int getHighestTileY(int x)
 {
-    for (int y = 0; y < MAP_HEIGHT; y++)
+    for (int y = 0; y < mapHeight; y++)
     {
-        if (isTileSolid(gameTerrain[x + y * MAP_WIDTH]))
+        if (isTileSolid(gameTerrain[x + y * MAP_WIDTH_MAX]))
         {
             return y;
         }
     }
-    return MAP_HEIGHT; // No solid tile found
+    return mapHeight; // No solid tile found
 }
 
 void setPlayerAnimFrame(int frame)
@@ -1285,6 +1297,17 @@ void setEntityAnimFrame(int id, int frame)
     fclose(f);
 }
 
+void delay(int seconds)
+{
+    int targetFrame = frame + seconds * 60; // Assuming 60 FPS
+    while (frame < targetFrame)
+    {
+        frame++;
+        swiWaitForVBlank();
+        mmStreamUpdate();
+    }
+}
+
 // I honestly wanted to make a struct of SaveData but i had some problems with its stack or whatever it is
 
 bool saveMapToFile(const char *filen)
@@ -1309,14 +1332,16 @@ bool saveMapToFile(const char *filen)
     }
 
     print(0, 0, "Saving map...");
-    uint32_t magic = 0xA212B055;
+    uint32_t magic = 0x550B12A2; // This magic number is for v0.2+ worlds
     size_t bytesWritten = fwrite(&magic, 1, 4, file);
+    bytesWritten += fwrite(&mapWidth, 1, 4, file);
+    bytesWritten += fwrite(&mapHeight, 1, 4, file);
     bytesWritten += fwrite(gameTerrain, 1, sizeof(gameTerrain), file);
     bytesWritten += fwrite(inventory, 1, sizeof(inventory), file);
     bytesWritten += fwrite(inventoryQuantity, 1, sizeof(inventoryQuantity), file);
     fclose(file);
 
-    if (bytesWritten != 4 + sizeof(gameTerrain) + sizeof(inventory) + sizeof(inventoryQuantity))
+    if (bytesWritten != 4 + 4 + 4 + sizeof(gameTerrain) + sizeof(inventory) + sizeof(inventoryQuantity))
     {
         print(0, 0, "Map save error");
         return false;
@@ -1345,27 +1370,55 @@ bool loadMapFromFile(const char *filen)
     print(0, 0, "Loading map...");
     uint32_t magic;
     size_t bytesRead = fread(&magic, 1, 4, file);
-    if (magic != 0xA212B055)
+    if (magic == 0xA212B055) // Try to load old world
     {
-        print(0, 0, "Invalid map file: ");
-        printDirect(filename);
+        clearPrint();
+        printSmart(0, 0, "Old world format detected, attempting to load..."); // Old worlds sizes are 1024x64
+        delay(3);
+        bytesRead += fread(gameTerrain, 1, 1024 * 64 * sizeof(u8), file);
+        bytesRead += fread(inventory, 1, sizeof(inventory), file);
+        bytesRead += fread(inventoryQuantity, 1, sizeof(inventoryQuantity), file);
         fclose(file);
-        return false;
-    }
-    bytesRead += fread(gameTerrain, 1, sizeof(gameTerrain), file);
-    bytesRead += fread(inventory, 1, sizeof(inventory), file);
-    bytesRead += fread(inventoryQuantity, 1, sizeof(inventoryQuantity), file);
-    fclose(file);
+        mapWidth = 1024;
+        mapHeight = 64;
 
-    if (bytesRead != 4 + sizeof(gameTerrain) + sizeof(inventory) + sizeof(inventoryQuantity))
+        if (bytesRead != 4 + 1024 * 64 * sizeof(u8) + sizeof(inventory) + sizeof(inventoryQuantity))
+        {
+            print(0, 0, "Map load error");
+            return false;
+        }
+
+        clearPrint();
+        printSmart(0, 0, "Old world loaded successfully! Consider saving it in the new format to avoid issues in the future.");
+        delay(3);
+    }
+    else
     {
-        print(0, 0, "Map load error");
-        return false;
+        if (magic != 0x550B12A2)
+        {
+            print(0, 0, "Invalid map file: ");
+            printDirect(filename);
+            fclose(file);
+            return false;
+        }
+        bytesRead += fread(&mapWidth, 1, 4, file);
+        bytesRead += fread(&mapHeight, 1, 4, file);
+        bytesRead += fread(gameTerrain, 1, sizeof(gameTerrain), file);
+        bytesRead += fread(inventory, 1, sizeof(inventory), file);
+        bytesRead += fread(inventoryQuantity, 1, sizeof(inventoryQuantity), file);
+        fclose(file);
+
+        if (bytesRead != 4 + 4 + 4 + sizeof(gameTerrain) + sizeof(inventory) + sizeof(inventoryQuantity))
+        {
+            print(0, 0, "Map load error");
+            return false;
+        }
     }
 
-    player.x = MAP_WIDTH * 8 / 2;
+    player.x = mapWidth * 8 / 2;
     player.y = 0;
-    chunk = -6;
+    lastCamTileX = -33;
+    lastCamTileY = -33;
     renderInventory();
     renderCrafting();
     print(0, 0, "Map loaded from ");
@@ -1412,7 +1465,7 @@ void playerDamage(int damage)
             mmStreamUpdate();
         }
         clearPrint();
-        player.x = MAP_WIDTH * 8 / 2;
+        player.x = mapWidth * 8 / 2;
         player.y = 0;
         player.health = 100;
         inventorySetHotbar();
@@ -1467,8 +1520,8 @@ void generateWorldName(char *nameBuffer, size_t bufferSize)
 
 void generateMap()
 {
-    u8 grassSurface[MAP_WIDTH];
-    u8 stoneSurface[MAP_WIDTH];
+    u8 grassSurface[mapWidth];
+    u8 stoneSurface[mapWidth];
     int seed = rando(0, 99999999);
 
     generateWorldName(worldFileName, sizeof(worldFileName));
@@ -1480,11 +1533,11 @@ void generateMap()
     printDirect("...\n");
     strcat(worldFileName, ".ter");
 
-    for (int x = 0; x < MAP_WIDTH; x++)
+    for (int x = 0; x < mapWidth; x++)
     {
         float wave = fractalPerlin1D(x, 4, 0.4f, 0.01f, seed) * 20.0f;
-        grassSurface[x] = clamp((int)(wave + (MIN_GRASS_HEIGHT + MAX_GRASS_HEIGHT) / 2), MIN_GRASS_HEIGHT, MAX_GRASS_HEIGHT);
-        if (x % (MAP_WIDTH / 32) == 0)
+        grassSurface[x] = clamp((int)(wave + (MIN_GRASS_HEIGHT * mapHeight + MAX_GRASS_HEIGHT * mapHeight) / 2), MIN_GRASS_HEIGHT * mapHeight, MAX_GRASS_HEIGHT * mapHeight);
+        if (x % (mapWidth / 32) == 0)
         {
             printDirect(".");
         }
@@ -1492,13 +1545,14 @@ void generateMap()
 
     // remove 1 block spikes, i fucking hate them
     printDirect("Removing spikes because they are annoying...\n");
-    for (int x = 1; x < MAP_WIDTH - 1; x++)
+    printDirect("."); // It needs one more lmao lol xd ong
+    for (int x = 1; x < mapWidth - 1; x++)
     {
         if (grassSurface[x - 1] != grassSurface[x] && grassSurface[x + 1] != grassSurface[x])
         {
             grassSurface[x] += 1;
         }
-        if (x % (MAP_WIDTH / 32) == 0)
+        if (x % (mapWidth / 32) == 0)
         {
             printDirect(".");
         }
@@ -1506,11 +1560,11 @@ void generateMap()
 
     // Generate stone height surface
     printDirect("Generating stone surface...\n");
-    for (int x = 0; x < MAP_WIDTH; x++)
+    for (int x = 0; x < mapWidth; x++)
     {
         float wave = fractalPerlin1D(x, 4, 0.4f, 0.01f, seed + 1) * 20.0f;
-        stoneSurface[x] = clamp((int)(wave + (MIN_STONE_HEIGHT + MAX_STONE_HEIGHT) / 2), MIN_STONE_HEIGHT, MAX_STONE_HEIGHT);
-        if (x % (MAP_WIDTH / 32) == 0)
+        stoneSurface[x] = clamp((int)(wave + (MIN_STONE_HEIGHT * mapHeight + MAX_STONE_HEIGHT * mapHeight) / 2), MIN_STONE_HEIGHT * mapHeight, MAX_STONE_HEIGHT * mapHeight);
+        if (x % (mapWidth / 32) == 0)
         {
             printDirect(".");
         }
@@ -1518,9 +1572,9 @@ void generateMap()
 
     // Place terrain
     printDirect("Placing terrain...\n");
-    for (int x = 0; x < MAP_WIDTH; x++)
+    for (int x = 0; x < mapWidth; x++)
     {
-        for (int y = 0; y < MAP_HEIGHT; y++)
+        for (int y = 0; y < mapHeight; y++)
         {
             if (y >= grassSurface[x] && y < stoneSurface[x])
             {
@@ -1531,7 +1585,7 @@ void generateMap()
                 setGameTerrain(x, y, TILE_STONE);
             }
         }
-        if (x % (MAP_WIDTH / 32) == 0)
+        if (x % (mapWidth / 32) == 0)
         {
             printDirect(".");
         }
@@ -1539,9 +1593,9 @@ void generateMap()
 
     // Generate ores
     printDirect("Generating copper...\n");
-    for (int x = 0; x < MAP_WIDTH; x++)
+    for (int x = 0; x < mapWidth; x++)
     {
-        for (int y = 0; y < MAP_HEIGHT; y++)
+        for (int y = 0; y < mapHeight; y++)
         {
             if (y >= stoneSurface[x])
             {
@@ -1552,15 +1606,15 @@ void generateMap()
                 }
             }
         }
-        if (x % (MAP_WIDTH / 32) == 0)
+        if (x % (mapWidth / 32) == 0)
         {
             printDirect(".");
         }
     }
     printDirect("Generating tin...\n");
-    for (int x = 0; x < MAP_WIDTH; x++)
+    for (int x = 0; x < mapWidth; x++)
     {
-        for (int y = 0; y < MAP_HEIGHT; y++)
+        for (int y = 0; y < mapHeight; y++)
         {
             if (y >= stoneSurface[x])
             {
@@ -1571,7 +1625,7 @@ void generateMap()
                 }
             }
         }
-        if (x % (MAP_WIDTH / 32) == 0)
+        if (x % (mapWidth / 32) == 0)
         {
             printDirect(".");
         }
@@ -1579,9 +1633,9 @@ void generateMap()
 
     // Generate caves
     printDirect("Generating caves...\n");
-    for (int x = 0; x < MAP_WIDTH; x++)
+    for (int x = 0; x < mapWidth; x++)
     {
-        for (int y = 0; y < MAP_HEIGHT; y++)
+        for (int y = 0; y < mapHeight; y++)
         {
             if (y >= grassSurface[x])
             {
@@ -1592,7 +1646,7 @@ void generateMap()
                 }
             }
         }
-        if (x % (MAP_WIDTH / 32) == 0)
+        if (x % (mapWidth / 32) == 0)
         {
             printDirect(".");
         }
@@ -1600,11 +1654,11 @@ void generateMap()
 
     // Adding walls
     printDirect("Adding walls...\n");
-    for (int x = 0; x < MAP_WIDTH; x++)
+    for (int x = 0; x < mapWidth; x++)
     {
-        for (int y = 0; y < MAP_HEIGHT; y++)
+        for (int y = 0; y < mapHeight; y++)
         {
-            if (gameTerrain[x + y * MAP_WIDTH] == TILE_AIR)
+            if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_AIR)
             {
                 if (y >= grassSurface[x] && y < stoneSurface[x])
                     setGameTerrain(x, y, TILE_DIRT_WALL);
@@ -1612,7 +1666,7 @@ void generateMap()
                     setGameTerrain(x, y, TILE_STONE_WALL);
             }
         }
-        if (x % (MAP_WIDTH / 32) == 0)
+        if (x % (mapWidth / 32) == 0)
         {
             printDirect(".");
         }
@@ -1620,9 +1674,9 @@ void generateMap()
 
     // Place trees
     printDirect("Placing trees...\n");
-    for (int x = 1; x < MAP_WIDTH - 1; x++)
+    for (int x = 1; x < mapWidth - 1; x++)
     {
-        if (rando(0, TREE_CHANCE) == 0 && gameTerrain[x + (grassSurface[x] + 1) * MAP_WIDTH] == TILE_DIRT)
+        if (rando(0, TREE_CHANCE) == 0 && gameTerrain[x + (grassSurface[x] + 1) * MAP_WIDTH_MAX] == TILE_DIRT)
         {
             int tree_height = rando(3, 5);
             // Tree trunk
@@ -1640,7 +1694,7 @@ void generateMap()
                 }
             }
         }
-        if (x % (MAP_WIDTH / 32) == 0)
+        if (x % (mapWidth / 32) == 0)
         {
             printDirect(".");
         }
@@ -1648,13 +1702,13 @@ void generateMap()
 
     // Place mushrooms
     printDirect("Placing mushrooms...\n");
-    for (int x = 1; x < MAP_WIDTH - 1; x++)
+    for (int x = 1; x < mapWidth - 1; x++)
     {
-        if (rando(0, MUSHROOM_CHANCE) == 0 && gameTerrain[x + grassSurface[x] * MAP_WIDTH] == TILE_DIRT && gameTerrain[x + (grassSurface[x] - 1) * MAP_WIDTH] == TILE_AIR)
+        if (rando(0, MUSHROOM_CHANCE) == 0 && gameTerrain[x + grassSurface[x] * MAP_WIDTH_MAX] == TILE_DIRT && gameTerrain[x + (grassSurface[x] - 1) * MAP_WIDTH_MAX] == TILE_AIR)
         {
             setGameTerrain(x, grassSurface[x] - 1, TILE_MUSHROOM);
         }
-        if (x % (MAP_WIDTH / 32) == 0)
+        if (x % (mapWidth / 32) == 0)
         {
             printDirect(".");
         }
@@ -1662,10 +1716,10 @@ void generateMap()
 
     // Place demonite bricks to limit the world
     printDirect("Placing demonite bricks at the bottom so you don't escape >:) ...\n");
-    for (int x = 0; x < MAP_WIDTH - 1; x++)
+    for (int x = 0; x < mapWidth - 1; x++)
     {
-        setGameTerrain(x, MAP_HEIGHT - 1, TILE_DEMONITE_BRICK);
-        if (x % (MAP_WIDTH / 32) == 0)
+        setGameTerrain(x, mapHeight - 1, TILE_DEMONITE_BRICK);
+        if (x % (mapWidth / 32) == 0)
         {
             printDirect(".");
         }
@@ -1679,6 +1733,8 @@ void generateMap()
         inventoryQuantity[i] = 0;
     }
 
+    player.x = mapWidth * 8 / 2;
+    player.y = 0;
     player.health = 100;
     player.maxHealth = 100;
     player.invincibilityFrames = 300;
@@ -1690,25 +1746,23 @@ void generateMap()
     giveInventory(ITEM_COPPER_PICKAXE, 1);
 }
 
-
-
 mm_word on_stream_request(mm_word length, mm_addr dest, mm_stream_formats format)
 {
-	uint8_t *target = (uint8_t *)dest;
+    uint8_t *target = (uint8_t *)dest;
 
-	size_t bytesRead = fread(target, 1, length, audioFile);
+    size_t bytesRead = fread(target, 1, length, audioFile);
 
-	if (bytesRead < length)
-	{
-		// Fill rest with silence
-		for (int i = bytesRead; i < length; i++)
-		{
-			target[i] = 128;
-		}
-		fseek(audioFile, 0, SEEK_SET);
-	}
+    if (bytesRead < length)
+    {
+        // Fill rest with silence
+        for (int i = bytesRead; i < length; i++)
+        {
+            target[i] = 128;
+        }
+        fseek(audioFile, 0, SEEK_SET);
+    }
 
-	return length;
+    return length;
 }
 
 #define PALETTE_LEN 256
@@ -1717,39 +1771,39 @@ u16 originalPalette[PALETTE_LEN];
 
 void storeOriginalPalette()
 {
-	// Copy the BG palette to a buffer
-	for (int i = 0; i < PALETTE_LEN; i++)
-	{
-		originalPalette[i] = BG_PALETTE[i];
-	}
+    // Copy the BG palette to a buffer
+    for (int i = 0; i < PALETTE_LEN; i++)
+    {
+        originalPalette[i] = BG_PALETTE[i];
+    }
 }
 
 void fadeInPalette(int steps, int delay)
 {
-	for (int s = 0; s <= steps; s++)
-	{
-		for (int i = 0; i < PALETTE_LEN; i++)
-		{
-			u16 color = originalPalette[i];
+    for (int s = 0; s <= steps; s++)
+    {
+        for (int i = 0; i < PALETTE_LEN; i++)
+        {
+            u16 color = originalPalette[i];
 
-			int r = color & 0x1F;
-			int g = (color >> 5) & 0x1F;
-			int b = (color >> 10) & 0x1F;
+            int r = color & 0x1F;
+            int g = (color >> 5) & 0x1F;
+            int b = (color >> 10) & 0x1F;
 
-			// Scale each component
-			int r2 = (r * s) / steps;
-			int g2 = (g * s) / steps;
-			int b2 = (b * s) / steps;
+            // Scale each component
+            int r2 = (r * s) / steps;
+            int g2 = (g * s) / steps;
+            int b2 = (b * s) / steps;
 
-			BG_PALETTE[i] = (b2 << 10) | (g2 << 5) | r2;
-		}
+            BG_PALETTE[i] = (b2 << 10) | (g2 << 5) | r2;
+        }
 
-		swiWaitForVBlank();
-		mmStreamUpdate();
-		for (int d = 0; d < delay; d++)
-		{
-			swiWaitForVBlank();
-			mmStreamUpdate();
-		}
-	}
+        swiWaitForVBlank();
+        mmStreamUpdate();
+        for (int d = 0; d < delay; d++)
+        {
+            swiWaitForVBlank();
+            mmStreamUpdate();
+        }
+    }
 }

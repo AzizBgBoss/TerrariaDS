@@ -37,8 +37,8 @@
 
 #include "soundbank.h"
 
-#define MAP_WIDTH 1024
-#define MAP_HEIGHT 64
+#define MAP_WIDTH_MAX 1024
+#define MAP_HEIGHT_MAX 256
 
 #define DAY_LENGTH 600 // Day length in seconds
 
@@ -48,10 +48,10 @@
 
 #define TREE_CHANCE 10
 #define MUSHROOM_CHANCE 10
-#define MIN_GRASS_HEIGHT 12
-#define MAX_GRASS_HEIGHT 20
-#define MIN_STONE_HEIGHT 17
-#define MAX_STONE_HEIGHT 25
+#define MIN_GRASS_HEIGHT 0.2
+#define MAX_GRASS_HEIGHT 0.3
+#define MIN_STONE_HEIGHT 0.25
+#define MAX_STONE_HEIGHT 0.4
 
 // Define game elements
 

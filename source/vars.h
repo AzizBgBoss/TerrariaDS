@@ -6,15 +6,18 @@ int frame = 0;
 int scrollX = 0;
 int scrollY = 0;
 int scale = 128; // 128 is x2, 256 is x1, 512 is x0.5
-int chunk = 0;
+int lastCamTileX = -67;
+int lastCamTileY = -67;
+
+int mapWidth = 1024, mapHeight = 64;
 
 int gametime = 0;
 int darkness = 0;
 
 char worldFileName[64];
 
-u8 gameTerrain[MAP_WIDTH * MAP_HEIGHT] = {0};
-int gameTerrainHealth[MAP_WIDTH * MAP_HEIGHT] = {0};
+u8 gameTerrain[MAP_WIDTH_MAX * MAP_HEIGHT_MAX] = {0};
+u16 gameTerrainHealth[MAP_WIDTH_MAX * MAP_HEIGHT_MAX] = {0};
 
 u8 inventory[8 * 4] = {0};
 u8 inventoryQuantity[8 * 4] = {0};
@@ -40,7 +43,7 @@ const char *titleSplashes[] = {
 	"By AzizBgBoss, for the DS community!",
 	"67",
 	"No braincells harmed while making this",
-	"If this crashes, trust me, it’s a feature",
+	"If this crashes, trust me, it's a feature",
 	"Now with 2 percent fewer bugs!",
 	"Runs at a positive amount of FPS",
 	"Built with duct tape and hope",
@@ -66,7 +69,7 @@ const char *titleSplashes[] = {
 	"If terrain generation feels slow, look away, it will feel faster",
 	"Impressively under 4MB for RAM",
 	"The DS has a 67MHz CPU, lol 67 (I'm sorry I have to grow up)",
-	"Procedural generation means I don’t know either",
+	"Procedural generation means I don't know either",
 	"TerrariaDS: legally distinct block mining building crafting fighting fishing simulator",
 	"CPU fan for your DS? Yeah I'm not a fan (get it? lol)",
 	"Implemented corruption! But not the Terraria one",
@@ -158,7 +161,7 @@ typedef struct
 } CraftingRecipe;
 
 // Define the player entity
-Player player = {MAP_WIDTH * 8 / 2, 0, 0, 0, 0, NULL, 16, 24, false, true, 1, 0, true, false, 4, 100, 100, 0, 0, ANIM_NONE};
+Player player = {0, 0, 0, 0, 0, NULL, 16, 24, false, true, 1, 0, true, false, 4, 100, 100, 0, 0, ANIM_NONE};
 
 Entity entity[ENTITY_COUNT];
 
