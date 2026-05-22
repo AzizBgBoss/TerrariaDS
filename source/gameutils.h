@@ -1,0 +1,1745 @@
+// Game engine utilities
+
+#include "defs.h"
+
+int getElementTile(int tile, int x, int y) // Tile will change based on surrounding tiles
+{
+    int tileabove = (y > 0) ? gameTerrain[x + (y - 1) * MAP_WIDTH] : TILE_AIR;
+    int tilebelow = (y < MAP_HEIGHT - 1) ? gameTerrain[x + (y + 1) * MAP_WIDTH] : TILE_AIR;
+    int tileleft = (x > 0) ? gameTerrain[x - 1 + y * MAP_WIDTH] : TILE_AIR;
+    int tileright = (x < MAP_WIDTH - 1) ? gameTerrain[x + 1 + y * MAP_WIDTH] : TILE_AIR;
+
+    int offset = 0;
+    switch (tile)
+    {
+    case TILE_AIR:
+        return 0;
+    case TILE_DIRT:
+        offset = 1;
+        break;
+    case TILE_STONE:
+        offset = 2;
+        break;
+    case TILE_LEAVES:
+        offset = 3;
+        break;
+    case TILE_PLANKS:
+        offset = 4;
+        break;
+    case TILE_DIRT_WALL:
+        offset = 5;
+        break;
+    case TILE_STONE_WALL:
+        offset = 6;
+        break;
+    case TILE_DEMONITE_BRICK:
+        offset = 7;
+        break;
+    case TILE_WOOD_WALL:
+        offset = 8;
+        break;
+    case TILE_COPPER_ORE:
+        offset = 9;
+        break;
+    case TILE_TIN_ORE:
+        offset = 12;
+        break;
+    case TILE_WOODLOG:
+        return 2;
+    case TILE_MUSHROOM:
+        return 1;
+    case TILE_WOODEN_DOOR_CLOSED_1:
+        return 92;
+    case TILE_WOODEN_DOOR_CLOSED_2:
+        return 95;
+    case TILE_WOODEN_DOOR_CLOSED_3:
+        return 98;
+    case TILE_WOODEN_DOOR_OPEN_1:
+        return 90;
+    case TILE_WOODEN_DOOR_OPEN_2:
+        return 91;
+    case TILE_WOODEN_DOOR_OPEN_3:
+        return 93;
+    case TILE_WOODEN_DOOR_OPEN_4:
+        return 94;
+    case TILE_WOODEN_DOOR_OPEN_5:
+        return 96;
+    case TILE_WOODEN_DOOR_OPEN_6:
+        return 97;
+    case TILE_WOODEN_DOOR_OPEN_RIGHT_1:
+        return 99;
+    case TILE_WOODEN_DOOR_OPEN_RIGHT_2:
+        return 100;
+    case TILE_WOODEN_DOOR_OPEN_RIGHT_3:
+        return 102;
+    case TILE_WOODEN_DOOR_OPEN_RIGHT_4:
+        return 103;
+    case TILE_WOODEN_DOOR_OPEN_RIGHT_5:
+        return 105;
+    case TILE_WOODEN_DOOR_OPEN_RIGHT_6:
+        return 106;
+    default:
+        return 8;
+    }
+
+    if (tileabove == TILE_AIR)
+    {
+        if (tilebelow == TILE_AIR)
+        {
+            if (tileleft == TILE_AIR)
+            {
+                if (tileright == TILE_AIR)
+                {
+                    return offset * 9 + 0; // Middle
+                }
+                else
+                {
+                    return offset * 9 + 0; // Top right corner
+                }
+            }
+            else
+            {
+                if (tileright == TILE_AIR)
+                {
+                    return offset * 9 + 2; // Top left corner
+                }
+                else
+                {
+                    return offset * 9 + 1; // Top edge
+                }
+            }
+        }
+        else
+        {
+            if (tileleft == TILE_AIR)
+            {
+                if (tileright == TILE_AIR)
+                {
+                    return offset * 9 + 1; // Top edge
+                }
+                else
+                {
+                    return offset * 9 + 0; // Top left corner
+                }
+            }
+            else
+            {
+                if (tileright == TILE_AIR)
+                {
+                    return offset * 9 + 2; // Top right corner
+                }
+                else
+                {
+                    return offset * 9 + 1; // Top edge
+                }
+            }
+        }
+    }
+    else
+    {
+        if (tilebelow == TILE_AIR)
+        {
+            if (tileleft == TILE_AIR)
+            {
+                if (tileright == TILE_AIR)
+                {
+                    return offset * 9 + 7; // Bottom middle
+                }
+                else
+                {
+                    return offset * 9 + 6; // Bottom left corner
+                }
+            }
+            else
+            {
+                if (tileright == TILE_AIR)
+                {
+                    return offset * 9 + 8; // Bottom right corner
+                }
+                else
+                {
+                    return offset * 9 + 7; // Bottom edge
+                }
+            }
+        }
+        else
+        {
+            if (tileleft == TILE_AIR)
+            {
+                if (tileright == TILE_AIR)
+                {
+                    return offset * 9 + 4; // Middle
+                }
+                else
+                {
+                    return offset * 9 + 3; // Left edge
+                }
+            }
+            else
+            {
+                if (tileright == TILE_AIR)
+                {
+                    return offset * 9 + 5; // Left edge
+                }
+                else
+                {
+                    return offset * 9 + 4; // Middle
+                }
+            }
+        }
+    }
+}
+
+int getItemTile(int item)
+{
+    switch (item)
+    {
+    case ITEM_COPPER_LONGSWORD:
+        return 0;
+    case ITEM_COPPER_PICKAXE:
+        return 4;
+    case ITEM_COPPER_AXE:
+        return 8;
+    case ITEM_COPPER_HAMMER:
+        return 12;
+    case TILE_DIRT:
+        return 16;
+    case TILE_STONE:
+        return 20;
+    case TILE_MUSHROOM:
+        return 24;
+    case TILE_PLANKS:
+        return 28;
+    case TILE_LEAVES:
+        return 32;
+    case TILE_DIRT_WALL:
+        return 36;
+    case TILE_STONE_WALL:
+        return 40;
+    case TILE_DEMONITE_BRICK:
+        return 44;
+    case TILE_WOOD_WALL:
+        return 48;
+    case TILE_COPPER_ORE:
+        return 52;
+    case TILE_WOODEN_DOOR_CLOSED_3:
+        return 64;
+    case TILE_TIN_ORE:
+        return 68;
+    case ITEM_TIN_LONGSWORD:
+        return 80;
+    case ITEM_TIN_PICKAXE:
+        return 84;
+    case ITEM_TIN_AXE:
+        return 88;
+    case ITEM_TIN_HAMMER:
+        return 92;
+    default:
+        return 56;
+    }
+}
+
+char *getElementName(int element)
+{
+    switch (element)
+    {
+    case TILE_DIRT:
+        return "Dirt";
+    case TILE_STONE:
+        return "Stone";
+    case TILE_WOODLOG:
+        return "Wood Log";
+    case TILE_PLANKS:
+        return "Planks";
+    case TILE_MUSHROOM:
+        return "Mushroom";
+    case TILE_LEAVES:
+        return "Leaves";
+    case TILE_DIRT_WALL:
+        return "Dirt Wall";
+    case TILE_STONE_WALL:
+        return "Stone Wall";
+    case TILE_DEMONITE_BRICK:
+        return "Demonite Brick";
+    case TILE_WOOD_WALL:
+        return "Wood Wall";
+    case TILE_COPPER_ORE:
+        return "Copper Ore";
+    case ITEM_COPPER_PICKAXE:
+        return "Copper Pickaxe";
+    case ITEM_COPPER_LONGSWORD:
+        return "Copper Long Sword";
+    case ITEM_COPPER_AXE:
+        return "Copper Axe";
+    case ITEM_COPPER_HAMMER:
+        return "Copper Hammer";
+    case TILE_TIN_ORE:
+        return "Tin Ore";
+    case ITEM_TIN_PICKAXE:
+        return "Tin Pickaxe";
+    case ITEM_TIN_LONGSWORD:
+        return "Tin Long Sword";
+    case ITEM_TIN_AXE:
+        return "Tin Axe";
+    case ITEM_TIN_HAMMER:
+        return "Tin Hammer";
+    case TILE_WOODEN_DOOR_CLOSED_3:
+        return "Wooden Door";
+    default:
+        return "";
+    }
+}
+
+int getElementHealth(int element)
+{
+    switch (element)
+    {
+    case TILE_DIRT:
+        return 100;
+    case TILE_STONE:
+        return 300;
+    case TILE_WOODLOG:
+        return 200;
+    case TILE_PLANKS:
+        return 100;
+    case TILE_LEAVES:
+        return 50;
+    case TILE_MUSHROOM:
+        return 10;
+    case TILE_DIRT_WALL:
+    case TILE_STONE_WALL:
+        return 100;
+    case TILE_DEMONITE_BRICK:
+        return INFINITY;
+    case TILE_WOOD_WALL:
+        return 100;
+    case TILE_COPPER_ORE:
+    case TILE_TIN_ORE:
+        return 200;
+    case TILE_WOODEN_DOOR_CLOSED_1:
+    case TILE_WOODEN_DOOR_CLOSED_2:
+    case TILE_WOODEN_DOOR_CLOSED_3:
+    case TILE_WOODEN_DOOR_OPEN_1:
+    case TILE_WOODEN_DOOR_OPEN_2:
+    case TILE_WOODEN_DOOR_OPEN_3:
+    case TILE_WOODEN_DOOR_OPEN_4:
+    case TILE_WOODEN_DOOR_OPEN_5:
+    case TILE_WOODEN_DOOR_OPEN_6:
+    case TILE_WOODEN_DOOR_OPEN_RIGHT_1:
+    case TILE_WOODEN_DOOR_OPEN_RIGHT_2:
+    case TILE_WOODEN_DOOR_OPEN_RIGHT_3:
+    case TILE_WOODEN_DOOR_OPEN_RIGHT_4:
+    case TILE_WOODEN_DOOR_OPEN_RIGHT_5:
+    case TILE_WOODEN_DOOR_OPEN_RIGHT_6:
+        return 50;
+    default:
+        return 0;
+    }
+}
+
+int getElementDrop(int element)
+{
+    switch (element)
+    {
+    case TILE_WOODLOG:
+        return TILE_PLANKS; // Drops planks when broken
+    case TILE_WOODEN_DOOR_CLOSED_1:
+    case TILE_WOODEN_DOOR_CLOSED_2:
+    case TILE_WOODEN_DOOR_CLOSED_3:
+    case TILE_WOODEN_DOOR_OPEN_1:
+    case TILE_WOODEN_DOOR_OPEN_2:
+    case TILE_WOODEN_DOOR_OPEN_3:
+    case TILE_WOODEN_DOOR_OPEN_4:
+    case TILE_WOODEN_DOOR_OPEN_5:
+    case TILE_WOODEN_DOOR_OPEN_6:
+    case TILE_WOODEN_DOOR_OPEN_RIGHT_1:
+    case TILE_WOODEN_DOOR_OPEN_RIGHT_2:
+    case TILE_WOODEN_DOOR_OPEN_RIGHT_3:
+    case TILE_WOODEN_DOOR_OPEN_RIGHT_4:
+    case TILE_WOODEN_DOOR_OPEN_RIGHT_5:
+    case TILE_WOODEN_DOOR_OPEN_RIGHT_6:
+        return TILE_WOODEN_DOOR_CLOSED_3;
+    default:
+        return element; // Drops itself
+    }
+}
+
+int getEntityDrop(int entity)
+{
+    switch (entity)
+    {
+    case ENTITY_GREEN_SLIME:
+    case ENTITY_RED_SLIME:
+    case ENTITY_BLUE_SLIME:
+        return TILE_MUSHROOM; // Slimes drop mushrooms for now
+    default:
+        return TILE_AIR;
+    }
+}
+
+bool isToolCompatible(int tool, int tile)
+{
+    switch (tool)
+    {
+    case ITEM_COPPER_PICKAXE:
+    case ITEM_TIN_PICKAXE:
+        return tile == TILE_STONE || tile == TILE_DIRT || tile == TILE_PLANKS || tile == TILE_MUSHROOM || tile == TILE_DEMONITE_BRICK || tile == TILE_COPPER_ORE || tile == TILE_WOODEN_DOOR_CLOSED_1 || tile == TILE_WOODEN_DOOR_CLOSED_2 || tile == TILE_WOODEN_DOOR_CLOSED_3 || tile == TILE_WOODEN_DOOR_OPEN_1 || tile == TILE_WOODEN_DOOR_OPEN_2 || tile == TILE_WOODEN_DOOR_OPEN_3 || TILE_WOODEN_DOOR_OPEN_4 || TILE_WOODEN_DOOR_OPEN_5 || TILE_WOODEN_DOOR_OPEN_6;
+    case ITEM_COPPER_AXE:
+    case ITEM_TIN_AXE:
+        return tile == TILE_WOODLOG || tile == TILE_LEAVES || tile == TILE_MUSHROOM;
+    case ITEM_COPPER_LONGSWORD:
+    case ITEM_TIN_LONGSWORD:
+        return tile == TILE_MUSHROOM; // Can break mushrooms
+    case ITEM_COPPER_HAMMER:
+    case ITEM_TIN_HAMMER:
+        return tile == TILE_DIRT_WALL || tile == TILE_STONE_WALL || tile == TILE_WOOD_WALL; // Can break walls
+    default:
+        return false;
+    }
+}
+
+bool isTileSolid(int tile)
+{
+    switch (tile)
+    {
+    case TILE_DIRT:
+    case TILE_STONE:
+    case TILE_PLANKS:
+    case TILE_DEMONITE_BRICK:
+    case TILE_COPPER_ORE:
+    case TILE_TIN_ORE:
+    case TILE_WOODEN_DOOR_CLOSED_1:
+    case TILE_WOODEN_DOOR_CLOSED_2:
+    case TILE_WOODEN_DOOR_CLOSED_3:
+        return true;
+    default:
+        return false;
+    }
+}
+
+bool isElementWall(int tile)
+{
+    switch (tile)
+    {
+    case TILE_DIRT_WALL:
+    case TILE_STONE_WALL:
+    case TILE_WOOD_WALL:
+        return true;
+    default:
+        return false;
+    }
+}
+
+int getItemSpeed(int item)
+{
+    switch (item)
+    {
+    case ITEM_COPPER_PICKAXE:
+    case ITEM_COPPER_AXE:
+    case ITEM_COPPER_LONGSWORD:
+    case ITEM_COPPER_HAMMER:
+        return 1;
+    case ITEM_TIN_PICKAXE:
+    case ITEM_TIN_AXE:
+    case ITEM_TIN_LONGSWORD:
+    case ITEM_TIN_HAMMER:
+        return 2;
+    default:
+        return 1;
+    }
+}
+
+void setInventorySelection(u8 slot)
+{
+    slot = slot % (inventoryOpen ? 32 : 8);
+    inventorySelection = inventoryOpen ? clamp(slot, 0, 31) : clamp(slot, 0, 7);
+    int x = (inventorySelection % 8) * 4 * 8;
+    int y = ((inventorySelection / 8) * -4 + 20) * 8;
+    if (!craftingOpen)
+    {
+        if (inventoryOpen)
+        {
+            print(1, 7, "              ");
+            print(1, 7, getElementName(inventory[inventorySelection]));
+        }
+        else
+        {
+            print(1, 19, "                ");
+            print(1, 19, getElementName(inventory[inventorySelection]));
+        }
+        oamSet(&oamMain, 0, x, y, 0, 0, SpriteSize_32x32, SpriteColorFormat_256Color, inventorySelectionSprite, -1, false, false, false, false, false);
+        oamUpdate(&oamMain);
+    }
+    mmEffect(SFX_ENU_TICK);
+}
+
+void setCraftingSelection(u8 slot)
+{
+    clearPrint();
+    craftingSelection = slot;
+    int x = (slot % 4) * 4 * 8;
+    int y = ((slot / 4) * -4 + 20) * 8;
+    if (craftingOpen)
+    {
+        print(16, 7, "              ");
+        print(16, 7, getElementName(craftingRecipes[slot].item));
+        for (int i = 0; i < craftingRecipes[slot].ingredientCount; i++)
+        {
+            Bg1UpSetTile(16, 8 + i * 2, getItemTile(craftingRecipes[slot].itemsNeeded[i]) + 0);
+            Bg1UpSetTile(16 + 1, 8 + i * 2, getItemTile(craftingRecipes[slot].itemsNeeded[i]) + 1);
+            Bg1UpSetTile(16, 8 + 1 + i * 2, getItemTile(craftingRecipes[slot].itemsNeeded[i]) + 2);
+            Bg1UpSetTile(16 + 1, 8 + 1 + i * 2, getItemTile(craftingRecipes[slot].itemsNeeded[i]) + 3);
+            print(16 + 2, 8 + i * 2, "              ");
+            print(16 + 2, 8 + i * 2, getElementName(craftingRecipes[slot].itemsNeeded[i]));
+            print(16 + 2, 9 + i * 2, "              ");
+            printVal(16 + 2, 9 + i * 2, craftingRecipes[slot].itemsNeededQuantity[i]);
+        }
+        oamSet(&oamMain, 0, x, y, 0, 0, SpriteSize_32x32, SpriteColorFormat_256Color, inventorySelectionSprite, -1, false, false, false, false, false);
+        oamUpdate(&oamMain);
+    }
+    mmEffect(SFX_ENU_TICK);
+}
+
+void renderInventory()
+{
+    if (!craftingOpen)
+    {
+        Bg1UpFill(63);
+        for (int i = 0; i < (inventoryOpen ? 8 * 4 : 8); i++) // Only show from the lowest 8 slots if using hotbar mode
+        {
+            if (inventory[i] == 0 || inventoryQuantity[i] == 0)
+            {
+                Bg1UpSetTile((i % 8) * 4 + 1, (i / 8) * -4 + 21, 63);
+                Bg1UpSetTile((i % 8) * 4 + 2, (i / 8) * -4 + 21, 63);
+                Bg1UpSetTile((i % 8) * 4 + 1, (i / 8) * -4 + 22, 63);
+                Bg1UpSetTile((i % 8) * 4 + 2, (i / 8) * -4 + 22, 63);
+                print((i % 8) * 4 + 1, (i / 8) * -4 + 23, "   ");
+            }
+            else
+            {
+                Bg1UpSetTile((i % 8) * 4 + 1, (i / 8) * -4 + 21, getItemTile(inventory[i]) + 0);
+                Bg1UpSetTile((i % 8) * 4 + 2, (i / 8) * -4 + 21, getItemTile(inventory[i]) + 1);
+                Bg1UpSetTile((i % 8) * 4 + 1, (i / 8) * -4 + 22, getItemTile(inventory[i]) + 2);
+                Bg1UpSetTile((i % 8) * 4 + 2, (i / 8) * -4 + 22, getItemTile(inventory[i]) + 3);
+                print((i % 8) * 4 + 1, (i / 8) * -4 + 23, "   ");
+                if (inventoryQuantity[i] > 1)
+                {
+                    char buffer[3];
+                    itoa(inventoryQuantity[i], buffer, 10);
+                    print((i % 8) * 4 + 1, (i / 8) * -4 + 23, buffer);
+                }
+            }
+        }
+        setInventorySelection(inventorySelection);
+    }
+}
+
+void renderCrafting()
+{
+    if (craftingOpen)
+    {
+        Bg1UpFill(63);
+        setCraftingSelection(craftingSelection);
+        int tilesToRender = (sizeof(craftingRecipes) / sizeof(craftingRecipes[0]) <= 16) ? sizeof(craftingRecipes) / sizeof(craftingRecipes[0]) : 16;
+        for (int i = 0; i < tilesToRender; i++)
+        {
+            Bg1UpSetTile((i % 4) * 4 + 1, (i / 4) * -4 + 21, getItemTile(craftingRecipes[i].item) + 0);
+            Bg1UpSetTile((i % 4) * 4 + 2, (i / 4) * -4 + 21, getItemTile(craftingRecipes[i].item) + 1);
+            Bg1UpSetTile((i % 4) * 4 + 1, (i / 4) * -4 + 22, getItemTile(craftingRecipes[i].item) + 2);
+            Bg1UpSetTile((i % 4) * 4 + 2, (i / 4) * -4 + 22, getItemTile(craftingRecipes[i].item) + 3);
+            print((i % 4) * 4 + 1, (i / 4) * -4 + 23, "   ");
+            if (craftingRecipes[i].quantity > 1)
+            {
+                printVal((i % 4) * 4 + 1, (i / 4) * -4 + 23, craftingRecipes[i].quantity);
+            }
+        }
+    }
+}
+
+void setInventory(int slot, int item, int quantity)
+{
+    if (slot < 0 || slot >= 8 * 4)
+        return;
+    if (item == 0 || quantity == 0)
+    {
+        inventory[slot] = 0;
+        inventoryQuantity[slot] = 0;
+        renderInventory();
+        return;
+    }
+    inventory[slot] = item;
+    inventoryQuantity[slot] = quantity;
+    renderInventory();
+}
+
+void inventorySetHotbar()
+{
+    lcdMainOnTop();
+    inventoryOpen = false;
+    craftingOpen = false;
+    Bg0UpFill(0);
+    Bg1UpFill(63);
+    for (int i = 0; i < 32; i += 4)
+    {
+        for (int j = 0; j < 16; j++)
+        {
+            Bg0UpSetTile(i + (j % 4), 20 + j / 4, 16 + j);
+        }
+    }
+    clearPrint();
+    print(0, 3, "TerrariaDS v0.1\n\
+By AzizBgBoss\n\
+https://github.com/AzizBgBoss/TerrariaDS");
+    renderInventory();
+    mmEffect(SFX_ENU_CLOSE);
+}
+
+void inventorySetFull()
+{
+    lcdMainOnBottom();
+    inventoryOpen = true;
+    craftingOpen = false;
+    Bg0UpFill(0);
+    Bg1UpFill(63);
+    for (int i = 0; i < 8 * 4; i++)
+    {
+        for (int j = 0; j < 16; j++)
+        {
+            Bg0UpSetTile((i % 8) * 4 + j % 4, 8 + (i / 8) * 4 + j / 4, 16 + j);
+        }
+    }
+    for (int j = 0; j < 16; j++)
+        Bg0UpSetTile(27 + j % 4, j / 4, 32 + j);
+    clearPrint();
+    renderInventory();
+    mmEffect(SFX_ENU_OPEN);
+}
+
+void inventorySetCrafting()
+{
+    lcdMainOnBottom();
+    inventoryOpen = true;
+    craftingOpen = true;
+    Bg0UpFill(0);
+    Bg1UpFill(63);
+    for (int i = 0; i < 4 * 4; i++)
+    {
+        for (int j = 0; j < 16; j++)
+        {
+            Bg0UpSetTile((i % 4) * 4 + j % 4, 8 + (i / 4) * 4 + j / 4, 16 + j);
+        }
+    }
+
+    for (int j = 0; j < 16; j++)
+        Bg0UpSetTile(27 + j % 4, j / 4, 48 + j);
+    for (int j = 0; j < 16; j++)
+        Bg0UpSetTile(23 + j % 4, 20 + j / 4, 64 + j);
+    for (int j = 0; j < 16; j++)
+        Bg0UpSetTile(27 + j % 4, 20 + j / 4, 80 + j);
+    clearPrint();
+    renderCrafting();
+    mmEffect(SFX_ENU_OPEN);
+}
+
+void setGameTerrain(int x, int y, int tile)
+{
+    if (x < 0 || x >= MAP_WIDTH || y < 0 || y >= MAP_HEIGHT)
+        return;
+
+    gameTerrain[x + y * MAP_WIDTH] = tile;
+
+    if (x < chunk * 4 || x > chunk * 4 + 63)
+        return;
+
+    int rx = x % 64;
+    // Re-render neighboring tiles
+    Bg1SetTile(rx - 1, y, getElementTile(gameTerrain[x - 1 + y * MAP_WIDTH], x - 1, y));
+    Bg1SetTile(rx + 1, y, getElementTile(gameTerrain[x + 1 + y * MAP_WIDTH], x + 1, y));
+    Bg1SetTile(rx, y - 1, getElementTile(gameTerrain[x + (y - 1) * MAP_WIDTH], x, y - 1));
+    Bg1SetTile(rx, y + 1, getElementTile(gameTerrain[x + (y + 1) * MAP_WIDTH], x, y + 1));
+    Bg1SetTile(rx, y, getElementTile(tile, x, y));
+}
+
+void playerPutGameTerrain(int x, int y, int tile)
+{
+    if (x < 0 || x >= MAP_WIDTH || y < 0 || y >= MAP_HEIGHT)
+        return;
+
+    // The difference is that we check the surrounding tiles to prevent placing tiles out of thin air
+    bool canPlace = false;
+    if (tile == TILE_WOODEN_DOOR_CLOSED_3)
+    {
+        if (isTileSolid(gameTerrain[x + (y + 1) * MAP_WIDTH]) && isTileSolid(gameTerrain[x + (y - 3) * MAP_WIDTH]))
+        {
+            if (!isTileSolid(gameTerrain[x + y * MAP_WIDTH]) && !isTileSolid(gameTerrain[x + (y - 1) * MAP_WIDTH]) && !isTileSolid(gameTerrain[x + (y - 2) * MAP_WIDTH]))
+            {
+                canPlace = true;
+            }
+        }
+    }
+    else
+    {
+        for (int dx = -1; dx <= 1; dx++)
+        {
+            for (int dy = -1; dy <= 1; dy++)
+            {
+                if (dx == 0 && dy == 0)
+                    continue; // Skip the tile itself
+                int nx = x + dx;
+                int ny = y + dy;
+                if (nx < 0 || nx >= MAP_WIDTH || ny < 0 || ny >= MAP_HEIGHT)
+                    continue; // Out of bounds
+                if (gameTerrain[nx + ny * MAP_WIDTH] != TILE_AIR)
+                {
+                    canPlace = true;
+                    break;
+                }
+            }
+            if (canPlace)
+                break;
+        }
+    }
+    if (!canPlace)
+        return; // Cannot place tile if no surrounding tiles are solid
+
+    Bg1SetTile(x, y, getElementTile(tile, x, y));
+    inventoryQuantity[inventorySelection]--;
+    setInventory(inventorySelection, inventory[inventorySelection], inventoryQuantity[inventorySelection]);
+    setGameTerrain(x, y, tile);
+    if (tile == TILE_WOODEN_DOOR_CLOSED_3)
+    {
+        setGameTerrain(x, y - 1, TILE_WOODEN_DOOR_CLOSED_2);
+        setGameTerrain(x, y - 2, TILE_WOODEN_DOOR_CLOSED_1);
+    }
+    switch (rando(0, 2))
+    {
+    case 0:
+        mmEffect(SFX_IG_0);
+        break;
+    case 1:
+        mmEffect(SFX_IG_1);
+        break;
+    case 2:
+        mmEffect(SFX_IG_2);
+        break;
+    }
+}
+
+bool giveInventory(int item, int quantity)
+{
+    for (int i = 0; i < 8 * 4; i++)
+    {
+        if (inventory[i] == item && inventoryQuantity[i] < 100 - quantity)
+        {
+            setInventory(i, item, inventoryQuantity[i] + quantity);
+            return true;
+        }
+    }
+    for (int i = 0; i < 8 * 4; i++)
+    {
+        if (inventory[i] == 0)
+        {
+            setInventory(i, item, quantity);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool playerHasItem(int item, int quantity)
+{
+    for (int i = 0; i < 8 * 4; i++)
+    {
+        if (inventory[i] == item && inventoryQuantity[i] >= quantity)
+            return true;
+    }
+    return false;
+}
+
+void dropItem(int x, int y, int tile, int quantity)
+{
+    int index = 0;
+    while (item[index].exists)
+        index++;
+    // we can do item[index] = {...} directly but it'll get confusing
+    item[index].x = x * 8 + 4; // Drop in the middle of the tile
+    item[index].y = y * 8 + 4;
+    item[index].exists = true;
+    item[index].tile = tile;
+    item[index].quantity = quantity;
+
+    f = fopen("nitro:/items.img.bin", "rb");
+    fseek(f, 8 * 8 * getItemTile(tile), SEEK_SET);
+    fread(item[index].sprite_gfx_mem, 1, 16 * 16, f);
+    fclose(f);
+}
+
+void destroyItem(int id)
+{
+    item[id].exists = false;
+}
+
+void breakTile(int x, int y, int speed)
+{
+    gameTerrainHealth[x + y * MAP_WIDTH] += speed;
+    if (gameTerrainHealth[x + y * MAP_WIDTH] >= getElementHealth(gameTerrain[x + y * MAP_WIDTH]))
+    {
+        // Special blocks handling
+        if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODLOG)
+        {
+            // Trees have special treatment: break all the logs and leaves above it
+            for (int i = y - 1; i >= 0; i--)
+            {
+                if (gameTerrain[x + i * MAP_WIDTH] == TILE_WOODLOG)
+                {
+                    dropItem(x, i, getElementDrop(TILE_WOODLOG), 1);
+                    setGameTerrain(x, i, 0);
+                    gameTerrainHealth[x + i * MAP_WIDTH] = 0;
+                }
+                else if (gameTerrain[x + i * MAP_WIDTH] == TILE_LEAVES)
+                { // Leaves don't drop anything if broken from tree
+                    setGameTerrain(x, i, 0);
+                    gameTerrainHealth[x + i * MAP_WIDTH] = 0;
+                    if (gameTerrain[x - 1 + i * MAP_WIDTH] == TILE_LEAVES)
+                    {
+                        setGameTerrain(x - 1, i, 0);
+                        gameTerrainHealth[x - 1 + i * MAP_WIDTH] = 0;
+                    }
+                    if (gameTerrain[x + 1 + i * MAP_WIDTH] == TILE_LEAVES)
+                    {
+                        setGameTerrain(x + 1, i, 0);
+                        gameTerrainHealth[x + 1 + i * MAP_WIDTH] = 0;
+                    }
+                }
+                else
+                {
+                    break; // Stop breaking when we hit a non-log or non-leaf tile
+                }
+            }
+        }
+        else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_CLOSED_1)
+        {
+            setGameTerrain(x, y + 1, TILE_AIR);
+            setGameTerrain(x, y + 2, TILE_AIR);
+        }
+        else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_CLOSED_2)
+        {
+            setGameTerrain(x, y - 1, TILE_AIR);
+            setGameTerrain(x, y + 1, TILE_AIR);
+        }
+        else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_CLOSED_3)
+        {
+            setGameTerrain(x, y - 1, TILE_AIR);
+            setGameTerrain(x, y - 2, TILE_AIR);
+        }
+        else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_1)
+        {
+            setGameTerrain(x + 1, y, TILE_AIR);
+            setGameTerrain(x, y + 1, TILE_AIR);
+            setGameTerrain(x + 1, y + 1, TILE_AIR);
+            setGameTerrain(x, y + 2, TILE_AIR);
+            setGameTerrain(x + 1, y + 2, TILE_AIR);
+        }
+        else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_2)
+        {
+            setGameTerrain(x - 1, y, TILE_AIR);
+            setGameTerrain(x, y + 1, TILE_AIR);
+            setGameTerrain(x - 1, y + 1, TILE_AIR);
+            setGameTerrain(x, y + 2, TILE_AIR);
+            setGameTerrain(x - 1, y + 2, TILE_AIR);
+        }
+        else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_3)
+        {
+            setGameTerrain(x, y - 1, TILE_AIR);
+            setGameTerrain(x + 1, y - 1, TILE_AIR);
+            setGameTerrain(x + 1, y, TILE_AIR);
+            setGameTerrain(x, y + 1, TILE_AIR);
+            setGameTerrain(x + 1, y + 1, TILE_AIR);
+        }
+        else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_4)
+        {
+            setGameTerrain(x - 1, y, TILE_AIR);
+            setGameTerrain(x, y - 1, TILE_AIR);
+            setGameTerrain(x - 1, y - 1, TILE_AIR);
+            setGameTerrain(x, y + 1, TILE_AIR);
+            setGameTerrain(x - 1, y + 1, TILE_AIR);
+        }
+        else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_5)
+        {
+            setGameTerrain(x, y - 2, TILE_AIR);
+            setGameTerrain(x + 1, y - 2, TILE_AIR);
+            setGameTerrain(x + 1, y - 1, TILE_AIR);
+            setGameTerrain(x, y, TILE_AIR);
+            setGameTerrain(x + 1, y, TILE_AIR);
+        }
+        else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_6)
+        {
+            setGameTerrain(x - 1, y - 2, TILE_AIR);
+            setGameTerrain(x, y - 2, TILE_AIR);
+            setGameTerrain(x - 1, y - 1, TILE_AIR);
+            setGameTerrain(x, y, TILE_AIR);
+            setGameTerrain(x - 1, y, TILE_AIR);
+        }
+        else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_RIGHT_1)
+        {
+            setGameTerrain(x + 1, y, TILE_AIR);
+            setGameTerrain(x, y + 1, TILE_AIR);
+            setGameTerrain(x + 1, y + 1, TILE_AIR);
+            setGameTerrain(x, y + 2, TILE_AIR);
+            setGameTerrain(x + 1, y + 2, TILE_AIR);
+        }
+        else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_RIGHT_2)
+        {
+            setGameTerrain(x - 1, y, TILE_AIR);
+            setGameTerrain(x, y + 1, TILE_AIR);
+            setGameTerrain(x - 1, y + 1, TILE_AIR);
+            setGameTerrain(x, y + 2, TILE_AIR);
+            setGameTerrain(x - 1, y + 2, TILE_AIR);
+        }
+        else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_RIGHT_3)
+        {
+            setGameTerrain(x, y - 1, TILE_AIR);
+            setGameTerrain(x + 1, y - 1, TILE_AIR);
+            setGameTerrain(x + 1, y, TILE_AIR);
+            setGameTerrain(x, y + 1, TILE_AIR);
+            setGameTerrain(x + 1, y + 1, TILE_AIR);
+        }
+        else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_RIGHT_4)
+        {
+            setGameTerrain(x - 1, y, TILE_AIR);
+            setGameTerrain(x, y - 1, TILE_AIR);
+            setGameTerrain(x - 1, y - 1, TILE_AIR);
+            setGameTerrain(x, y + 1, TILE_AIR);
+            setGameTerrain(x - 1, y + 1, TILE_AIR);
+        }
+        else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_RIGHT_5)
+        {
+            setGameTerrain(x, y - 2, TILE_AIR);
+            setGameTerrain(x + 1, y - 2, TILE_AIR);
+            setGameTerrain(x + 1, y - 1, TILE_AIR);
+            setGameTerrain(x, y, TILE_AIR);
+            setGameTerrain(x + 1, y, TILE_AIR);
+        }
+        else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_RIGHT_6)
+        {
+            setGameTerrain(x - 1, y - 2, TILE_AIR);
+            setGameTerrain(x, y - 2, TILE_AIR);
+            setGameTerrain(x - 1, y - 1, TILE_AIR);
+            setGameTerrain(x, y, TILE_AIR);
+            setGameTerrain(x - 1, y, TILE_AIR);
+        }
+        dropItem(x, y, getElementDrop(gameTerrain[x + y * MAP_WIDTH]), 1);
+        setGameTerrain(x, y, TILE_AIR);
+        gameTerrainHealth[x + y * MAP_WIDTH] = 0;
+    }
+    // Random sound effect for breaking tiles
+    if (frame % 15 == 0) // Play sound every 10 frames
+    {
+        switch (rando(0, 2))
+        {
+        case 0:
+            mmEffect(SFX_IG_0);
+            break;
+        case 1:
+            mmEffect(SFX_IG_1);
+            break;
+        case 2:
+            mmEffect(SFX_IG_2);
+            break;
+        }
+    }
+}
+
+// FIXME: this feels inefficient, need to fix it
+void interact(int x, int y)
+{
+    if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_CLOSED_1)
+    {
+        mmEffect(SFX_DOOR_OPEN);
+        // Open to the left
+        if (gameTerrain[x - 1 + y * MAP_WIDTH] == TILE_AIR &&
+            gameTerrain[x - 1 + (y + 1) * MAP_WIDTH] == TILE_AIR &&
+            gameTerrain[x - 1 + (y + 2) * MAP_WIDTH] == TILE_AIR)
+        {
+            setGameTerrain(x - 1, y, TILE_WOODEN_DOOR_OPEN_1);
+            setGameTerrain(x, y, TILE_WOODEN_DOOR_OPEN_2);
+            setGameTerrain(x - 1, y + 1, TILE_WOODEN_DOOR_OPEN_3);
+            setGameTerrain(x, y + 1, TILE_WOODEN_DOOR_OPEN_4);
+            setGameTerrain(x - 1, y + 2, TILE_WOODEN_DOOR_OPEN_5);
+            setGameTerrain(x, y + 2, TILE_WOODEN_DOOR_OPEN_6);
+        }
+        // Open to the right
+        else if (gameTerrain[x + 1 + y * MAP_WIDTH] == TILE_AIR &&
+                 gameTerrain[x + 1 + (y + 1) * MAP_WIDTH] == TILE_AIR &&
+                 gameTerrain[x + 1 + (y + 2) * MAP_WIDTH] == TILE_AIR)
+        {
+            setGameTerrain(x, y, TILE_WOODEN_DOOR_OPEN_RIGHT_1);
+            setGameTerrain(x + 1, y, TILE_WOODEN_DOOR_OPEN_RIGHT_2);
+            setGameTerrain(x, y + 1, TILE_WOODEN_DOOR_OPEN_RIGHT_3);
+            setGameTerrain(x + 1, y + 1, TILE_WOODEN_DOOR_OPEN_RIGHT_4);
+            setGameTerrain(x, y + 2, TILE_WOODEN_DOOR_OPEN_RIGHT_5);
+            setGameTerrain(x + 1, y + 2, TILE_WOODEN_DOOR_OPEN_RIGHT_6);
+        }
+    }
+    else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_CLOSED_2)
+    {
+        mmEffect(SFX_DOOR_OPEN);
+        if (gameTerrain[x - 1 + (y - 1) * MAP_WIDTH] == TILE_AIR &&
+            gameTerrain[x - 1 + y * MAP_WIDTH] == TILE_AIR &&
+            gameTerrain[x - 1 + (y + 1) * MAP_WIDTH] == TILE_AIR)
+        {
+            setGameTerrain(x - 1, y - 1, TILE_WOODEN_DOOR_OPEN_1);
+            setGameTerrain(x, y - 1, TILE_WOODEN_DOOR_OPEN_2);
+            setGameTerrain(x - 1, y, TILE_WOODEN_DOOR_OPEN_3);
+            setGameTerrain(x, y, TILE_WOODEN_DOOR_OPEN_4);
+            setGameTerrain(x - 1, y + 1, TILE_WOODEN_DOOR_OPEN_5);
+            setGameTerrain(x, y + 1, TILE_WOODEN_DOOR_OPEN_6);
+        }
+        else if (gameTerrain[x + 1 + (y - 1) * MAP_WIDTH] == TILE_AIR &&
+                 gameTerrain[x + 1 + y * MAP_WIDTH] == TILE_AIR &&
+                 gameTerrain[x + 1 + (y + 1) * MAP_WIDTH] == TILE_AIR)
+        {
+            setGameTerrain(x, y - 1, TILE_WOODEN_DOOR_OPEN_RIGHT_1);
+            setGameTerrain(x + 1, y - 1, TILE_WOODEN_DOOR_OPEN_RIGHT_2);
+            setGameTerrain(x, y, TILE_WOODEN_DOOR_OPEN_RIGHT_3);
+            setGameTerrain(x + 1, y, TILE_WOODEN_DOOR_OPEN_RIGHT_4);
+            setGameTerrain(x, y + 1, TILE_WOODEN_DOOR_OPEN_RIGHT_5);
+            setGameTerrain(x + 1, y + 1, TILE_WOODEN_DOOR_OPEN_RIGHT_6);
+        }
+    }
+    else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_CLOSED_3)
+    {
+        mmEffect(SFX_DOOR_OPEN);
+        if (gameTerrain[x - 1 + (y - 2) * MAP_WIDTH] == TILE_AIR &&
+            gameTerrain[x - 1 + (y - 1) * MAP_WIDTH] == TILE_AIR &&
+            gameTerrain[x - 1 + y * MAP_WIDTH] == TILE_AIR)
+        {
+            setGameTerrain(x - 1, y - 2, TILE_WOODEN_DOOR_OPEN_1);
+            setGameTerrain(x, y - 2, TILE_WOODEN_DOOR_OPEN_2);
+            setGameTerrain(x - 1, y - 1, TILE_WOODEN_DOOR_OPEN_3);
+            setGameTerrain(x, y - 1, TILE_WOODEN_DOOR_OPEN_4);
+            setGameTerrain(x - 1, y, TILE_WOODEN_DOOR_OPEN_5);
+            setGameTerrain(x, y, TILE_WOODEN_DOOR_OPEN_6);
+        }
+        else if (gameTerrain[x + 1 + (y - 2) * MAP_WIDTH] == TILE_AIR &&
+                 gameTerrain[x + 1 + (y - 1) * MAP_WIDTH] == TILE_AIR &&
+                 gameTerrain[x + 1 + y * MAP_WIDTH] == TILE_AIR)
+        {
+            setGameTerrain(x, y - 2, TILE_WOODEN_DOOR_OPEN_RIGHT_1);
+            setGameTerrain(x + 1, y - 2, TILE_WOODEN_DOOR_OPEN_RIGHT_2);
+            setGameTerrain(x, y - 1, TILE_WOODEN_DOOR_OPEN_RIGHT_3);
+            setGameTerrain(x + 1, y - 1, TILE_WOODEN_DOOR_OPEN_RIGHT_4);
+            setGameTerrain(x, y, TILE_WOODEN_DOOR_OPEN_RIGHT_5);
+            setGameTerrain(x + 1, y, TILE_WOODEN_DOOR_OPEN_RIGHT_6);
+        }
+    }
+    // Closing left-opening door
+    else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_1)
+    {
+        mmEffect(SFX_DOOR_CLOSE);
+        setGameTerrain(x, y, TILE_AIR);
+        setGameTerrain(x, y + 1, TILE_AIR);
+        setGameTerrain(x, y + 2, TILE_AIR);
+        setGameTerrain(x + 1, y, TILE_WOODEN_DOOR_CLOSED_1);
+        setGameTerrain(x + 1, y + 1, TILE_WOODEN_DOOR_CLOSED_2);
+        setGameTerrain(x + 1, y + 2, TILE_WOODEN_DOOR_CLOSED_3);
+    }
+    else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_2)
+    {
+        mmEffect(SFX_DOOR_CLOSE);
+        setGameTerrain(x - 1, y, TILE_AIR);
+        setGameTerrain(x - 1, y + 1, TILE_AIR);
+        setGameTerrain(x - 1, y + 2, TILE_AIR);
+        setGameTerrain(x, y, TILE_WOODEN_DOOR_CLOSED_1);
+        setGameTerrain(x, y + 1, TILE_WOODEN_DOOR_CLOSED_2);
+        setGameTerrain(x, y + 2, TILE_WOODEN_DOOR_CLOSED_3);
+    }
+    else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_3)
+    {
+        mmEffect(SFX_DOOR_CLOSE);
+        setGameTerrain(x, y - 1, TILE_AIR);
+        setGameTerrain(x, y, TILE_AIR);
+        setGameTerrain(x, y + 1, TILE_AIR);
+        setGameTerrain(x + 1, y - 1, TILE_WOODEN_DOOR_CLOSED_1);
+        setGameTerrain(x + 1, y, TILE_WOODEN_DOOR_CLOSED_2);
+        setGameTerrain(x + 1, y + 1, TILE_WOODEN_DOOR_CLOSED_3);
+    }
+    else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_4)
+    {
+        mmEffect(SFX_DOOR_CLOSE);
+        setGameTerrain(x - 1, y - 1, TILE_AIR);
+        setGameTerrain(x - 1, y, TILE_AIR);
+        setGameTerrain(x - 1, y + 1, TILE_AIR);
+        setGameTerrain(x, y - 1, TILE_WOODEN_DOOR_CLOSED_1);
+        setGameTerrain(x, y, TILE_WOODEN_DOOR_CLOSED_2);
+        setGameTerrain(x, y + 1, TILE_WOODEN_DOOR_CLOSED_3);
+    }
+    else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_5)
+    {
+        mmEffect(SFX_DOOR_CLOSE);
+        setGameTerrain(x, y - 2, TILE_AIR);
+        setGameTerrain(x + 1, y - 2, TILE_AIR);
+        setGameTerrain(x + 1, y - 1, TILE_AIR);
+        setGameTerrain(x, y, TILE_AIR);
+        setGameTerrain(x + 1, y, TILE_AIR);
+    }
+    else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_6)
+    {
+        mmEffect(SFX_DOOR_CLOSE);
+        setGameTerrain(x - 1, y - 2, TILE_AIR);
+        setGameTerrain(x, y - 2, TILE_AIR);
+        setGameTerrain(x - 1, y - 1, TILE_AIR);
+        setGameTerrain(x, y, TILE_AIR);
+        setGameTerrain(x - 1, y, TILE_AIR);
+    }
+    // Closing right-opening door
+    else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_RIGHT_1)
+    {
+        mmEffect(SFX_DOOR_CLOSE);
+        setGameTerrain(x, y, TILE_WOODEN_DOOR_CLOSED_1);
+        setGameTerrain(x, y + 1, TILE_WOODEN_DOOR_CLOSED_2);
+        setGameTerrain(x, y + 2, TILE_WOODEN_DOOR_CLOSED_3);
+        setGameTerrain(x + 1, y, TILE_AIR);
+        setGameTerrain(x + 1, y + 1, TILE_AIR);
+        setGameTerrain(x + 1, y + 2, TILE_AIR);
+    }
+    else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_RIGHT_2)
+    {
+        mmEffect(SFX_DOOR_CLOSE);
+        setGameTerrain(x - 1, y, TILE_WOODEN_DOOR_CLOSED_1);
+        setGameTerrain(x - 1, y + 1, TILE_WOODEN_DOOR_CLOSED_2);
+        setGameTerrain(x - 1, y + 2, TILE_WOODEN_DOOR_CLOSED_3);
+        setGameTerrain(x, y, TILE_AIR);
+        setGameTerrain(x, y + 1, TILE_AIR);
+        setGameTerrain(x, y + 2, TILE_AIR);
+    }
+    else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_RIGHT_3)
+    {
+        mmEffect(SFX_DOOR_CLOSE);
+        setGameTerrain(x, y - 1, TILE_WOODEN_DOOR_CLOSED_1);
+        setGameTerrain(x, y, TILE_WOODEN_DOOR_CLOSED_2);
+        setGameTerrain(x, y + 1, TILE_WOODEN_DOOR_CLOSED_3);
+        setGameTerrain(x + 1, y - 1, TILE_AIR);
+        setGameTerrain(x + 1, y, TILE_AIR);
+        setGameTerrain(x + 1, y + 1, TILE_AIR);
+    }
+    else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_RIGHT_4)
+    {
+        mmEffect(SFX_DOOR_CLOSE);
+        setGameTerrain(x - 1, y - 1, TILE_WOODEN_DOOR_CLOSED_1);
+        setGameTerrain(x - 1, y, TILE_WOODEN_DOOR_CLOSED_2);
+        setGameTerrain(x - 1, y + 1, TILE_WOODEN_DOOR_CLOSED_3);
+        setGameTerrain(x, y - 1, TILE_AIR);
+        setGameTerrain(x, y, TILE_AIR);
+        setGameTerrain(x, y + 1, TILE_AIR);
+    }
+    else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_RIGHT_5)
+    {
+        mmEffect(SFX_DOOR_CLOSE);
+        setGameTerrain(x, y - 2, TILE_WOODEN_DOOR_CLOSED_1);
+        setGameTerrain(x, y - 1, TILE_WOODEN_DOOR_CLOSED_2);
+        setGameTerrain(x, y, TILE_WOODEN_DOOR_CLOSED_3);
+        setGameTerrain(x + 1, y - 2, TILE_AIR);
+        setGameTerrain(x + 1, y - 1, TILE_AIR);
+        setGameTerrain(x + 1, y, TILE_AIR);
+    }
+    else if (gameTerrain[x + y * MAP_WIDTH] == TILE_WOODEN_DOOR_OPEN_RIGHT_6)
+    {
+        mmEffect(SFX_DOOR_CLOSE);
+        setGameTerrain(x - 1, y - 2, TILE_WOODEN_DOOR_CLOSED_1);
+        setGameTerrain(x, y - 2, TILE_WOODEN_DOOR_CLOSED_2);
+        setGameTerrain(x - 1, y - 1, TILE_WOODEN_DOOR_CLOSED_3);
+        setGameTerrain(x, y, TILE_AIR);
+        setGameTerrain(x - 1, y, TILE_AIR);
+    }
+}
+
+int spawnEntity(int type, int x, int y)
+{
+    int i = 0;
+    while (entity[i].exists && i < ENTITY_COUNT)
+        i++;
+    if (i >= ENTITY_COUNT)
+        return -1; // No available entity slot
+
+    entity[i].type = type;
+    entity[i].exists = true;
+    entity[i].x = x;
+    entity[i].y = y;
+    entity[i].renderX = 0;
+    entity[i].renderY = 0;
+    entity[i].anim_frame = 0;
+    entity[i].sizeX = entities[type].sizeX;
+    entity[i].sizeY = entities[type].sizeY;
+    entity[i].isJumping = false;
+    entity[i].isSolid = entities[type].isSolid;
+    entity[i].weight = entities[type].weight;
+    entity[i].velocity = 0;
+    entity[i].isOnGround = true;
+    entity[i].isLookingLeft = false;
+    entity[i].health = entities[type].health;
+    entity[i].fall = 0;
+    entity[i].animation = ANIM_NONE;
+
+    entity[i].sprite_gfx_mem = oamAllocateGfx(&oamSub, SpriteSize_32x32, SpriteColorFormat_256Color);
+    f = fopen("nitro:/entities.img.bin", "rb");
+    fseek(f, entity[i].type * 32 * 32, SEEK_SET);
+    fread(entity[i].sprite_gfx_mem, 1, 32 * 32, f);
+    fclose(f);
+
+    return i;
+}
+
+void killEntity(int id)
+{
+    entity[id].exists = false;
+    dropItem(entity[id].x / 8, entity[id].y / 8, getEntityDrop(entity[id].type), rando(1, 3));
+}
+
+bool checkPlayerCollision(int x, int y, int sizeX, int sizeY)
+{
+    // AABB collision detection
+    if (player.x < x + sizeX &&
+        player.x + player.sizeX > x &&
+        player.y < y + sizeY &&
+        player.y + player.sizeY > y)
+    {
+        return true;
+    }
+    return false;
+}
+
+int detectEntity(int x, int y)
+{
+    for (int i = 0; i < ENTITY_COUNT; i++)
+    {
+        if (entity[i].exists)
+        {
+            // AABB collision detection
+            if (x < entity[i].x + entity[i].sizeX &&
+                x >= entity[i].x &&
+                y < entity[i].y + entity[i].sizeY &&
+                y >= entity[i].y)
+            {
+                return i;
+            }
+        }
+    }
+    return -1;
+}
+
+void damageEntity(int id, int damage)
+{
+    if (entity[id].exists)
+    {
+        mmEffect(SFX_HIT);
+        entity[id].health -= damage;
+    }
+}
+
+int getHighestTileY(int x)
+{
+    for (int y = 0; y < MAP_HEIGHT; y++)
+    {
+        if (isTileSolid(gameTerrain[x + y * MAP_WIDTH]))
+        {
+            return y;
+        }
+    }
+    return MAP_HEIGHT; // No solid tile found
+}
+
+void setPlayerAnimFrame(int frame)
+{
+    if (frame == player.anim_frame)
+        return;
+    if (frame < 0)
+        frame = 0;
+    player.anim_frame = frame;
+    f = fopen("nitro:/sprites.img.bin", "rb");
+    fseek(f, 32 * 64 * player.anim_frame, SEEK_SET);
+    fread(player.sprite_gfx_mem, 1, 32 * 64, f);
+    fclose(f);
+}
+
+void setEntityAnimFrame(int id, int frame)
+{
+    if (frame == entity[id].anim_frame)
+        return;
+    if (frame < 0)
+        frame = 0;
+    entity[id].anim_frame = frame;
+    f = fopen("nitro:/entities.img.bin", "rb");
+    fseek(f, entity[id].type * 32 * 32 + entity[id].anim_frame * 32 * 32, SEEK_SET);
+    fread(entity[id].sprite_gfx_mem, 1, 32 * 32, f);
+    fclose(f);
+}
+
+// I honestly wanted to make a struct of SaveData but i had some problems with its stack or whatever it is
+
+bool saveMapToFile(const char *filen)
+{
+    mmEffect(SFX_ENU_CLOSE);
+
+    if (mkdir("terrarias/", 0777) == -1 && errno != EEXIST)
+    {
+        print(0, 0, "Failed to create directory 'terrarias/'");
+        return false;
+    }
+
+    char filename[128];
+    snprintf(filename, sizeof(filename), "terrarias/%s", filen);
+
+    FILE *file = fopen(filename, "wb"); // "wb" = write binary
+    if (!file)
+    {
+        print(0, 0, "Failed to open file for writing: ");
+        printDirect(filename);
+        return false;
+    }
+
+    print(0, 0, "Saving map...");
+    uint32_t magic = 0xA212B055;
+    size_t bytesWritten = fwrite(&magic, 1, 4, file);
+    bytesWritten += fwrite(gameTerrain, 1, sizeof(gameTerrain), file);
+    bytesWritten += fwrite(inventory, 1, sizeof(inventory), file);
+    bytesWritten += fwrite(inventoryQuantity, 1, sizeof(inventoryQuantity), file);
+    fclose(file);
+
+    if (bytesWritten != 4 + sizeof(gameTerrain) + sizeof(inventory) + sizeof(inventoryQuantity))
+    {
+        print(0, 0, "Map save error");
+        return false;
+    }
+
+    print(0, 0, "Map saved to ");
+    printDirect(filename);
+    return true;
+}
+
+bool loadMapFromFile(const char *filen)
+{
+    mmEffect(SFX_ENU_OPEN);
+
+    char filename[128];
+    snprintf(filename, sizeof(filename), "terrarias/%s", filen);
+
+    FILE *file = fopen(filename, "rb"); // "rb" = read binary
+    if (!file)
+    {
+        print(0, 0, "Failed to open file for reading: ");
+        printDirect(filename);
+        return false;
+    }
+
+    print(0, 0, "Loading map...");
+    uint32_t magic;
+    size_t bytesRead = fread(&magic, 1, 4, file);
+    if (magic != 0xA212B055)
+    {
+        print(0, 0, "Invalid map file: ");
+        printDirect(filename);
+        fclose(file);
+        return false;
+    }
+    bytesRead += fread(gameTerrain, 1, sizeof(gameTerrain), file);
+    bytesRead += fread(inventory, 1, sizeof(inventory), file);
+    bytesRead += fread(inventoryQuantity, 1, sizeof(inventoryQuantity), file);
+    fclose(file);
+
+    if (bytesRead != 4 + sizeof(gameTerrain) + sizeof(inventory) + sizeof(inventoryQuantity))
+    {
+        print(0, 0, "Map load error");
+        return false;
+    }
+
+    player.x = MAP_WIDTH * 8 / 2;
+    player.y = 0;
+    chunk = -6;
+    renderInventory();
+    renderCrafting();
+    print(0, 0, "Map loaded from ");
+    printDirect(filename);
+
+    strcpy(worldFileName, filen);
+
+    return true;
+}
+
+void playerDamage(int damage)
+{
+    if (player.invincibilityFrames > 0)
+        return; // Player is invincible
+    damage = clamp(damage, 0, 400);
+    player.health -= damage;
+    if (player.health < 0)
+        player.health = 0; // Virtually should never happen but just in case
+    switch (rando(0, 2))
+    {
+    case 0:
+        mmEffect(SFX_LAYER_HIT_0);
+        break;
+    case 1:
+        mmEffect(SFX_LAYER_HIT_1);
+        break;
+    case 2:
+        mmEffect(SFX_LAYER_HIT_2);
+        break;
+    }
+    if (player.health == 0)
+    { // Player is ded
+        mmEffect(SFX_LAYER_KILLED);
+        inventorySetHotbar();
+        clearPrint();
+        print(0, 0, "You died lol");
+        oamSet(&oamSub, 0, 0, 0, 0, 0, SpriteSize_8x8, SpriteColorFormat_256Color, nullSprite, -1, false, false, false, false, false);
+        oamUpdate(&oamSub);
+        for (int i = 0; i < 600; i++)
+        {
+            printVal(0, 1, 10 - i / 60);
+            printDirect(" ");
+            swiWaitForVBlank();
+            mmStreamUpdate();
+        }
+        clearPrint();
+        player.x = MAP_WIDTH * 8 / 2;
+        player.y = 0;
+        player.health = 100;
+        inventorySetHotbar();
+    }
+    else
+    {
+        player.invincibilityFrames = 120; // 2 seconds of invincibility
+    }
+}
+
+void playerHeal(int health)
+{
+    health = clamp(health, 0, 400);
+    player.health += health;
+    if (player.health > player.maxHealth)
+        player.health = player.maxHealth; // Cap at max health
+}
+
+void generateWorldName(char *nameBuffer, size_t bufferSize)
+{
+    const char *adjectives[] = {
+        "Lush", "Dark", "Misty", "Silent", "Ancient",
+        "Frozen", "Golden", "Hidden", "Enchanted", "Whispering",
+        "Vast", "Forgotten", "Crimson", "Radiant", "Broken",
+        "Twisted", "Sacred", "Forsaken", "Distant", "Wild",
+        "Echoing", "Burning", "Lost", "Shimmering", "Fading"};
+
+    const char *nouns[] = {
+        "Valley", "Forest", "Mountain", "River", "Cavern",
+        "Island", "Plains", "Hills", "Swamp", "Desert",
+        "House", "Home", "Temple", "Ruins", "Depths",
+        "Labyrinth", "Peak", "Marsh", "Glacier", "Wasteland",
+        "Underworld", "Skylands", "Borderlands", "Outpost", "Sanctum"};
+
+    const char *ofPhrases[] = {
+        "Doom", "Mystery", "Shadows", "Light", "Wonders",
+        "Echoes", "Dreams", "Legends", "Secrets", "Magic",
+        "Happiness", "Joy", "Mischief", "Adventure", "Misery",
+        "Despair", "Hope", "Chaos", "Order", "Silence",
+        "Storms", "Time", "Flames", "Dust", "Stars", "Triple T",
+        "Nothing", "Everything", "The Void", "Forgotten Kings", "Endings"};
+
+    int adjIndex = rando(0, sizeof(adjectives) / sizeof(adjectives[0]) - 1);
+    int nounIndex = rando(0, sizeof(nouns) / sizeof(nouns[0]) - 1);
+    int ofIndex = rando(0, sizeof(ofPhrases) / sizeof(ofPhrases[0]) - 1);
+
+    snprintf(nameBuffer, bufferSize, "%s %s of %s",
+             adjectives[adjIndex],
+             nouns[nounIndex],
+             ofPhrases[ofIndex]);
+}
+
+void generateMap()
+{
+    u8 grassSurface[MAP_WIDTH];
+    u8 stoneSurface[MAP_WIDTH];
+    int seed = rando(0, 0xFFFFFFFF);
+
+    generateWorldName(worldFileName, sizeof(worldFileName));
+
+    printDirect("Seed: ");
+    printValDirect(seed);
+    printDirect("\nGenerating ");
+    printDirect(worldFileName);
+    printDirect("...\n");
+    strcat(worldFileName, ".ter");
+
+    for (int x = 0; x < MAP_WIDTH; x++)
+    {
+        float wave = fractalPerlin1D(x, 4, 0.4f, 0.01f, seed) * 20.0f;
+        grassSurface[x] = clamp((int)(wave + (MIN_GRASS_HEIGHT + MAX_GRASS_HEIGHT) / 2), MIN_GRASS_HEIGHT, MAX_GRASS_HEIGHT);
+        if (x % (MAP_WIDTH / 32) == 0)
+        {
+            printDirect(".");
+        }
+    }
+
+    // remove 1 block spikes, i fucking hate them
+    printDirect("Removing spikes because they are annoying...\n");
+    for (int x = 1; x < MAP_WIDTH - 1; x++)
+    {
+        if (grassSurface[x - 1] != grassSurface[x] && grassSurface[x + 1] != grassSurface[x])
+        {
+            grassSurface[x] += 1;
+        }
+        if (x % (MAP_WIDTH / 32) == 0)
+        {
+            printDirect(".");
+        }
+    }
+
+    // Generate stone height surface
+    printDirect("Generating stone surface...\n");
+    for (int x = 0; x < MAP_WIDTH; x++)
+    {
+        float wave = fractalPerlin1D(x, 4, 0.4f, 0.01f, seed + 1) * 20.0f;
+        stoneSurface[x] = clamp((int)(wave + (MIN_STONE_HEIGHT + MAX_STONE_HEIGHT) / 2), MIN_STONE_HEIGHT, MAX_STONE_HEIGHT);
+        if (x % (MAP_WIDTH / 32) == 0)
+        {
+            printDirect(".");
+        }
+    }
+
+    // Place terrain
+    printDirect("Placing terrain...\n");
+    for (int x = 0; x < MAP_WIDTH; x++)
+    {
+        for (int y = 0; y < MAP_HEIGHT; y++)
+        {
+            if (y >= grassSurface[x] && y < stoneSurface[x])
+            {
+                setGameTerrain(x, y, TILE_DIRT);
+            }
+            else if (y >= stoneSurface[x])
+            {
+                setGameTerrain(x, y, TILE_STONE);
+            }
+        }
+        if (x % (MAP_WIDTH / 32) == 0)
+        {
+            printDirect(".");
+        }
+    }
+
+    // Generate ores
+    printDirect("Generating copper...\n");
+    for (int x = 0; x < MAP_WIDTH; x++)
+    {
+        for (int y = 0; y < MAP_HEIGHT; y++)
+        {
+            if (y >= stoneSurface[x])
+            {
+                float caveNoise = fractalPerlin2D(x, y, 6, 0.4f, 0.05f, seed + 69);
+                if (caveNoise < -0.2f) // Adjust this threshold to control ores density
+                {
+                    setGameTerrain(x, y, TILE_COPPER_ORE);
+                }
+            }
+        }
+        if (x % (MAP_WIDTH / 32) == 0)
+        {
+            printDirect(".");
+        }
+    }
+    printDirect("Generating tin...\n");
+    for (int x = 0; x < MAP_WIDTH; x++)
+    {
+        for (int y = 0; y < MAP_HEIGHT; y++)
+        {
+            if (y >= stoneSurface[x])
+            {
+                float caveNoise = fractalPerlin2D(x, y, 6, 0.4f, 0.05f, seed + 420);
+                if (caveNoise < -0.25f) // tin is more rare
+                {
+                    setGameTerrain(x, y, TILE_TIN_ORE);
+                }
+            }
+        }
+        if (x % (MAP_WIDTH / 32) == 0)
+        {
+            printDirect(".");
+        }
+    }
+
+    // Generate caves
+    printDirect("Generating caves...\n");
+    for (int x = 0; x < MAP_WIDTH; x++)
+    {
+        for (int y = 0; y < MAP_HEIGHT; y++)
+        {
+            if (y >= grassSurface[x])
+            {
+                float caveNoise = fractalPerlin2D(x, y, 6, 0.4f, 0.02f, seed);
+                if (caveNoise < -0.15f) // Adjust this threshold to control cave density
+                {
+                    setGameTerrain(x, y, TILE_AIR); // Create a cave
+                }
+            }
+        }
+        if (x % (MAP_WIDTH / 32) == 0)
+        {
+            printDirect(".");
+        }
+    }
+
+    // Adding walls
+    printDirect("Adding walls...\n");
+    for (int x = 0; x < MAP_WIDTH; x++)
+    {
+        for (int y = 0; y < MAP_HEIGHT; y++)
+        {
+            if (gameTerrain[x + y * MAP_WIDTH] == TILE_AIR)
+            {
+                if (y >= grassSurface[x] && y < stoneSurface[x])
+                    setGameTerrain(x, y, TILE_DIRT_WALL);
+                else if (y >= stoneSurface[x])
+                    setGameTerrain(x, y, TILE_STONE_WALL);
+            }
+        }
+        if (x % (MAP_WIDTH / 32) == 0)
+        {
+            printDirect(".");
+        }
+    }
+
+    // Place trees
+    printDirect("Placing trees...\n");
+    for (int x = 1; x < MAP_WIDTH - 1; x++)
+    {
+        if (rando(0, TREE_CHANCE) == 0 && gameTerrain[x + (grassSurface[x] + 1) * MAP_WIDTH] == TILE_DIRT)
+        {
+            int tree_height = rando(3, 5);
+            // Tree trunk
+            for (int i = 0; i < tree_height; i++)
+                setGameTerrain(x, grassSurface[x] - 1 - i, TILE_WOODLOG);
+
+            // Tree leaves (3x3 above trunk)
+            for (int i = -1; i <= 1; i++)
+            {
+                for (int j = 0; j < 3; j++)
+                {
+                    int leafX = x + i;
+                    int leafY = grassSurface[x] - tree_height - 1 - j;
+                    setGameTerrain(leafX, leafY, TILE_LEAVES); // No need for bounds check, the setGameTerrain function handles it fine twin <3
+                }
+            }
+        }
+        if (x % (MAP_WIDTH / 32) == 0)
+        {
+            printDirect(".");
+        }
+    }
+
+    // Place mushrooms
+    printDirect("Placing mushrooms...\n");
+    for (int x = 1; x < MAP_WIDTH - 1; x++)
+    {
+        if (rando(0, MUSHROOM_CHANCE) == 0 && gameTerrain[x + grassSurface[x] * MAP_WIDTH] == TILE_DIRT && gameTerrain[x + (grassSurface[x] - 1) * MAP_WIDTH] == TILE_AIR)
+        {
+            setGameTerrain(x, grassSurface[x] - 1, TILE_MUSHROOM);
+        }
+        if (x % (MAP_WIDTH / 32) == 0)
+        {
+            printDirect(".");
+        }
+    }
+
+    // Place demonite bricks to limit the world
+    printDirect("Placing demonite bricks at the bottom so you don't escape >:) ...\n");
+    for (int x = 0; x < MAP_WIDTH - 1; x++)
+    {
+        setGameTerrain(x, MAP_HEIGHT - 1, TILE_DEMONITE_BRICK);
+        if (x % (MAP_WIDTH / 32) == 0)
+        {
+            printDirect(".");
+        }
+    }
+
+    // Clean Inventory
+
+    for (int i = 0; i < 8 * 4; i++)
+    {
+        inventory[i] = TILE_AIR;
+        inventoryQuantity[i] = 0;
+    }
+
+    player.health = 100;
+    player.maxHealth = 100;
+    player.invincibilityFrames = 300;
+    gametime = 0;
+
+    printDirect("Giving you some tools to start with...");
+    giveInventory(ITEM_COPPER_LONGSWORD, 1);
+    giveInventory(ITEM_COPPER_AXE, 1);
+    giveInventory(ITEM_COPPER_PICKAXE, 1);
+}
+
+
+
+mm_word on_stream_request(mm_word length, mm_addr dest, mm_stream_formats format)
+{
+	uint8_t *target = (uint8_t *)dest;
+
+	size_t bytesRead = fread(target, 1, length, audioFile);
+
+	if (bytesRead < length)
+	{
+		// Fill rest with silence
+		for (int i = bytesRead; i < length; i++)
+		{
+			target[i] = 128;
+		}
+		fseek(audioFile, 0, SEEK_SET);
+	}
+
+	return length;
+}
+
+#define PALETTE_LEN 256
+
+u16 originalPalette[PALETTE_LEN];
+
+void storeOriginalPalette()
+{
+	// Copy the BG palette to a buffer
+	for (int i = 0; i < PALETTE_LEN; i++)
+	{
+		originalPalette[i] = BG_PALETTE[i];
+	}
+}
+
+void fadeInPalette(int steps, int delay)
+{
+	for (int s = 0; s <= steps; s++)
+	{
+		for (int i = 0; i < PALETTE_LEN; i++)
+		{
+			u16 color = originalPalette[i];
+
+			int r = color & 0x1F;
+			int g = (color >> 5) & 0x1F;
+			int b = (color >> 10) & 0x1F;
+
+			// Scale each component
+			int r2 = (r * s) / steps;
+			int g2 = (g * s) / steps;
+			int b2 = (b * s) / steps;
+
+			BG_PALETTE[i] = (b2 << 10) | (g2 << 5) | r2;
+		}
+
+		swiWaitForVBlank();
+		mmStreamUpdate();
+		for (int d = 0; d < delay; d++)
+		{
+			swiWaitForVBlank();
+			mmStreamUpdate();
+		}
+	}
+}

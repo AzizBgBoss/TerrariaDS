@@ -21,9 +21,8 @@ You can join my [Discord server](https://discord.gg/zfMwPhvDc4) for more updates
 This project is not affiliated with Re-Logic or Terraria in any way. It is a fan-made project and is not intended for commercial use. All assets used in this project are use for educational and entertainment purposes only. If you're a party of Re-Logic and owner of any assets used in this project and want them removed, please contact me.
 
 ### Notes:
-- Almost 4000 downloads, man I'm really grateful. Thanks for trying out my simple game.
-- This project has huge potential, but I'm having trouble concentrating and keeping attention when working on it. Of course, I'm still going to work on it, but on a slower pace. You can contribute if you want.
-- I got a bit tired of TerrariaDS, I'm working on another DS game. I'm not going to abandon it, but I'm going to take a tiny break.
+- 17k downloads, love you guys
+- Summer break is here, I will be coming back to this project, expect an update soon.
 
 ## Installation:
 You can either compile the game yourself (for nightly releases) or check for stable releases in the Releases page. Please check the Tested devices part before starting.
@@ -37,7 +36,7 @@ You can either compile the game yourself (for nightly releases) or check for sta
 | NO$GBA (Windows Emulator)        | Medium                    | No ability to save + Choppy sound | The emulator doesn't have DLDI support.                                         |
 | desMuMe (Windows Emulator)       | Non-functional            | Game doesn't even start |                                                                             |
 | melonDS (Windows Emulator)       | Non-functional            | No nitroFS              | The emulator *has* DLDI support but it doesn't work with this game, maybe they'll fix it in a future update. But for some reason NitroFS won't work with melonDS. |
-| melonDS (Special fork)           | Excellent                 | None                  | This is a fork of the original melonDS with NitroFS and FAT support added. You can find it [here](https://github.com/AzizBgBoss/TerrariaDS/raw/refs/heads/main/extras/melonDS.exe). I got it somewhere from the DS(i) Mode Customization! Discord server, don't worry it shouldn't contain any malware. But as soon as I find the original link, I'll put it here. | 
+| melonDS (Special fork)           | Excellent                 | None                  | This is a fork of the original melonDS with NitroFS and FAT support added. You can find it [here](https://github.com/AzizBgBoss/TerrariaDS/raw/refs/heads/main/extras/melonDS.exe). I got it somewhere from the DS(i) Mode Customization! Discord server. Don't worry, it shouldn't contain any malware. But as soon as I find the original link, I'll put it here. | 
 *More platforms will be tested soon.*
 
 ## Download the latest version (QR code scannable with DSi Downloader)
@@ -86,7 +85,7 @@ Initial commit with basic project structure.
 - Ability to save character data and world data independently.
 - Remember that jittering? I didn't get rid of it completely: When sprites are animated, each new frame is loaded from NitroFS. I need to load all the frames of existing entities to RAM directly so reading from NitroFS won't slow it down.
 - Probably converting all tile handling data to a struct.
-- Organize my messy code and split it to many files, won't change anything but will make it easier to add features.
+- Organize my messy code and split it to many files, won't change anything but will make it easier to add features. ***(done)***
 - Support for maps with more height (limit is 64 for now, that means chunking should happen in both X and Y axes).
 - Add swinging animation.
 - Add crimson/corruption.
