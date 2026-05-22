@@ -100,11 +100,12 @@ Initial commit with basic project structure.
 - Add bosses.
 - Unique content for the DS version to make it stand out a bit.
 - Extra content and features for the DSi.
+- Maybe migrate to BlocksDS for better performance and more features (it shouldn't be that hard I think).
 
 Again, I'm open to suggestions and contributions, so if you have any ideas or want to help, feel free to open a pull request or an issue.
 
 ## Compile it yourself
-To compile this project, you need to have devkitPro installed. You can find instructions on how to install it on the [devkitPro website](https://devkitpro.org/wiki/Getting_Started) (Note: devkitPro NDS compilation only works on Windows as far as I know, or x86_64 architectures in general), I also always hear about some BlocksDS, I think that causes errors.
+To compile this project, you need to have devkitPro installed. You can find instructions on how to install it on the [devkitPro website](https://devkitpro.org/wiki/Getting_Started) (Note: devkitPro NDS compilation only works on Windows as far as I know, or x86_64 architectures in general).
 
 Once you have devkitPro installed, you can clone this repository by running:
 ```bash

@@ -1197,7 +1197,7 @@ mainMenu:
 			}
 		}
 
-		for (int i = 0; i < 64; i++)
+		for (int i = 0; i < MAX_ITEMS_TOTAL; i++)
 		{
 			if (item[i].exists)
 			{
@@ -1222,7 +1222,7 @@ mainMenu:
 				}
 
 				// Check for close items to fuse together to not waste memory
-				for (int j = 0; j < 64; j++)
+				for (int j = 0; j < MAX_ITEMS_TOTAL; j++)
 				{
 					if (i == j)
 						continue;
