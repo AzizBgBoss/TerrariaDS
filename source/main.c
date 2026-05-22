@@ -249,7 +249,6 @@ mainMenu:
 			touchRead(&touch);
 			if (touch.px >= 56 && touch.px <= 199 && touch.py >= 56 && touch.py <= 87)
 			{
-				mmStreamClose();
 				changeTextBackground();
 				clearPrint();
 
@@ -260,7 +259,7 @@ mainMenu:
 					swiWaitForVBlank();
 					mmStreamUpdate();
 					clearPrint();
-					printDirect("Select a world size:\n\n");
+					printDirect("Select a world size:\nPress B to return.\n\n");
 					for (int i = 0; i < 4; i++)
 					{
 						if (i == chosenIndex)
@@ -304,6 +303,10 @@ mainMenu:
 					{
 						break; // World size chosen
 					}
+					else if (down & KEY_B)
+					{
+						goto mainMenu;
+					}
 				}
 				switch (chosenIndex)
 				{
@@ -324,13 +327,13 @@ mainMenu:
 					mapHeight = 256;
 					break;
 				}
+				mmStreamClose();
 				clearPrint();
 				generateMap();
 				break;
 			}
 			else if (touch.px >= 56 && touch.px <= 199 && touch.py >= 104 && touch.py <= 135)
 			{
-				mmStreamClose();
 				changeTextBackground();
 				clearPrint();
 				if (fatInitDefault())
@@ -382,7 +385,7 @@ mainMenu:
 						swiWaitForVBlank();
 						mmStreamUpdate();
 						clearPrint();
-						printDirect("Select a world to load:\n\n");
+						printDirect("Select a world to load:\nPress B to return.\n\n");
 						for (int i = 0; i < worldFileCount; i++)
 						{
 							if (i == chosenIndex)
@@ -412,10 +415,15 @@ mainMenu:
 						{
 							break; // World chosen
 						}
+						else if (down & KEY_B)
+						{
+							goto mainMenu;
+						}
 					}
 
 					if (loadMapFromFile(worldFiles[chosenIndex]))
 					{
+						mmStreamClose();
 						clearPrint();
 						printDirect("Map loaded successfully!");
 						gametime = 0;

@@ -94,6 +94,7 @@ Initial commit with basic project structure.
 - Add more biomes (desert, jungle, etc.).
 - Add particles (for example when breaking blocks).
 - More bug fixes and optimizations.
+- Add currency.
 
 ## Planed Features for the future:
 - Multiplayer support.
