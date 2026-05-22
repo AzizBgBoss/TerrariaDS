@@ -431,8 +431,9 @@ mainMenu:
 				else
 				{
 					clearPrint();
-					printDirect("Error: FatInitDefault failed!\nFallback to generating map...");
-					generateMap();
+					printDirect("Error: FatInitDefault failed!");
+					delay(1);
+					goto mainMenu;
 				}
 				break;
 			}
