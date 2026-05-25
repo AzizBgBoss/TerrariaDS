@@ -93,6 +93,7 @@ typedef struct
 	bool isSolid;		 // Is the player solid (can collide with other objects)
 	int weight;			 // Zero if not affected by gravity
 	int velocity;		 // Velocity for jumping or falling
+	int velocityX;		 // Velocity for horizontal movement
 	bool isOnGround;	 // Is the player on the ground
 	bool isLookingLeft;
 	int tileRange;
@@ -107,20 +108,22 @@ typedef struct
 {
 	int type;
 	bool exists;
-	int x, y; // Player position
+	int x, y; // Entity position
 	int renderX, renderY;
 	int anim_frame;		 // Animation frame
 	u16 *sprite_gfx_mem; // Pointer to sprite graphics memory
 	int sizeX, sizeY;	 // Size of the sprite, may be used for collision detection
-	bool isJumping;		 // Is the player jumping
-	bool isSolid;		 // Is the player solid (can collide with other objects)
+	bool isJumping;		 // Is the entity jumping
+	bool isSolid;		 // Is the entity solid (can collide with other objects)
 	int weight;			 // Zero if not affected by gravity
 	int velocity;		 // Velocity for jumping or falling
-	bool isOnGround;	 // Is the player on the ground
+	int velocityX;		 // Velocity for horizontal movement
+	bool isOnGround;	 // Is the entity on the ground
 	bool isLookingLeft;
 	int health;
 	int fall;
 	u8 animation;
+	int nextTick;
 } Entity;
 
 typedef struct
@@ -130,6 +133,12 @@ typedef struct
 	bool isSolid;
 	int weight;
 	int health;
+	int spriteSize;
+	int type;
+	int dropCount;
+	int drops[4];
+	int dropChance[4];	 // 1/x chance (example: 100% is 1, 50% is 2, 25% is 4, etc...)
+	int dropRange[4][2]; // [min, max] range for each drop
 } EntityProperties;
 
 typedef struct
@@ -161,14 +170,16 @@ typedef struct
 } CraftingRecipe;
 
 // Define the player entity
-Player player = {0, 0, 0, 0, 0, NULL, 16, 24, false, true, 1, 0, true, false, 4, 100, 100, 0, 0, ANIM_NONE};
+Player player = {0, 0, 0, 0, 0, NULL, 16, 24, false, true, 1, 0, 0, true, false, 4, 100, 100, 0, 0, ANIM_NONE};
 
 Entity entity[ENTITY_COUNT];
 
-EntityProperties entities[3] = {
-	{16, 12, true, 1, 20},
-	{16, 12, true, 1, 30},
-	{16, 12, true, 1, 100},
+EntityProperties entities[ENTITIES] = {
+	{16, 12, true, 1, 20, SpriteSize_32x32, ENTITY_TYPE_HOSTILE, 1, {TILE_MUSHROOM}, {1}, {{1, 3}}},														// Green slime
+	{16, 12, true, 1, 30, SpriteSize_32x32, ENTITY_TYPE_SPECIAL, 1, {TILE_MUSHROOM}, {1}, {{1, 1}}},														// Red slime
+	{16, 12, true, 1, 100, SpriteSize_32x32, ENTITY_TYPE_SPECIAL, 1, {TILE_MUSHROOM}, {1}, {{1, 1}}},														// Blue slime
+	{16, 13, true, 1, 10, SpriteSize_32x32, ENTITY_TYPE_PASSIVE, 0, {}, {}, {}},																			// Bunny
+	{16, 24, true, 1, 100, SpriteSize_32x64, ENTITY_TYPE_HOSTILE, 3, {TILE_MUSHROOM, TILE_TIN_ORE, TILE_COPPER_ORE}, {2, 3, 1}, {{1, 2}, {1, 5}, {1, 10}}}, // Zombie
 };
 
 // Define MAX_ITEMS_TOTAL slots for item entities

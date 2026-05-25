@@ -364,19 +364,6 @@ int getElementDrop(int element)
     }
 }
 
-int getEntityDrop(int entity)
-{
-    switch (entity)
-    {
-    case ENTITY_GREEN_SLIME:
-    case ENTITY_RED_SLIME:
-    case ENTITY_BLUE_SLIME:
-        return TILE_MUSHROOM; // Slimes drop mushrooms for now
-    default:
-        return TILE_AIR;
-    }
-}
-
 bool isToolCompatible(int tool, int tile)
 {
     switch (tool)
@@ -1197,25 +1184,47 @@ int spawnEntity(int type, int x, int y)
     entity[i].isSolid = entities[type].isSolid;
     entity[i].weight = entities[type].weight;
     entity[i].velocity = 0;
+    entity[i].velocityX = 0;
     entity[i].isOnGround = true;
     entity[i].isLookingLeft = false;
     entity[i].health = entities[type].health;
     entity[i].fall = 0;
     entity[i].animation = ANIM_NONE;
+    entity[i].nextTick = 0;
 
-    entity[i].sprite_gfx_mem = oamAllocateGfx(&oamSub, SpriteSize_32x32, SpriteColorFormat_256Color);
-    f = fopen("nitro:/entities.img.bin", "rb");
-    fseek(f, entity[i].type * 32 * 32, SEEK_SET);
-    fread(entity[i].sprite_gfx_mem, 1, 32 * 32, f);
-    fclose(f);
+    if (entities[type].spriteSize == SpriteSize_32x32)
+    {
+        entity[i].sprite_gfx_mem = oamAllocateGfx(&oamSub, SpriteSize_32x32, SpriteColorFormat_256Color);
+        f = fopen("nitro:/entities.img.bin", "rb");
+        fseek(f, entity[i].type * 32 * 32, SEEK_SET);
+        fread(entity[i].sprite_gfx_mem, 1, 32 * 32, f);
+        fclose(f);
+    }
+    else if (entities[type].spriteSize == SpriteSize_32x64) // We have to glue two 32x32 sprites together
+    {
+        entity[i].sprite_gfx_mem = oamAllocateGfx(&oamSub, SpriteSize_32x64, SpriteColorFormat_256Color);
+        f = fopen("nitro:/entities.img.bin", "rb");
+        fseek(f, entity[i].type * 32 * 32, SEEK_SET);
+        fread(entity[i].sprite_gfx_mem, 1, 32 * 64, f);
+        fclose(f);
+    }
 
     return i;
 }
 
 void killEntity(int id)
 {
+    EntityProperties *e = &entities[entity[id].type]; // Pointers are so sexy
     entity[id].exists = false;
-    dropItem(entity[id].x / 8, entity[id].y / 8, getEntityDrop(entity[id].type), rando(1, 3));
+    if (e->dropCount > 0)
+    {
+        for (int i = 0; i < e->dropCount; i++)
+        {
+            if (rando(1, e->dropChance[i]) == 1)
+                dropItem(entity[id].x / 8 + rando(-2, 2), entity[id].y / 8 + rando(-2, 2), e->drops[i],
+                         rando(e->dropRange[i][0], e->dropRange[i][1]));
+        }
+    }
 }
 
 bool checkPlayerCollision(int x, int y, int sizeX, int sizeY)
@@ -1291,10 +1300,20 @@ void setEntityAnimFrame(int id, int frame)
     if (frame < 0)
         frame = 0;
     entity[id].anim_frame = frame;
-    f = fopen("nitro:/entities.img.bin", "rb");
-    fseek(f, entity[id].type * 32 * 32 + entity[id].anim_frame * 32 * 32, SEEK_SET);
-    fread(entity[id].sprite_gfx_mem, 1, 32 * 32, f);
-    fclose(f);
+    if (entities[entity[id].type].spriteSize == SpriteSize_32x32)
+    {
+        f = fopen("nitro:/entities.img.bin", "rb");
+        fseek(f, entity[id].type * 32 * 32 + entity[id].anim_frame * 32 * 32 * ENTITY_SPRITESHEET_WIDTH, SEEK_SET);
+        fread(entity[id].sprite_gfx_mem, 1, 32 * 32, f);
+        fclose(f);
+    }
+    else if (entities[entity[id].type].spriteSize == SpriteSize_32x64)
+    {
+        f = fopen("nitro:/entities.img.bin", "rb");
+        fseek(f, entity[id].type * 32 * 32 + entity[id].anim_frame * 32 * 32 * ENTITY_SPRITESHEET_WIDTH, SEEK_SET);
+        fread(entity[id].sprite_gfx_mem, 1, 32 * 64, f);
+        fclose(f);
+    }
 }
 
 void delay(int seconds)
@@ -1468,6 +1487,7 @@ void playerDamage(int damage)
         player.x = mapWidth * 8 / 2;
         player.y = 0;
         player.health = 100;
+        player.invincibilityFrames = 300; // 5 seconds of invincibility after respawn
         inventorySetHotbar();
     }
     else
@@ -1806,4 +1826,18 @@ void fadeInPalette(int steps, int delay)
             mmStreamUpdate();
         }
     }
+}
+
+void knockBackPlayer(int x, int y)
+{
+    if (player.invincibilityFrames)
+        return; // Don't knock back if player is [TITLE CARD]
+    player.velocityX += x;
+    player.velocity += y;
+}
+
+void knockBackEntity(int id, int x, int y)
+{
+    entity[id].velocityX += x;
+    entity[id].velocity += y;
 }

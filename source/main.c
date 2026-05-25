@@ -561,7 +561,7 @@ mainMenu:
 			printDirect("Press X to close debug menu.\n");
 
 			int selection = 0;
-			int maxSelection = 6;
+			int maxSelection = 7;
 
 			while (pmMainLoop())
 			{
@@ -597,29 +597,32 @@ mainMenu:
 					switch (i)
 					{
 					case 0:
-						printDirect("Spawn green slime");
+						printDirect("Spawn entity");
 						break;
 					case 1:
-						printDirect("Spawn red slime");
-						break;
-					case 2:
-						printDirect("Spawn blue slime");
-						break;
-					case 3:
 						printDirect("Set health to max");
 						break;
-					case 4:
+					case 2:
 						printDirect("Kill all entities");
 						break;
-					case 5:
+					case 3:
 						printDirect("Kill player");
 						break;
-					case 6:
+					case 4:
+						printDirect("Become [TITLE CARD] for 5 mins");
+						break;
+					case 5:
 						printDirect("Show debug info: ");
 						if (debug)
 							printDirect("ON ");
 						else
 							printDirect("OFF");
+						break;
+					case 6:
+						printDirect("Set time to night");
+						break;
+					case 7:
+						printDirect("Set time to day");
 						break;
 					default:
 						printDirect("---");
@@ -632,22 +635,54 @@ mainMenu:
 					switch (selection)
 					{
 					case 0:
-						spawnEntity(ENTITY_GREEN_SLIME, player.x, player.y);
-						printDirect("\nSpawned green slime!");
+						int chosenID = 0;
+						while (pmMainLoop())
+						{
+							swiWaitForVBlank();
+							mmStreamUpdate();
+							scanKeys();
+
+							int pressed = keysDown();
+
+							clearPrint();
+							print(0, 0, "Choose an entity ID: ");
+							printValDirect(chosenID);
+							printDirect("\nPress A to spawn at player's position.\nPress X to cancel.");
+
+							if (pressed & KEY_UP)
+							{
+								chosenID--;
+								if (chosenID < 0)
+									chosenID = ENTITIES - 1;
+							}
+							else if (pressed & KEY_DOWN)
+							{
+								chosenID++;
+								if (chosenID >= ENTITIES)
+									chosenID = 0;
+							}
+							else if (pressed & KEY_A)
+							{
+								spawnEntity(chosenID, player.x, player.y);
+								clearPrint();
+								print(0, 0, "Debug menu, bazinga!\n");
+								printDirect("Press X to close debug menu.\n");
+								break;
+							}
+							else if (pressed & KEY_X)
+							{
+								clearPrint();
+								print(0, 0, "Debug menu, bazinga!\n");
+								printDirect("Press X to close debug menu.\n");
+								break;
+							}
+						}
 						break;
 					case 1:
-						spawnEntity(ENTITY_RED_SLIME, player.x, player.y);
-						printDirect("\nSpawned red slime!");
-						break;
-					case 2:
-						spawnEntity(ENTITY_BLUE_SLIME, player.x, player.y);
-						printDirect("\nSpawned blue slime!");
-						break;
-					case 3:
 						player.health = 400;
 						printDirect("\nHealth set to max!");
 						break;
-					case 4:
+					case 2:
 						for (int e = 0; e < ENTITY_COUNT; e++)
 						{
 							if (entity[e].exists)
@@ -657,12 +692,24 @@ mainMenu:
 						}
 						printDirect("\nAll entities killed!");
 						break;
-					case 5:
+					case 3:
 						playerDamage(9999);
 						printDirect("\nPlayer killed!");
 						break;
-					case 6:
+					case 4:
+						player.invincibilityFrames += 60 * 5 * 60; // 5 minutes of invincibility at 60 fps
+						printDirect("\nInvincibility for 5 minutes!");
+						break;
+					case 5:
 						debug = !debug;
+						break;
+					case 6:
+						gametime = DAY_LENGTH / 2; // Night time
+						printDirect("\nTime set to night!");
+						break;
+					case 7:
+						gametime = 0; // Day time
+						printDirect("\nTime set to day!");
 						break;
 					default:
 						printDirect("\nUnknown implementation.");
@@ -793,28 +840,20 @@ mainMenu:
 		{
 			if ((player.x + player.sizeX) / 8 < mapWidth)
 			{
-				if (!isTileSolid(gameTerrain[(player.x + player.sizeX) / 8 + player.y / 8 * MAP_WIDTH_MAX]) &&
-					!isTileSolid(gameTerrain[(player.x + player.sizeX) / 8 + (player.y + player.sizeY / 2) / 8 * MAP_WIDTH_MAX]) &&
-					!isTileSolid(gameTerrain[(player.x + player.sizeX) / 8 + (player.y + player.sizeY - 1) / 8 * MAP_WIDTH_MAX]))
-				{
-					player.isLookingLeft = false;
-					player.x++;
-					player.animation = ANIM_WALK;
-				}
+				player.isLookingLeft = false;
+				if (player.velocityX < 1) // if player stationary or pushed to the opposite direction, he can fight it back.
+					player.velocityX++;	  // But can't accelerate more if he's already going that way.
+				player.animation = ANIM_WALK;
 			}
 		}
 		else if (held & KEY_LEFT)
 		{
 			if (player.x - 1 >= 0)
 			{
-				if (!isTileSolid(gameTerrain[(player.x - 1) / 8 + player.y / 8 * MAP_WIDTH_MAX]) &&
-					!isTileSolid(gameTerrain[(player.x - 1) / 8 + (player.y + player.sizeY / 2) / 8 * MAP_WIDTH_MAX]) &&
-					!isTileSolid(gameTerrain[(player.x - 1) / 8 + (player.y + player.sizeY - 1) / 8 * MAP_WIDTH_MAX]))
-				{
-					player.isLookingLeft = true;
-					player.x--;
-					player.animation = ANIM_WALK;
-				}
+				player.isLookingLeft = true;
+				if (player.velocityX > -1)
+					player.velocityX--;
+				player.animation = ANIM_WALK;
 			}
 		}
 		else
@@ -836,7 +875,7 @@ mainMenu:
 			}
 		}
 
-		if (!player.isOnGround)
+		if (!player.isOnGround || player.velocity < 0)
 		{
 			player.velocity += player.weight; // Apply gravity
 			if (player.velocity > 6)
@@ -851,6 +890,29 @@ mainMenu:
 				player.velocity = 0; // Reset velocity when on the ground
 			}
 		}
+
+		if (player.velocityX > 0)
+		{
+			if (!isTileSolid(gameTerrain[(player.x + player.sizeX - 1 + player.velocityX) / 8 + player.y / 8 * MAP_WIDTH_MAX]) &&
+				!isTileSolid(gameTerrain[(player.x + player.sizeX - 1 + player.velocityX) / 8 + (player.y + player.sizeY / 2) / 8 * MAP_WIDTH_MAX]) &&
+				!isTileSolid(gameTerrain[(player.x + player.sizeX - 1 + player.velocityX) / 8 + (player.y + player.sizeY - 1) / 8 * MAP_WIDTH_MAX]))
+			{
+				player.x += player.velocityX;
+			}
+		}
+		else if (player.velocityX < 0)
+		{
+			if (!isTileSolid(gameTerrain[(player.x + player.velocityX) / 8 + player.y / 8 * MAP_WIDTH_MAX]) &&
+				!isTileSolid(gameTerrain[(player.x + player.velocityX) / 8 + (player.y + player.sizeY / 2) / 8 * MAP_WIDTH_MAX]) &&
+				!isTileSolid(gameTerrain[(player.x + player.velocityX) / 8 + (player.y + player.sizeY - 1) / 8 * MAP_WIDTH_MAX]))
+			{
+				player.x += player.velocityX;
+			}
+		}
+
+		if (player.isOnGround) // Friction
+			player.velocityX += (player.velocityX > 0) ? -1 : (player.velocityX < 0) ? 1
+																					 : 0;
 
 		// Collision detection with ground
 		int TLCx = player.x;
@@ -1084,6 +1146,7 @@ mainMenu:
 								{
 									mmEffect(SFX_SWING);
 									damageEntity(e, 5);
+									knockBackEntity(e, (player.x > entity[e].x) ? -5 : 5, -5);
 								}
 								else if (inventory[inventorySelection] == TILE_MUSHROOM && inventoryQuantity[inventorySelection] && player.health < player.maxHealth)
 								{
@@ -1121,7 +1184,7 @@ mainMenu:
 		// Check if player is on the ground
 		if (isTileSolid(gameTerrain[BLCtileX + BLCtileY * MAP_WIDTH_MAX]))
 		{
-			if (player.isOnGround == false)
+			if (player.isOnGround == false && player.velocity >= 0)
 			{
 				player.isOnGround = true;
 				player.isJumping = false;
@@ -1135,7 +1198,7 @@ mainMenu:
 
 		if (isTileSolid(gameTerrain[BRCtileX + BRCtileY * MAP_WIDTH_MAX]))
 		{
-			if (player.isOnGround == false)
+			if (player.isOnGround == false && player.velocity >= 0)
 			{
 				player.isOnGround = true;
 				player.isJumping = false;
@@ -1170,25 +1233,9 @@ mainMenu:
 					killEntity(i);
 					continue;
 				}
-				if (entity[i].type == ENTITY_GREEN_SLIME)
+				if ((0 <= entity[i].type && entity[i].type < ENTITIES) && frame % 2 == 0) // Move every 2 frames to make it slower
 				{
-					if (!entity[i].isOnGround)
-					{
-						if (isTileSolid(gameTerrain[entity[i].x / 8 + (entity[i].y + entity[i].velocity) / 8 * MAP_WIDTH_MAX]))
-						{
-							entity[i].velocity = 0;
-							entity[i].y /= 8;
-							entity[i].y *= 8;
-						}
-						if (isTileSolid(gameTerrain[(entity[i].x + entity[i].sizeX - 1) / 8 + (entity[i].y + entity[i].velocity) / 8 * MAP_WIDTH_MAX]))
-						{
-							entity[i].velocity = 0;
-							entity[i].y /= 8;
-							entity[i].y *= 8;
-						}
-					}
-
-					if (!entity[i].isOnGround)
+					if (!entity[i].isOnGround || entity[i].velocity < 0)
 					{
 						entity[i].velocity += entity[i].weight; // Apply gravity
 						if (entity[i].velocity > 7)
@@ -1207,6 +1254,29 @@ mainMenu:
 					{
 						entity[i].animation = ANIM_NONE;
 					}
+
+					if (entity[i].velocityX > 0)
+					{
+						if (!isTileSolid(gameTerrain[(entity[i].x + entity[i].sizeX - 1 + entity[i].velocityX) / 8 + entity[i].y / 8 * MAP_WIDTH_MAX]) &&
+							!isTileSolid(gameTerrain[(entity[i].x + entity[i].sizeX - 1 + entity[i].velocityX) / 8 + (entity[i].y + entity[i].sizeY / 2) / 8 * MAP_WIDTH_MAX]) &&
+							!isTileSolid(gameTerrain[(entity[i].x + entity[i].sizeX - 1 + entity[i].velocityX) / 8 + (entity[i].y + entity[i].sizeY - 1) / 8 * MAP_WIDTH_MAX]))
+						{
+							entity[i].x += entity[i].velocityX;
+						}
+					}
+					else if (entity[i].velocityX < 0)
+					{
+						if (!isTileSolid(gameTerrain[(entity[i].x + entity[i].velocityX) / 8 + entity[i].y / 8 * MAP_WIDTH_MAX]) &&
+							!isTileSolid(gameTerrain[(entity[i].x + entity[i].velocityX) / 8 + (entity[i].y + entity[i].sizeY / 2) / 8 * MAP_WIDTH_MAX]) &&
+							!isTileSolid(gameTerrain[(entity[i].x + entity[i].velocityX) / 8 + (entity[i].y + entity[i].sizeY - 1) / 8 * MAP_WIDTH_MAX]))
+						{
+							entity[i].x += entity[i].velocityX;
+						}
+					}
+
+					if (entity[i].isOnGround) // Friction
+						entity[i].velocityX += (entity[i].velocityX > 0) ? -1 : (entity[i].velocityX < 0) ? 1
+																										  : 0;
 
 					// Collision detection with ground
 					TLCx = entity[i].x;
@@ -1229,7 +1299,7 @@ mainMenu:
 
 					if (isTileSolid(gameTerrain[BLCtileX + BLCtileY * MAP_WIDTH_MAX]))
 					{
-						if (entity[i].isOnGround == false)
+						if (entity[i].isOnGround == false && entity[i].velocity >= 0)
 						{
 							entity[i].isOnGround = true;
 							entity[i].isJumping = false;
@@ -1240,7 +1310,7 @@ mainMenu:
 
 					if (isTileSolid(gameTerrain[BRCtileX + BRCtileY * MAP_WIDTH_MAX]))
 					{
-						if (entity[i].isOnGround == false)
+						if (entity[i].isOnGround == false && entity[i].velocity >= 0)
 						{
 							entity[i].isOnGround = true;
 							entity[i].isJumping = false;
@@ -1256,31 +1326,6 @@ mainMenu:
 							entity[i].isOnGround = false;
 							entity[i].isJumping = true;
 						}
-					}
-
-					// Handle entity AI
-					if (frame % 60 == 0) // Tick
-					{
-						entity[i].velocity = -7;
-						entity[i].isOnGround = false;
-						entity[i].isJumping = true;
-					}
-
-					if (entity[i].isJumping)
-					{
-						if (player.x > entity[i].x)
-						{
-							entity[i].x++;
-						}
-						else
-						{
-							entity[i].x--;
-						}
-					}
-
-					if (checkPlayerCollision(entity[i].x, entity[i].y, entity[i].sizeX, entity[i].sizeY))
-					{
-						playerDamage(5);
 					}
 				}
 				else if (entity[i].type == ENTITY_RED_SLIME)
@@ -1303,6 +1348,127 @@ mainMenu:
 						{
 							entity[i].y--;
 						}
+					}
+				}
+
+				// Handle entity AI
+				entity[i].nextTick--;
+				if (entity[i].type == ENTITY_GREEN_SLIME)
+				{
+					if (entity[i].nextTick <= 0 && entity[i].isOnGround) // Tick
+					{
+						entity[i].velocity = -7;
+						entity[i].isOnGround = false;
+						entity[i].isJumping = true;
+						entity[i].nextTick = rando(1 * 60, 3 * 60); // Jump every 1 to 3 seconds
+						if (player.x > entity[i].x)
+						{
+							if (entity[i].velocityX < 1)
+								entity[i].velocityX++;
+						}
+						else
+						{
+							if (entity[i].velocityX > -1)
+								entity[i].velocityX--;
+						}
+					}
+
+					if (checkPlayerCollision(entity[i].x, entity[i].y, entity[i].sizeX, entity[i].sizeY))
+					{
+						knockBackPlayer((entity[i].x > player.x) ? -5 : 5, -5);
+						playerDamage(5);
+					}
+				}
+				else if (entity[i].type == ENTITY_BUNNY)
+				{
+					if (entity[i].nextTick <= 0 && entity[i].isOnGround) // Tick
+					{
+						entity[i].velocity = -7;
+						entity[i].isOnGround = false;
+						entity[i].isJumping = true;
+						entity[i].isLookingLeft = rando(0, 1);
+						entity[i].nextTick = rando(2 * 60, 7 * 60); // Jump every 2 to 7 seconds
+						if (entity[i].isLookingLeft)
+						{
+							if (entity[i].velocityX > -1)
+								entity[i].velocityX--;
+						}
+						else
+						{
+							if (entity[i].velocityX < 1)
+								entity[i].velocityX++;
+						}
+					}
+				}
+				else if (entity[i].type == ENTITY_ZOMBIE)
+				{
+					if (frame % 2 == 0)
+					{
+						if (gametime >= DAY_LENGTH / 2 && gametime < DAY_LENGTH - 16) // Night time: hunt the player
+						{
+							if (player.x > entity[i].x && entity[i].isOnGround)
+							{
+								if (entity[i].velocityX < 1)
+									entity[i].velocityX++;
+								entity[i].isLookingLeft = false;
+								entity[i].animation = ANIM_WALK;
+							}
+							else if (player.x < entity[i].x && entity[i].isOnGround)
+							{
+								if (entity[i].velocityX > -1)
+									entity[i].velocityX--;
+								entity[i].isLookingLeft = true;
+								entity[i].animation = ANIM_WALK;
+							}
+						}
+						else // Day time: run for your fucking life (do zombies have lives?)
+						{
+							if (player.x < entity[i].x && entity[i].isOnGround)
+							{
+								if (entity[i].velocityX < 1)
+									entity[i].velocityX++;
+								entity[i].isLookingLeft = false;
+								entity[i].animation = ANIM_WALK;
+							}
+							else if (player.x > entity[i].x && entity[i].isOnGround)
+							{
+								if (entity[i].velocityX > -1)
+									entity[i].velocityX--;
+								entity[i].isLookingLeft = true;
+								entity[i].animation = ANIM_WALK;
+							}
+						}
+
+						if (entity[i].nextTick <= 0 && entity[i].isOnGround) // Tick
+						{
+							if (entity[i].velocityX > 0) // Jump over obstacles
+							{
+								if (isTileSolid(gameTerrain[(entity[i].x + entity[i].sizeX - 1 + entity[i].velocityX) / 8 + entity[i].y / 8 * MAP_WIDTH_MAX]) ||
+									isTileSolid(gameTerrain[(entity[i].x + entity[i].sizeX - 1 + entity[i].velocityX) / 8 + (entity[i].y + entity[i].sizeY / 2) / 8 * MAP_WIDTH_MAX]) ||
+									isTileSolid(gameTerrain[(entity[i].x + entity[i].sizeX - 1 + entity[i].velocityX) / 8 + (entity[i].y + entity[i].sizeY - 1) / 8 * MAP_WIDTH_MAX]))
+								{
+									entity[i].velocity = -7;
+									entity[i].isOnGround = false; // Add this line to stop friction and allow zombie to move in the air
+								}
+							}
+							else if (entity[i].velocityX < 0)
+							{
+								if (isTileSolid(gameTerrain[(entity[i].x + entity[i].velocityX) / 8 + entity[i].y / 8 * MAP_WIDTH_MAX]) ||
+									isTileSolid(gameTerrain[(entity[i].x + entity[i].velocityX) / 8 + (entity[i].y + entity[i].sizeY / 2) / 8 * MAP_WIDTH_MAX]) ||
+									isTileSolid(gameTerrain[(entity[i].x + entity[i].velocityX) / 8 + (entity[i].y + entity[i].sizeY - 1) / 8 * MAP_WIDTH_MAX]))
+								{
+									entity[i].velocity = -7;
+									entity[i].isOnGround = false;
+								}
+							}
+							entity[i].nextTick = rando(1 * 60, 3 * 60); // Jump every 1 to 3 seconds
+						}
+					}
+
+					if (checkPlayerCollision(entity[i].x, entity[i].y, entity[i].sizeX, entity[i].sizeY))
+					{
+						knockBackPlayer((entity[i].x > player.x) ? -5 : 5, -5);
+						playerDamage(10);
 					}
 				}
 			}
@@ -1388,10 +1554,43 @@ mainMenu:
 			else if (gametime >= DAY_LENGTH - 16 && gametime < DAY_LENGTH)
 				darkness = 16 - (gametime - (DAY_LENGTH - 16)); // Transition to day
 
-			if (gametime >= DAY_LENGTH / 2 && gametime < DAY_LENGTH - 16 && rando(0, 60) < 5) // Night time
-			{
-				int spawnX = rando(-SCREEN_WIDTH, SCREEN_WIDTH);
-				spawnEntity(ENTITY_GREEN_SLIME, scrollX + SCREEN_WIDTH + spawnX, getHighestTileY(spawnX / 8) - entities[ENTITY_GREEN_SLIME].sizeY); // Spawn a green slime at random coordinates in the screen
+			if (gametime >= DAY_LENGTH / 2 && gametime < DAY_LENGTH - 16)
+			{ // Night time
+				if (rando(0, 15) == 0)
+				{
+					int entityToSpawn = -1;
+					while (entityToSpawn == -1)
+					{
+						int i = rando(0, sizeof(entities) / sizeof(entities[0]) - 1);
+						if (entities[i].type == ENTITY_TYPE_HOSTILE)
+						{
+							entityToSpawn = i;
+						}
+					}
+					int spawnX = rando(0, 1) ? rando(-SCREEN_WIDTH * 2, -SCREEN_WIDTH) : rando(SCREEN_WIDTH, SCREEN_WIDTH * 2); // Spawn on left or right side of the screen
+					spawnEntity(entityToSpawn,
+								scrollX + SCREEN_WIDTH / 2 + spawnX,
+								getHighestTileY(spawnX / 8) - entities[entityToSpawn].sizeY);
+				}
+			}
+			else
+			{ // Day time
+				if (rando(0, 20) == 0)
+				{
+					int entityToSpawn = -1;
+					while (entityToSpawn == -1)
+					{
+						int i = rando(0, sizeof(entities) / sizeof(entities[0]) - 1);
+						if (entities[i].type == ENTITY_TYPE_PASSIVE)
+						{
+							entityToSpawn = i;
+						}
+					}
+					int spawnX = rando(0, 1) ? rando(-SCREEN_WIDTH * 2, -SCREEN_WIDTH) : rando(SCREEN_WIDTH, SCREEN_WIDTH * 2); // Spawn on left or right side of the screen
+					spawnEntity(entityToSpawn,
+								scrollX + SCREEN_WIDTH / 2 + spawnX,
+								getHighestTileY(spawnX / 8) - entities[entityToSpawn].sizeY);
+				}
 			}
 
 			REG_BLDALPHA_SUB =
@@ -1416,6 +1615,14 @@ mainMenu:
 			printDirect("   \n");
 			printDirect("scale: ");
 			printValDirect(scale);
+			printDirect("   \n");
+			printDirect("Vel X, Y: ");
+			printValDirect(player.velocityX);
+			printDirect(", ");
+			printValDirect(player.velocity);
+			printDirect("   \n");
+			printDirect("time: ");
+			printValDirect(gametime);
 			printDirect("   \n");
 		}
 
@@ -1462,10 +1669,39 @@ mainMenu:
 					switch (entity[i].animation)
 					{
 					case ANIM_NONE:
-						setEntityAnimFrame(i, 4);
+						setEntityAnimFrame(i, 16);
 						break;
 					case ANIM_JUMP:
 						setEntityAnimFrame(i, 0);
+						break;
+					}
+				}
+				if (entity[i].type == ENTITY_BUNNY)
+				{
+					// Animate bunny
+					switch (entity[i].animation)
+					{
+					case ANIM_NONE:
+						setEntityAnimFrame(i, 0);
+						break;
+					case ANIM_JUMP:
+						setEntityAnimFrame(i, (frame / 4) % 7);
+						break;
+					}
+				}
+				if (entity[i].type == ENTITY_ZOMBIE)
+				{
+					// Animate zombie
+					switch (entity[i].animation)
+					{
+					case ANIM_NONE:
+						setEntityAnimFrame(i, 0);
+						break;
+					case ANIM_WALK:
+						setEntityAnimFrame(i, 2 - abs(((frame / 16) % 4) - 2)); // 0, 1, 2, 1, 0, 1, 2, 1, ...
+						break;
+					case ANIM_JUMP:
+						setEntityAnimFrame(i, 2);
 						break;
 					}
 				}
@@ -1537,14 +1773,14 @@ mainMenu:
 		{
 			if (entity[i].exists)
 			{
-				entity[i].renderX = entity[i].x - scrollX - (entity[i].x - player.x - player.sizeX / 2) * (scale - 256) / scale - (8 * (scale - 128)) / 128;
-				entity[i].renderY = entity[i].y - scrollY - (entity[i].y - player.y - player.sizeY / 2) * (scale - 256) / scale - (8 * (scale - 128)) / 128;
+				entity[i].renderX = entity[i].x - scrollX - (entity[i].x - player.x - player.sizeX / 2) * (scale - 256) / scale - (entity[i].sizeX / 2 * (scale - 128)) / 128;
+				entity[i].renderY = entity[i].y - scrollY - (entity[i].y - player.y - player.sizeY / 2) * (scale - 256) / scale - (entity[i].sizeY / 2 * (scale - 128)) / 128;
 				if (entity[i].renderX >= 0 && entity[i].renderX < SCREEN_WIDTH && entity[i].renderY >= 0 && entity[i].renderY < SCREEN_HEIGHT)
 				{
 					oamSet(&oamSub, renderedEntities + 2,
 						   entity[i].renderX,
 						   entity[i].renderY,
-						   1, 0, SpriteSize_32x32, SpriteColorFormat_256Color, entity[i].sprite_gfx_mem, i + 2, false, false, entity[i].isLookingLeft, false, false);
+						   1, 0, entities[entity[i].type].spriteSize, SpriteColorFormat_256Color, entity[i].sprite_gfx_mem, i + 2, false, false, entity[i].isLookingLeft, false, false);
 					renderedEntities++;
 				}
 			}
@@ -1566,7 +1802,7 @@ mainMenu:
 				if (item[i].exists)
 				{
 					item[i].renderX = item[i].x - scrollX - (item[i].x - player.x - player.sizeX / 2) * (scale - 256) / scale - 8;
-					item[i].renderY = item[i].y - scrollY - (item[i].y - player.y - player.sizeY / 2) * (scale - 256) / scale - 8d;
+					item[i].renderY = item[i].y - scrollY - (item[i].y - player.y - player.sizeY / 2) * (scale - 256) / scale - 8;
 					if (item[i].renderX >= 0 && item[i].renderX < SCREEN_WIDTH && item[i].renderY >= 0 && item[i].renderY < SCREEN_HEIGHT)
 					{
 						oamRotateScale(&oamSub, renderedItems + ENTITY_COUNT + 2, degreesToAngle(0), scale * 2, scale * 2);

@@ -56,6 +56,9 @@
 #define MAX_SCALE 256
 #define MIN_SCALE 128
 
+#define ENTITY_SPRITESHEET_WIDTH 16
+#define ENTITIES 5
+
 // Define game elements
 
 enum // Make sure the indexing follows the one in the textures
@@ -109,6 +112,15 @@ enum // Entities
     ENTITY_GREEN_SLIME,
     ENTITY_RED_SLIME,
     ENTITY_BLUE_SLIME,
+    ENTITY_BUNNY,
+    ENTITY_ZOMBIE,
+};
+
+enum // Entity type
+{
+    ENTITY_TYPE_PASSIVE,
+    ENTITY_TYPE_HOSTILE,
+    ENTITY_TYPE_SPECIAL,
 };
 
 enum // Animations

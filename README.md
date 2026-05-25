@@ -81,9 +81,9 @@ Initial commit with basic project structure.
 
 ### Version 0.2 (In progress):
 - Rework special tiles.
-- Probably add a bit more enemies.
+- Probably add a bit more entities. ***(done for now: Bunny, Zombie)***
 - Ability to save character data and world data independently.
-- Remember that jittering? I didn't get rid of it completely: When sprites are animated, each new frame is loaded from NitroFS. I need to load all the frames of existing entities to RAM directly so reading from NitroFS won't slow it down.
+- Remember that jittering? I didn't get rid of it completely: When sprites are animated, each new frame is loaded from NitroFS. For some reason I moved all textures to NitroFS (maybe I thought it would save RAM) but my dumbass at that time didn't know that the data is `const` so it will take ROM space anyways and not RAM space.
 - Probably converting all tile handling data to a struct.
 - Organize my messy code and split it to many files, won't change anything but will make it easier to add features. ***(done)***
 - Support for maps with more height (limit is 64 for now, that means chunking should happen in both X and Y axes). ***(done, worlds come in 4 sizes, with backwards compatibility with v0.1 maps)***
@@ -97,6 +97,8 @@ Initial commit with basic project structure.
 - Add currency.
 - Better and more efficient world generation.
 - Fix misaligned sprites when zooming in/out ***(done: yeah I still don't understand why this happens, if you can please help me with it. But I just added more math to counter the offset)***
+- Show health as hearts.
+- Add X axis velocity ***(done: this allowed to implement knockback and fix some collision bugs)***
 
 ## Planed Features for the future:
 - Multiplayer support.
