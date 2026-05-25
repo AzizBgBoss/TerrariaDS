@@ -16,9 +16,7 @@ int main(void)
 {
 	scanKeys();
 
-	nitroFSInit(NULL);
-
-	mmInitDefault("nitro:/soundbank.bin");
+	mmInitDefaultMem((mm_addr)soundbank_bin);
 
 	mmLoadEffect(SFX_IG_0);
 	mmLoadEffect(SFX_IG_1);
@@ -37,12 +35,6 @@ int main(void)
 	mmLoadEffect(SFX_DOOR_OPEN);
 	mmLoadEffect(SFX_DOOR_CLOSE);
 
-	if (!nitroFSInit(NULL))
-	{
-		consoleDemoInit();
-		iprintf("nitroFSInit error.");
-	}
-
 	if (!fatInitDefault() || keysHeld() & KEY_START)
 	{
 		mmLoad(MOD_MODULE1);
@@ -53,15 +45,9 @@ int main(void)
 		vramSetBankA(VRAM_A_MAIN_BG);
 		BGCTRL[0] = BG_TILE_BASE(1) | BG_MAP_BASE(0) | BG_COLOR_256 | BG_32x32 | BG_PRIORITY(3);
 
-		f = fopen("nitro:/von.img.bin", "rb");
-		fread((void *)CHAR_BASE_BLOCK(1), 1, vonTilesLen, f);
-		fclose(f);
-		f = fopen("nitro:/von.map.bin", "rb");
-		fread((void *)SCREEN_BASE_BLOCK(0), 1, vonMapLen, f);
-		fclose(f);
-		f = fopen("nitro:/von.pal.bin", "rb");
-		fread((void *)BG_PALETTE, 1, vonPalLen, f);
-		fclose(f);
+		dmaCopy(vonTiles, (void *)CHAR_BASE_BLOCK(1), vonTilesLen);
+		dmaCopy(vonMap, (void *)SCREEN_BASE_BLOCK(0), vonMapLen);
+		dmaCopy(vonPal, BG_PALETTE, vonPalLen);
 
 		consoleDemoInit();
 		iprintf("Greetings, twin. fatInitDefault hath failed, dear twin.\n\
@@ -89,9 +75,9 @@ You shall press START to continue, with no saving abilities.");
 	int intro = rando(0, 9);
 
 	if (intro == 0)
-		audioFile = fopen("nitro:/special.pcm", "rb");
+		setStreamAudio("special.pcm");
 	else
-		audioFile = fopen("nitro:/1.pcm", "rb");
+		setStreamAudio("intro1.pcm");
 
 	mm_stream mystream;
 	mystream.sampling_rate = 11025;
@@ -110,51 +96,27 @@ You shall press START to continue, with no saving abilities.");
 
 	if (intro == 0)
 	{
-		f = fopen("nitro:/intro2.img.bin", "rb");
-		fread((void *)CHAR_BASE_BLOCK(1), 1, intro2TilesLen, f);
-		fclose(f);
-		f = fopen("nitro:/intro2.map.bin", "rb");
-		fread((void *)SCREEN_BASE_BLOCK(0), 1, intro2MapLen, f);
-		fclose(f);
-		f = fopen("nitro:/intro2.pal.bin", "rb");
-		fread((void *)BG_PALETTE, 1, intro2PalLen, f);
-		fclose(f);
+		dmaCopy(intro2Tiles, (void *)CHAR_BASE_BLOCK(1), intro2TilesLen);
+		dmaCopy(intro2Map, (void *)SCREEN_BASE_BLOCK(0), intro2MapLen);
+		dmaCopy(intro2Pal, BG_PALETTE, intro2PalLen);
 	}
 	else if (intro < 3)
 	{
-		f = fopen("nitro:/intro3.img.bin", "rb");
-		fread((void *)CHAR_BASE_BLOCK(1), 1, intro3TilesLen, f);
-		fclose(f);
-		f = fopen("nitro:/intro3.map.bin", "rb");
-		fread((void *)SCREEN_BASE_BLOCK(0), 1, intro3MapLen, f);
-		fclose(f);
-		f = fopen("nitro:/intro3.pal.bin", "rb");
-		fread((void *)BG_PALETTE, 1, intro3PalLen, f);
-		fclose(f);
+		dmaCopy(intro3Tiles, (void *)CHAR_BASE_BLOCK(1), intro3TilesLen);
+		dmaCopy(intro3Map, (void *)SCREEN_BASE_BLOCK(0), intro3MapLen);
+		dmaCopy(intro3Pal, BG_PALETTE, intro3PalLen);
 	}
 	else if (intro < 6)
 	{
-		f = fopen("nitro:/intro4.img.bin", "rb");
-		fread((void *)CHAR_BASE_BLOCK(1), 1, intro4TilesLen, f);
-		fclose(f);
-		f = fopen("nitro:/intro4.map.bin", "rb");
-		fread((void *)SCREEN_BASE_BLOCK(0), 1, intro4MapLen, f);
-		fclose(f);
-		f = fopen("nitro:/intro4.pal.bin", "rb");
-		fread((void *)BG_PALETTE, 1, intro4PalLen, f);
-		fclose(f);
+		dmaCopy(intro4Tiles, (void *)CHAR_BASE_BLOCK(1), intro4TilesLen);
+		dmaCopy(intro4Map, (void *)SCREEN_BASE_BLOCK(0), intro4MapLen);
+		dmaCopy(intro4Pal, BG_PALETTE, intro4PalLen);
 	}
 	else
 	{
-		f = fopen("nitro:/intro.img.bin", "rb");
-		fread((void *)CHAR_BASE_BLOCK(1), 1, introTilesLen, f);
-		fclose(f);
-		f = fopen("nitro:/intro.map.bin", "rb");
-		fread((void *)SCREEN_BASE_BLOCK(0), 1, introMapLen, f);
-		fclose(f);
-		f = fopen("nitro:/intro.pal.bin", "rb");
-		fread((void *)BG_PALETTE, 1, introPalLen, f);
-		fclose(f);
+		dmaCopy(introTiles, (void *)CHAR_BASE_BLOCK(1), introTilesLen);
+		dmaCopy(introMap, (void *)SCREEN_BASE_BLOCK(0), introMapLen);
+		dmaCopy(introPal, BG_PALETTE, introPalLen);
 	}
 
 	storeOriginalPalette();
@@ -165,65 +127,39 @@ mainMenu:
 	videoSetMode(MODE_0_2D | DISPLAY_BG0_ACTIVE | DISPLAY_BG3_ACTIVE);
 
 	BGCTRL[3] = BG_TILE_BASE(3) | BG_MAP_BASE(3) | BG_COLOR_256 | BG_32x32 | BG_PRIORITY(0);
-	f = fopen("nitro:/font.img.bin", "rb");
-	fread((void *)CHAR_BASE_BLOCK(3), 1, fontTilesLen, f);
-	fclose(f);
+	dmaCopy(fontTiles, (void *)CHAR_BASE_BLOCK(3), fontTilesLen);
 	dmaFillHalfWords(0, (void *)SCREEN_BASE_BLOCK(3), 2048);
 
 	if (intro == 0)
 	{
-		f = fopen("nitro:/mainscreenbg2.img.bin", "rb");
-		fread((void *)CHAR_BASE_BLOCK(1), 1, mainscreenbg2TilesLen, f);
-		fclose(f);
-		f = fopen("nitro:/mainscreenbg2.map.bin", "rb");
-		fread((void *)SCREEN_BASE_BLOCK(0), 1, mainscreenbg2MapLen, f);
-		fclose(f);
-		f = fopen("nitro:/mainscreenbg2.pal.bin", "rb");
-		fread((void *)BG_PALETTE, 1, mainscreenbg2PalLen, f);
-		fclose(f);
+		dmaCopy(mainscreenbg2Tiles, (void *)CHAR_BASE_BLOCK(1), mainscreenbg2TilesLen);
+		dmaCopy(mainscreenbg2Map, (void *)SCREEN_BASE_BLOCK(0), mainscreenbg2MapLen);
+		dmaCopy(mainscreenbg2Pal, BG_PALETTE, mainscreenbg2PalLen);
 	}
 	else
 	{
-		f = fopen("nitro:/mainscreenbg.img.bin", "rb");
-		fread((void *)CHAR_BASE_BLOCK(1), 1, mainscreenbgTilesLen, f);
-		fclose(f);
-		f = fopen("nitro:/mainscreenbg.map.bin", "rb");
-		fread((void *)SCREEN_BASE_BLOCK(0), 1, mainscreenbgMapLen, f);
-		fclose(f);
-		f = fopen("nitro:/mainscreenbg.pal.bin", "rb");
-		fread((void *)BG_PALETTE, 1, mainscreenbgPalLen, f);
-		fclose(f);
+		dmaCopy(mainscreenbgTiles, (void *)CHAR_BASE_BLOCK(1), mainscreenbgTilesLen);
+		dmaCopy(mainscreenbgMap, (void *)SCREEN_BASE_BLOCK(0), mainscreenbgMapLen);
+		dmaCopy(mainscreenbgPal, BG_PALETTE, mainscreenbgPalLen);
 	}
 
 	BGCTRL_SUB[0] = BG_TILE_BASE(1) | BG_MAP_BASE(0) | BG_COLOR_256 | BG_32x32 | BG_PRIORITY(3);
-	f = fopen("nitro:/bg.img.bin", "rb");
-	fread((void *)CHAR_BASE_BLOCK_SUB(1), 1, bgTilesLen, f);
-	fclose(f);
-	f = fopen("nitro:/bg.map.bin", "rb");
-	fread((void *)SCREEN_BASE_BLOCK_SUB(0), 1, bgMapLen, f);
-	fclose(f);
+	dmaCopy(bgTiles, (void *)CHAR_BASE_BLOCK_SUB(1), bgTilesLen);
+	dmaCopy(bgMap, (void *)SCREEN_BASE_BLOCK_SUB(0), bgMapLen);
 
 	BGCTRL_SUB[1] = BG_TILE_BASE(2) | BG_MAP_BASE(1) | BG_COLOR_256 | BG_32x32 | BG_PRIORITY(2);
-	f = fopen("nitro:/mainscreenui.img.bin", "rb");
-	fread((void *)CHAR_BASE_BLOCK_SUB(2), 1, mainscreenuiTilesLen, f);
-	fclose(f);
-	f = fopen("nitro:/mainscreenui.map.bin", "rb");
-	fread((void *)SCREEN_BASE_BLOCK_SUB(1), 1, mainscreenuiMapLen, f);
-	fclose(f);
+	dmaCopy(mainscreenuiTiles, (void *)CHAR_BASE_BLOCK_SUB(2), mainscreenuiTilesLen);
+	dmaCopy(mainscreenuiMap, (void *)SCREEN_BASE_BLOCK_SUB(1), mainscreenuiMapLen);
 
 	int bg2 = bgInitSub(3, BgType_ExRotation, BgSize_ER_512x512, 3, 3);
 	bgWrapOn(bg2);
 	bgSetPriority(bg2, 2);
-	f = fopen("nitro:/tilemap.img.bin", "rb");
-	fread(bgGetGfxPtr(bg2), 1, tilemapTilesLen, f);
-	fclose(f);
+	dmaCopy(tilemapTiles, bgGetGfxPtr(bg2), tilemapTilesLen);
 	dmaFillHalfWords(TILE_AIR, bgGetMapPtr(bg2), 64 * 64 * 2);
 
 	bg2Map = (u16 *)bgGetMapPtr(bg2); // Make sure this is defined before using generateMap or setGameTerrain so it doesn't tap into an undefined pointer and freeze
 
-	f = fopen("nitro:/bg.pal.bin", "rb");
-	fread((void *)BG_PALETTE_SUB, 1, bgPalLen, f);
-	fclose(f);
+	dmaCopy(bgPal, BG_PALETTE_SUB, bgPalLen);
 
 	printSmart(0, 17, titleSplashes[rando(0, sizeof(titleSplashes) / sizeof(titleSplashes[0]) - 1)]);
 
@@ -448,8 +384,6 @@ mainMenu:
 		}
 		x++;
 	}
-	fclose(audioFile);
-
 	videoSetMode(MODE_0_2D | DISPLAY_BG0_ACTIVE | DISPLAY_BG1_ACTIVE | DISPLAY_BG3_ACTIVE);	   // BG0: Background (item slots, etc...), BG1: Item tiles, BG3: Text
 	videoSetModeSub(MODE_3_2D | DISPLAY_BG0_ACTIVE | DISPLAY_BG1_ACTIVE | DISPLAY_BG3_ACTIVE); // BG0: Background, BG1: Black background (to darken bg0), BG3: Game terrain
 
@@ -459,19 +393,13 @@ mainMenu:
 	vramSetBankD(VRAM_D_SUB_SPRITE); // for sprites on subscreen
 
 	BGCTRL[0] = BG_TILE_BASE(1) | BG_MAP_BASE(0) | BG_COLOR_256 | BG_32x32 | BG_PRIORITY(3);
-	f = fopen("nitro:/inv.img.bin", "rb");
-	fread((void *)CHAR_BASE_BLOCK(1), 1, invTilesLen, f);
-	fclose(f);
+	dmaCopy(invTiles, (void *)CHAR_BASE_BLOCK(1), invTilesLen);
 	dmaFillHalfWords(0, (void *)SCREEN_BASE_BLOCK(0), 2048);
 	BGCTRL[1] = BG_TILE_BASE(2) | BG_MAP_BASE(2) | BG_COLOR_256 | BG_32x32 | BG_PRIORITY(2);
-	f = fopen("nitro:/items.img.bin", "rb");
-	fread((void *)CHAR_BASE_BLOCK(2), 1, itemsTilesLen, f);
-	fclose(f);
+	dmaCopy(itemsTiles, (void *)CHAR_BASE_BLOCK(2), itemsTilesLen);
 	dmaFillHalfWords(63, (void *)SCREEN_BASE_BLOCK(2), 2048);
 
-	f = fopen("nitro:/inv.pal.bin", "rb");
-	fread((void *)BG_PALETTE, 1, invPalLen, f);
-	fclose(f);
+	dmaCopy(invPal, BG_PALETTE, invPalLen);
 
 	dmaFillHalfWords(0, (void *)SCREEN_BASE_BLOCK_SUB(1), 2048);  // Fill the background with tiles 0
 	dmaFillHalfWords(0x6666, (void *)CHAR_BASE_BLOCK_SUB(2), 32); // Fill the tiles data with the color black (index 6 in the palette)
@@ -490,13 +418,9 @@ mainMenu:
 	oamInit(&oamMain, SpriteMapping_1D_128, false);
 
 	inventorySelectionSprite = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_256Color);
-	f = fopen("nitro:/ui.img.bin", "rb");
-	fread(inventorySelectionSprite, 1, uiTilesLen, f);
-	fclose(f);
+	dmaCopy(uiTiles, inventorySelectionSprite, uiTilesLen);
 
-	f = fopen("nitro:/ui.pal.bin", "rb");
-	fread((void *)SPRITE_PALETTE, 1, uiPalLen, f);
-	fclose(f);
+	dmaCopy(uiPal, SPRITE_PALETTE, uiPalLen);
 
 	oamInit(&oamSub, SpriteMapping_1D_128, false);
 
@@ -504,16 +428,11 @@ mainMenu:
 	dmaFillHalfWords(0, nullSprite, 16 * 16);
 
 	player.sprite_gfx_mem = oamAllocateGfx(&oamSub, SpriteSize_32x64, SpriteColorFormat_256Color);
-	f = fopen("nitro:/sprites.img.bin", "rb");
-	fread(player.sprite_gfx_mem, 1, 32 * 64, f);
-	fclose(f);
+	dmaCopy(spritesTiles, player.sprite_gfx_mem, 32 * 64);
 
 	itemHandSprite = oamAllocateGfx(&oamSub, SpriteSize_16x16, SpriteColorFormat_256Color);
 
-	f = fopen("nitro:/tilemap.img.bin", "rb");
-	fseek(f, 0, SEEK_SET);
-	fread(itemHandSprite, 1, 16 * 16, f);
-	fclose(f);
+	dmaCopy(tilemapTiles, itemHandSprite, 16 * 16);
 
 	for (int i = 0; i < MAX_ITEMS; i++)
 	{
@@ -521,11 +440,9 @@ mainMenu:
 		// No need to copy anything, we'll do that later when we summon the item
 	}
 
-	f = fopen("nitro:/sprites.pal.bin", "rb");
-	fread((void *)SPRITE_PALETTE_SUB, 1, spritesPalLen, f);
-	fclose(f);
+	dmaCopy(spritesPal, SPRITE_PALETTE_SUB, spritesPalLen);
 
-	audioFile = fopen("nitro:/2.pcm", "rb");
+	setStreamAudio("game2.pcm");
 	mmStreamOpen(&mystream);
 
 	// Setup inventory

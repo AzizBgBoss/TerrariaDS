@@ -24,8 +24,9 @@ BUILD    := build
 SOURCES  := source
 INCLUDES := include
 DATA     :=
-GRAPHICS := 
+GRAPHICS := gfx
 AUDIO    := audio
+PCM      := audio/pcm
 ICON     := media/icon.png
 
 GAME_TITLE     := TerrariaDS
@@ -34,7 +35,7 @@ GAME_SUBTITLE2 := github.com/AzizBgBoss
 
 # specify a directory which contains the nitro filesystem
 # this is relative to the Makefile
-NITRO    := nitro
+NITRO    := 
 
 #---------------------------------------------------------------------------------
 # options for code generation
@@ -79,7 +80,8 @@ export OUTPUT := $(CURDIR)/$(TARGET)
 export VPATH := $(CURDIR)/$(subst /,,$(dir $(ICON)))\
                 $(foreach dir,$(SOURCES),$(CURDIR)/$(dir))\
                 $(foreach dir,$(DATA),$(CURDIR)/$(dir))\
-                $(foreach dir,$(GRAPHICS),$(CURDIR)/$(dir))
+                $(foreach dir,$(GRAPHICS),$(CURDIR)/$(dir))\
+                $(foreach dir,$(PCM),$(CURDIR)/$(dir))
 
 export DEPSDIR := $(CURDIR)/$(BUILD)
 
@@ -87,7 +89,14 @@ CFILES   := $(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
 CPPFILES := $(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
 SFILES   := $(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
 PNGFILES := $(foreach dir,$(GRAPHICS),$(notdir $(wildcard $(dir)/*.png)))
+PCMFILES := $(foreach dir,$(PCM),$(notdir $(wildcard $(dir)/*.pcm)))
 BINFILES := $(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
+
+ifneq ($(strip $(PCMFILES)),)
+  export PCMFILES
+  export PCM_SOURCE_DIR := $(CURDIR)/$(PCM)
+  export NITRO_FILES := $(CURDIR)/$(BUILD)/pcmfs
+endif
 
 # prepare NitroFS directory
 ifneq ($(strip $(NITRO)),)
@@ -167,8 +176,7 @@ else
 #---------------------------------------------------------------------------------
 # main targets
 #---------------------------------------------------------------------------------
-$(OUTPUT).nds: $(OUTPUT).elf $(GAME_ICON)
-$(OUTPUT).elf: process_gfx
+$(OUTPUT).nds: $(OUTPUT).elf $(GAME_ICON) prepare_pcmfs
 $(OUTPUT).elf: $(OFILES)
 
 # need to build soundbank first
@@ -188,6 +196,12 @@ $(SOUNDBANK) : $(MODFILES)
 	$(bin2o)
 
 #---------------------------------------------------------------------------------
+prepare_pcmfs:
+#---------------------------------------------------------------------------------
+	@mkdir -p $(NITRO_FILES)
+	@for file in $(PCMFILES); do cp "$(PCM_SOURCE_DIR)/$$file" "$(NITRO_FILES)/$$file"; done
+
+#---------------------------------------------------------------------------------
 # This rule creates assembly source files using grit
 # grit takes an image file and a .grit describing how the file is to be processed
 # add additional rules like this for each image extension
@@ -196,16 +210,6 @@ $(SOUNDBANK) : $(MODFILES)
 %.s %.h: %.png %.grit
 #---------------------------------------------------------------------------------
 	grit $< -fts -o$*
-
-process_gfx:
-	@echo "[gfx] Running grit on each PNG..."
-	@cd $(CURDIR)/../gfx && \
-	for file in *.png; do \
-		grit "$$file" -ftb; \
-		base=$${file%.png}; \
-		mv $${base}*.bin ../$(NITRO); \
-		mv $${base}*.h ../$(INCLUDES); \
-	done
 
 #---------------------------------------------------------------------------------
 # Convert non-GRF game icon to GRF if needed

@@ -82,6 +82,12 @@ u16 *nullSprite;
 
 FILE *f;
 
+NitroRom *audioRom = NULL;
+u16 audioFileId = 0;
+u32 audioLength = 0;
+u32 audioPosition = 0;
+bool audioReady = false;
+
 typedef struct
 {
 	int x, y; // Player position
@@ -205,5 +211,3 @@ CraftingRecipe craftingRecipes[] = {
 };
 
 u16 *bg2Map;
-
-FILE *audioFile;

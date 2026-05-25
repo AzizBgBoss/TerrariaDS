@@ -14,11 +14,13 @@
 #include <filesystem.h>
 #include <dirent.h>
 #include <errno.h>
+#include <string.h>
 
 // Textures
 
 #include "tilemap.h"
 #include "bg.h"
+#include "entities.h"
 #include "sprites.h"
 #include "inv.h"
 #include "font.h"
@@ -36,6 +38,7 @@
 // Soundbank
 
 #include "soundbank.h"
+#include "soundbank_bin.h"
 
 #define MAP_WIDTH_MAX 1024
 #define MAP_HEIGHT_MAX 256

@@ -439,9 +439,7 @@ int getItemSpeed(int item)
 void changeTextBackground()
 {
     BGCTRL[0] = BG_TILE_BASE(1) | BG_MAP_BASE(0) | BG_COLOR_256 | BG_32x32 | BG_PRIORITY(3);
-    f = fopen("nitro:/inv.img.bin", "rb");
-    fread((void *)CHAR_BASE_BLOCK(1), 1, invTilesLen, f);
-    fclose(f);
+    dmaCopy(invTiles, (void *)CHAR_BASE_BLOCK(1), invTilesLen);
     dmaFillHalfWords(0, (void *)SCREEN_BASE_BLOCK(0), 2048);
     Bg0UpFill(0);
 };
@@ -777,10 +775,7 @@ void dropItem(int x, int y, int tile, int quantity)
     item[index].tile = tile;
     item[index].quantity = quantity;
 
-    f = fopen("nitro:/items.img.bin", "rb");
-    fseek(f, 8 * 8 * getItemTile(tile), SEEK_SET);
-    fread(item[index].sprite_gfx_mem, 1, 16 * 16, f);
-    fclose(f);
+    dmaCopy(((const u8 *)itemsTiles) + 8 * 8 * getItemTile(tile), item[index].sprite_gfx_mem, 16 * 16);
 }
 
 void destroyItem(int id)
@@ -1195,18 +1190,12 @@ int spawnEntity(int type, int x, int y)
     if (entities[type].spriteSize == SpriteSize_32x32)
     {
         entity[i].sprite_gfx_mem = oamAllocateGfx(&oamSub, SpriteSize_32x32, SpriteColorFormat_256Color);
-        f = fopen("nitro:/entities.img.bin", "rb");
-        fseek(f, entity[i].type * 32 * 32, SEEK_SET);
-        fread(entity[i].sprite_gfx_mem, 1, 32 * 32, f);
-        fclose(f);
+        dmaCopy(((const u8 *)entitiesTiles) + entity[i].type * 32 * 32, entity[i].sprite_gfx_mem, 32 * 32);
     }
     else if (entities[type].spriteSize == SpriteSize_32x64) // We have to glue two 32x32 sprites together
     {
         entity[i].sprite_gfx_mem = oamAllocateGfx(&oamSub, SpriteSize_32x64, SpriteColorFormat_256Color);
-        f = fopen("nitro:/entities.img.bin", "rb");
-        fseek(f, entity[i].type * 32 * 32, SEEK_SET);
-        fread(entity[i].sprite_gfx_mem, 1, 32 * 64, f);
-        fclose(f);
+        dmaCopy(((const u8 *)entitiesTiles) + entity[i].type * 32 * 32, entity[i].sprite_gfx_mem, 32 * 64);
     }
 
     return i;
@@ -1287,10 +1276,7 @@ void setPlayerAnimFrame(int frame)
     if (frame < 0)
         frame = 0;
     player.anim_frame = frame;
-    f = fopen("nitro:/sprites.img.bin", "rb");
-    fseek(f, 32 * 64 * player.anim_frame, SEEK_SET);
-    fread(player.sprite_gfx_mem, 1, 32 * 64, f);
-    fclose(f);
+    dmaCopy(((const u8 *)spritesTiles) + 32 * 64 * player.anim_frame, player.sprite_gfx_mem, 32 * 64);
 }
 
 void setEntityAnimFrame(int id, int frame)
@@ -1302,17 +1288,11 @@ void setEntityAnimFrame(int id, int frame)
     entity[id].anim_frame = frame;
     if (entities[entity[id].type].spriteSize == SpriteSize_32x32)
     {
-        f = fopen("nitro:/entities.img.bin", "rb");
-        fseek(f, entity[id].type * 32 * 32 + entity[id].anim_frame * 32 * 32 * ENTITY_SPRITESHEET_WIDTH, SEEK_SET);
-        fread(entity[id].sprite_gfx_mem, 1, 32 * 32, f);
-        fclose(f);
+        dmaCopy(((const u8 *)entitiesTiles) + entity[id].type * 32 * 32 + entity[id].anim_frame * 32 * 32 * ENTITY_SPRITESHEET_WIDTH, entity[id].sprite_gfx_mem, 32 * 32);
     }
     else if (entities[entity[id].type].spriteSize == SpriteSize_32x64)
     {
-        f = fopen("nitro:/entities.img.bin", "rb");
-        fseek(f, entity[id].type * 32 * 32 + entity[id].anim_frame * 32 * 32 * ENTITY_SPRITESHEET_WIDTH, SEEK_SET);
-        fread(entity[id].sprite_gfx_mem, 1, 32 * 64, f);
-        fclose(f);
+        dmaCopy(((const u8 *)entitiesTiles) + entity[id].type * 32 * 32 + entity[id].anim_frame * 32 * 32 * ENTITY_SPRITESHEET_WIDTH, entity[id].sprite_gfx_mem, 32 * 64);
     }
 }
 
@@ -1766,20 +1746,53 @@ void generateMap()
     giveInventory(ITEM_COPPER_PICKAXE, 1);
 }
 
+bool setStreamAudio(const char *path)
+{
+    if (audioRom == NULL)
+        audioRom = nitroromGetSelf();
+
+    audioReady = false;
+    audioPosition = 0;
+
+    if (audioRom == NULL)
+        return false;
+
+    int fileId = nitroromResolvePath(audioRom, NITROROM_ROOT_DIR, path);
+    if (fileId < 0)
+        return false;
+
+    audioFileId = fileId;
+    audioLength = nitroromGetFileSize(audioRom, audioFileId);
+    audioReady = audioLength > 0;
+    return audioReady;
+}
+
 mm_word on_stream_request(mm_word length, mm_addr dest, mm_stream_formats format)
 {
     uint8_t *target = (uint8_t *)dest;
 
-    size_t bytesRead = fread(target, 1, length, audioFile);
-
-    if (bytesRead < length)
+    if (!audioReady)
     {
-        // Fill rest with silence
-        for (int i = bytesRead; i < length; i++)
-        {
-            target[i] = 128;
-        }
-        fseek(audioFile, 0, SEEK_SET);
+        memset(target, 128, length);
+        return length;
+    }
+
+    size_t bytesLeft = audioLength - audioPosition;
+    size_t bytesToCopy = length < bytesLeft ? length : bytesLeft;
+
+    if (!nitroromReadFile(audioRom, audioFileId, audioPosition, target, bytesToCopy))
+    {
+        memset(target, 128, length);
+        audioPosition = 0;
+        return length;
+    }
+
+    audioPosition += bytesToCopy;
+
+    if (bytesToCopy < length)
+    {
+        memset(target + bytesToCopy, 128, length - bytesToCopy);
+        audioPosition = 0;
     }
 
     return length;
