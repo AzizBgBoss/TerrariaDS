@@ -3,7 +3,7 @@
 # TerrariaDS
 A terraria remake (not port) for the Nintendo DS made by AzizBgBoss, started on the 26th of July 2025.<br>
 
-I'm a 17 y/o that's obsessed with programming, I'm also into Terraria! I love the freedom you get in the game and the endless possibilities it has to offer. Another thing I love is the Nintendo DS, it's a great console and I wondered if I can fuse the 3 thing I love together, so I programmed Terraria into the DS! TerrariaDS!<br>
+I'm a 17 y/o that's obsessed with programming, I'm also into Terraria! I love the freedom you get in the game and the endless possibilities it has to offer. Another thing I love is the Nintendo DS, it's a great console and I wondered if I can fuse the 3 thing I love together, so I programmed Terraria into the DS! TerrariaDS! ***(update: I'm now 18 lol)***<br>
 <br>
 This project is a work in progress and is not affiliated with the original Terraria game. It aims to replicate the core mechanics and gameplay of Terraria on the Nintendo DS.
 It aims at least to somewhat replicate the 3DS version of Terraria, but with some features from the PC version, and some sacrifices to fit the DS hardware limitations.<br>
@@ -100,7 +100,7 @@ Initial commit with basic project structure.
 - Show health as hearts.
 - Add X axis velocity ***(done: this allowed to implement knockback and fix some collision bugs)***
 
-## Planed Features for the future:
+## Planned Features for the future:
 - Multiplayer support.
 - Skins (or changeable player styles).
 - Add mana and magic items.
