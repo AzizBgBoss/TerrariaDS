@@ -83,7 +83,7 @@ Initial commit with basic project structure.
 - Rework special tiles.
 - Probably add a bit more entities. ***(done for now: Bunny, Zombie)***
 - Ability to save character data and world data independently.
-- Remember that jittering? I didn't get rid of it completely: When sprites are animated, each new frame is loaded from NitroFS. For some reason I moved all textures to NitroFS (maybe I thought it would save RAM) but my dumbass at that time didn't know that the data is `const` so it will take ROM space anyways and not RAM space.
+- Move all assets back to ROM since my dumbass a year ago thought moving everything to NitroFS will free up RAM but it's already `const` so need...
 - Probably converting all tile handling data to a struct.
 - Organize my messy code and split it to many files, won't change anything but will make it easier to add features. ***(done)***
 - Support for maps with more height (limit is 64 for now, that means chunking should happen in both X and Y axes). ***(done, worlds come in 4 sizes, with backwards compatibility with v0.1 maps)***
