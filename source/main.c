@@ -1586,7 +1586,7 @@ mainMenu:
 					switch (entity[i].animation)
 					{
 					case ANIM_NONE:
-						setEntityAnimFrame(i, 16);
+						setEntityAnimFrame(i, 1);
 						break;
 					case ANIM_JUMP:
 						setEntityAnimFrame(i, 0);
@@ -1692,7 +1692,7 @@ mainMenu:
 			{
 				entity[i].renderX = entity[i].x - scrollX - (entity[i].x - player.x - player.sizeX / 2) * (scale - 256) / scale - (entity[i].sizeX / 2 * (scale - 128)) / 128;
 				entity[i].renderY = entity[i].y - scrollY - (entity[i].y - player.y - player.sizeY / 2) * (scale - 256) / scale - (entity[i].sizeY / 2 * (scale - 128)) / 128;
-				if (entity[i].renderX >= 0 && entity[i].renderX < SCREEN_WIDTH && entity[i].renderY >= 0 && entity[i].renderY < SCREEN_HEIGHT)
+				if (entity[i].renderX + entity[i].sizeX >= 0 && entity[i].renderX < SCREEN_WIDTH && entity[i].renderY + entity[i].sizeY >= 0 && entity[i].renderY < SCREEN_HEIGHT)
 				{
 					oamSet(&oamSub, renderedEntities + 2,
 						   entity[i].renderX,
@@ -1720,7 +1720,7 @@ mainMenu:
 				{
 					item[i].renderX = item[i].x - scrollX - (item[i].x - player.x - player.sizeX / 2) * (scale - 256) / scale - 8;
 					item[i].renderY = item[i].y - scrollY - (item[i].y - player.y - player.sizeY / 2) * (scale - 256) / scale - 8;
-					if (item[i].renderX >= 0 && item[i].renderX < SCREEN_WIDTH && item[i].renderY >= 0 && item[i].renderY < SCREEN_HEIGHT)
+					if (item[i].renderX + 16 >= 0 && item[i].renderX < SCREEN_WIDTH && item[i].renderY + 16 >= 0 && item[i].renderY < SCREEN_HEIGHT)
 					{
 						oamRotateScale(&oamSub, renderedItems + ENTITY_COUNT + 2, degreesToAngle(0), scale * 2, scale * 2);
 						oamSet(&oamSub, renderedItems + ENTITY_COUNT + 2, item[i].renderX, item[i].renderY, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, item[i].sprite_gfx_mem, renderedItems + 2, false, false, false, false, false);
