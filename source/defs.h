@@ -53,6 +53,9 @@
 #define MIN_STONE_HEIGHT 0.25
 #define MAX_STONE_HEIGHT 0.4
 
+#define MAX_SCALE 256
+#define MIN_SCALE 128
+
 // Define game elements
 
 enum // Make sure the indexing follows the one in the textures

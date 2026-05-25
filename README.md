@@ -95,6 +95,8 @@ Initial commit with basic project structure.
 - Add particles (for example when breaking blocks).
 - More bug fixes and optimizations.
 - Add currency.
+- Better and more efficient world generation.
+- Fix misaligned sprites when zooming in/out ***(done: yeah I still don't understand why this happens, if you can please help me with it. But I just added more math to counter the offset)***
 
 ## Planed Features for the future:
 - Multiplayer support.

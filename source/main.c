@@ -561,7 +561,7 @@ mainMenu:
 			printDirect("Press X to close debug menu.\n");
 
 			int selection = 0;
-			int maxSelection = 5;
+			int maxSelection = 6;
 
 			while (pmMainLoop())
 			{
@@ -614,6 +614,13 @@ mainMenu:
 					case 5:
 						printDirect("Kill player");
 						break;
+					case 6:
+						printDirect("Show debug info: ");
+						if (debug)
+							printDirect("ON ");
+						else
+							printDirect("OFF");
+						break;
 					default:
 						printDirect("---");
 						break;
@@ -653,6 +660,9 @@ mainMenu:
 					case 5:
 						playerDamage(9999);
 						printDirect("\nPlayer killed!");
+						break;
+					case 6:
+						debug = !debug;
 						break;
 					default:
 						printDirect("\nUnknown implementation.");
@@ -760,10 +770,10 @@ mainMenu:
 		if (held & KEY_UP)
 			scale *= 0.99;
 
-		if (scale > 256)
-			scale = 256;
-		if (scale < 128)
-			scale = 128;
+		if (scale > MAX_SCALE)
+			scale = MAX_SCALE;
+		if (scale < MIN_SCALE)
+			scale = MIN_SCALE;
 
 		// Draw player sprite
 		if (pressed & KEY_A)
@@ -1395,7 +1405,19 @@ mainMenu:
 		printValDirect(player.health);
 		printDirect("/");
 		printValDirect(player.maxHealth);
-		printDirect("   ");
+		printDirect("   \n");
+
+		if (debug)
+		{
+			printDirect("X, Y: ");
+			printValDirect(player.x);
+			printDirect(", ");
+			printValDirect(player.y);
+			printDirect("   \n");
+			printDirect("scale: ");
+			printValDirect(scale);
+			printDirect("   \n");
+		}
 
 		// Compute screen-relative render coordinates
 		player.renderX = player.x - scrollX;
@@ -1450,6 +1472,8 @@ mainMenu:
 			}
 		}
 
+		// chunking, on both axises
+
 		int camTileX = (scrollX / 8) - 32 + 1;
 		int camTileY = (scrollY / 8) - 32 + 1;
 
@@ -1495,13 +1519,17 @@ mainMenu:
 			}
 		}
 
-		if (player.invincibilityFrames > 0 && (player.invincibilityFrames / 4) % 2 == 0) // If invincible, flicker every 4 frames
+		if (player.invincibilityFrames > 0 && (player.invincibilityFrames / 4) % 2 == 0) // If the player is [TITLE CARD], flicker every 4 frames
 		{
 			oamSet(&oamSub, 0, -64, -64, 1, 0, SpriteSize_32x64, SpriteColorFormat_256Color, nullSprite, 0, false, false, false, false, false);
 		}
 		else
-			oamSet(&oamSub, 0, player.renderX - player.sizeX / 2, player.renderY - player.sizeY / 2, 1, 0, SpriteSize_32x64, SpriteColorFormat_256Color, player.sprite_gfx_mem, 0, false, false, player.isLookingLeft, false, false);
+			oamSet(&oamSub, 0,
+				   player.renderX - (player.sizeX / 2),
+				   player.renderY - (player.sizeY / 2) - 4 * (scale - 128) / 128, // using a proportional offset to fix my bad math
+				   1, 0, SpriteSize_32x64, SpriteColorFormat_256Color, player.sprite_gfx_mem, 0, false, false, player.isLookingLeft, false, false);
 		// oamSet(&oamSub, 1, player.renderX, player.renderY, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, itemHandSprite, -1, false, false, player.isLookingLeft, false, false);
+
 		// Render entities
 		u8 renderedEntities = 0;
 
@@ -1509,8 +1537,16 @@ mainMenu:
 		{
 			if (entity[i].exists)
 			{
-				oamSet(&oamSub, renderedEntities + 2, entity[i].x - scrollX - (player.x - entity[i].x) * 256 / scale + player.x - entity[i].x, entity[i].y - scrollY - (player.y - entity[i].y) * 256 / scale + player.y - entity[i].y, 1, 0, SpriteSize_32x32, SpriteColorFormat_256Color, entity[i].sprite_gfx_mem, i + 2, false, false, entity[i].isLookingLeft, false, false);
-				renderedEntities++;
+				entity[i].renderX = entity[i].x - scrollX - (entity[i].x - player.x - player.sizeX / 2) * (scale - 256) / scale - (8 * (scale - 128)) / 128;
+				entity[i].renderY = entity[i].y - scrollY - (entity[i].y - player.y - player.sizeY / 2) * (scale - 256) / scale - (8 * (scale - 128)) / 128;
+				if (entity[i].renderX >= 0 && entity[i].renderX < SCREEN_WIDTH && entity[i].renderY >= 0 && entity[i].renderY < SCREEN_HEIGHT)
+				{
+					oamSet(&oamSub, renderedEntities + 2,
+						   entity[i].renderX,
+						   entity[i].renderY,
+						   1, 0, SpriteSize_32x32, SpriteColorFormat_256Color, entity[i].sprite_gfx_mem, i + 2, false, false, entity[i].isLookingLeft, false, false);
+					renderedEntities++;
+				}
 			}
 		}
 
@@ -1529,18 +1565,18 @@ mainMenu:
 			{
 				if (item[i].exists)
 				{
-					item[i].renderX = item[i].x - scrollX - (player.x - item[i].x) * 256 / scale + player.x - item[i].x; // Adjust for player position
-					item[i].renderY = item[i].y - scrollY - (player.y - item[i].y) * 256 / scale + player.y - item[i].y; // Adjust for player position
+					item[i].renderX = item[i].x - scrollX - (item[i].x - player.x - player.sizeX / 2) * (scale - 256) / scale - 8;
+					item[i].renderY = item[i].y - scrollY - (item[i].y - player.y - player.sizeY / 2) * (scale - 256) / scale - 8d;
 					if (item[i].renderX >= 0 && item[i].renderX < SCREEN_WIDTH && item[i].renderY >= 0 && item[i].renderY < SCREEN_HEIGHT)
 					{
 						oamRotateScale(&oamSub, renderedItems + ENTITY_COUNT + 2, degreesToAngle(0), scale * 2, scale * 2);
-						oamSet(&oamSub, renderedItems + ENTITY_COUNT + 2, item[i].renderX - item[i].sizeX * 256 / scale, item[i].renderY - item[i].sizeY * 256 / scale, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, item[i].sprite_gfx_mem, renderedItems + 2, false, false, false, false, false);
+						oamSet(&oamSub, renderedItems + ENTITY_COUNT + 2, item[i].renderX, item[i].renderY, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, item[i].sprite_gfx_mem, renderedItems + 2, false, false, false, false, false);
 						renderedItems++;
 					}
 				}
 			}
 		}
-		// Clean up used sprites
+		// Clean up unused sprites
 		for (int i = renderedItems; i < MAX_ITEMS; i++)
 		{
 			oamSet(&oamSub, i + ENTITY_COUNT + 2, 0, 0, 0, 0, SpriteSize_8x8, SpriteColorFormat_256Color, nullSprite, -1, false, false, false, false, false);

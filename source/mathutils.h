@@ -9,6 +9,13 @@ static int clamp(int val, int min, int max)
 	return val;
 }
 
+static int min(int val, int min)
+{
+	if (val < min)
+		return val;
+	return min;
+}
+
 int rando(int min, int max) // Random function, returns a random integer between min and max (max included)
 {
 	return rand() % (max - min + 1) + min;

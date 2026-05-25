@@ -1,0 +1,26 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Run in melonDS",
+      "type": "shell",
+      "command": "${workspaceFolder}\\extras\\melonDS.exe",
+      "args": [
+        "${workspaceFolder}\\TerrariaDS.nds"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "presentation": {
+        "reveal": "never",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Make",
+      "type": "shell",
+      "command": "make"
+    }
+  ]
+}
