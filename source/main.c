@@ -621,11 +621,11 @@ mainMenu:
 						debug = !debug;
 						break;
 					case 6:
-						gametime = DAY_LENGTH / 2; // Night time
+						gametime = DAY_LENGTH / 2 - 16; // Night time
 						printDirect("\nTime set to night!");
 						break;
 					case 7:
-						gametime = 0; // Day time
+						gametime = DAY_LENGTH - 16; // Day time
 						printDirect("\nTime set to day!");
 						break;
 					default:
@@ -1457,7 +1457,7 @@ mainMenu:
 		if (player.invincibilityFrames > 0)
 			player.invincibilityFrames--;
 
-		// Time transitioning: 0 (for a while) -> goes slowly to 16 (full night) -> stays at 16 (for a while) -> goes slowly back to 0 -> repeat
+		// Time transitioning: 0 (for a while) -> goes slowly to 16 (full night) -> Transitions to night BG -> goes back to 0 -> stays until day -> goes to 16 -> Transitions to day BG -> goes back to 0 -> repeat
 		// One whole day is about 10 minutes (600 seconds)
 		// TODO: when background reaches full darkness, change bg to a night one and transition back to 100% opacity
 
@@ -1467,14 +1467,42 @@ mainMenu:
 			if (gametime >= DAY_LENGTH)
 				gametime = 0;
 
-			if (gametime < DAY_LENGTH / 2 - 16)
-				darkness = 0; // Day time
-			else if (gametime >= DAY_LENGTH / 2 - 16 && gametime < DAY_LENGTH / 2)
-				darkness = (gametime - (DAY_LENGTH / 2 - 16)); // Transition to night
-			else if (gametime >= DAY_LENGTH / 2 && gametime < DAY_LENGTH - 16)
-				darkness = 16; // Night time
+			if (gametime >= DAY_LENGTH / 2 - 16 && gametime < DAY_LENGTH / 2)
+			{
+				darkness = (gametime - (DAY_LENGTH / 2 - 16)); // Transition to darkness
+			}
+			else if (gametime == DAY_LENGTH / 2) // Copy night BG
+			{
+				darkness = 16;
+				dmaCopy(nbgTiles, (void *)CHAR_BASE_BLOCK_SUB(1), nbgTilesLen);
+				dmaCopy(nbgMap, (void *)SCREEN_BASE_BLOCK_SUB(0), nbgMapLen);
+			}
+			else if (gametime > DAY_LENGTH / 2 && gametime < DAY_LENGTH / 2 + 16)
+			{
+				darkness = (DAY_LENGTH / 2 + 16) - gametime; // Transition to no darkness (to show night bg)
+			}
+			else if (gametime >= DAY_LENGTH / 2 + 16 && gametime < DAY_LENGTH - 16)
+			{
+				darkness = 0; // Night time
+			}
 			else if (gametime >= DAY_LENGTH - 16 && gametime < DAY_LENGTH)
-				darkness = 16 - (gametime - (DAY_LENGTH - 16)); // Transition to day
+			{
+				darkness = (gametime - (DAY_LENGTH - 16)); // Transition to darkness
+			}
+			else if (gametime == DAY_LENGTH) // Copy day BG
+			{
+				darkness = 16;
+				dmaCopy(bgTiles, (void *)CHAR_BASE_BLOCK_SUB(1), bgTilesLen);
+				dmaCopy(bgMap, (void *)SCREEN_BASE_BLOCK_SUB(0), bgMapLen);
+			}
+			else if (gametime > DAY_LENGTH && gametime < DAY_LENGTH + 16)
+			{
+				darkness = (DAY_LENGTH + 16) - gametime; // Transition to no darkness (to show day bg)
+			}
+			else if (gametime >= DAY_LENGTH + 16 && gametime < DAY_LENGTH / 2 - 16)
+			{
+				darkness = 0; // Day time
+			}
 
 			if (gametime >= DAY_LENGTH / 2 && gametime < DAY_LENGTH - 16)
 			{ // Night time
@@ -1514,6 +1542,8 @@ mainMenu:
 								getHighestTileY(spawnX / 8) - entities[entityToSpawn].sizeY);
 				}
 			}
+
+			// TODO: Add entity dispawn if offscreen
 
 			REG_BLDALPHA_SUB =
 				(16 - darkness) | // BG0 weight

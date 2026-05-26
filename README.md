@@ -94,6 +94,7 @@ Initial commit with basic project structure.
 - Better and more efficient world generation.
 - Show health as hearts.
 - Add more music.
+- Add more crafting recipes.
 - Add currency. ***(done)***
 - Add X axis velocity ***(done: this allowed to implement knockback and fix some collision bugs)***
 - Probably add a bit more entities. ***(done for now: Red Slime, Bunny, Zombie)***

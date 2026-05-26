@@ -20,6 +20,7 @@
 
 #include "tilemap.h"
 #include "bg.h"
+#include "nbg.h"
 #include "entities.h"
 #include "sprites.h"
 #include "inv.h"
