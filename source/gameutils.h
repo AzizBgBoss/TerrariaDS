@@ -1803,9 +1803,9 @@ void generateMap()
     printDirect("Placing trees...\n");
     for (int x = 1; x < mapWidth - 1; x++)
     {
-        if (rando(0, TREE_CHANCE) == 0 && gameTerrain[x + (grassSurface[x] + 1) * MAP_WIDTH_MAX] == TILE_DIRT)
+        if (rando(1, TREE_CHANCE) == 1 && gameTerrain[x + (grassSurface[x] + 1) * MAP_WIDTH_MAX] == TILE_DIRT)
         {
-            int tree_height = rando(3, 5);
+            int tree_height = rando(MIN_TREE_HEIGHT, MAX_TREE_HEIGHT);
             // Tree trunk
             for (int i = 0; i < tree_height; i++)
                 setGameTerrain(x, grassSurface[x] - 1 - i, TILE_WOODLOG);
@@ -1831,7 +1831,7 @@ void generateMap()
     printDirect("Placing mushrooms...\n");
     for (int x = 1; x < mapWidth - 1; x++)
     {
-        if (rando(0, MUSHROOM_CHANCE) == 0 && gameTerrain[x + grassSurface[x] * MAP_WIDTH_MAX] == TILE_DIRT && gameTerrain[x + (grassSurface[x] - 1) * MAP_WIDTH_MAX] == TILE_AIR)
+        if (rando(1, MUSHROOM_CHANCE) == 1 && gameTerrain[x + grassSurface[x] * MAP_WIDTH_MAX] == TILE_DIRT && gameTerrain[x + (grassSurface[x] - 1) * MAP_WIDTH_MAX] == TILE_AIR)
         {
             setGameTerrain(x, grassSurface[x] - 1, TILE_MUSHROOM);
         }

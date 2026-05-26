@@ -50,8 +50,10 @@
 #define MAX_ITEMS_TOTAL 64 // Maximum items in the world at once
 #define ENTITY_COUNT 16 // Maximum number of entities in the game at once
 
-#define TREE_CHANCE 10
-#define MUSHROOM_CHANCE 10
+#define TREE_CHANCE 3
+#define MUSHROOM_CHANCE 4
+#define MIN_TREE_HEIGHT 3
+#define MAX_TREE_HEIGHT 9
 #define MIN_GRASS_HEIGHT 0.2
 #define MAX_GRASS_HEIGHT 0.3
 #define MIN_STONE_HEIGHT 0.25
