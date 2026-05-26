@@ -139,12 +139,13 @@ typedef struct
 	bool isSolid;
 	int weight;
 	int health;
+	int damage;
 	int spriteSize;
 	int type;
 	int dropCount;
-	int drops[4];
-	int dropChance[4];	 // 1/x chance (example: 100% is 1, 50% is 2, 25% is 4, etc...)
-	int dropRange[4][2]; // [min, max] range for each drop
+	int drops[8];
+	int dropChance[8];	 // 1/x chance (example: 100% is 1, 50% is 2, 25% is 4, etc...)
+	int dropRange[8][2]; // [min, max] range for each drop
 } EntityProperties;
 
 typedef struct
@@ -181,11 +182,76 @@ Player player = {0, 0, 0, 0, 0, NULL, 16, 24, false, true, 1, 0, 0, true, false,
 Entity entity[ENTITY_COUNT];
 
 EntityProperties entities[ENTITIES] = {
-	{16, 12, true, 1, 20, SpriteSize_32x32, ENTITY_TYPE_HOSTILE, 1, {TILE_MUSHROOM}, {1}, {{1, 3}}},														// Green slime
-	{16, 12, true, 1, 30, SpriteSize_32x32, ENTITY_TYPE_SPECIAL, 1, {TILE_MUSHROOM}, {1}, {{1, 1}}},														// Red slime
-	{16, 12, true, 1, 100, SpriteSize_32x32, ENTITY_TYPE_SPECIAL, 1, {TILE_MUSHROOM}, {1}, {{1, 1}}},														// Blue slime
-	{16, 13, true, 1, 10, SpriteSize_32x32, ENTITY_TYPE_PASSIVE, 0, {}, {}, {}},																			// Bunny
-	{16, 24, true, 1, 100, SpriteSize_32x64, ENTITY_TYPE_HOSTILE, 3, {TILE_MUSHROOM, TILE_TIN_ORE, TILE_COPPER_ORE}, {2, 3, 1}, {{1, 2}, {1, 5}, {1, 10}}}, // Zombie
+	{
+		16,
+		12,
+		true,
+		1,
+		14,
+		6,
+		SpriteSize_32x32,
+		ENTITY_TYPE_HOSTILE,
+		6,
+		{ITEM_COPPER_COIN, TILE_COPPER_ORE, TILE_TIN_ORE, ITEM_COPPER_COIN, ITEM_SILVER_COIN, ITEM_GOLD_COIN},
+		{1, 32, 32, 12, 12, 12},
+		{{3, 3}, {3, 13}, {3, 13}, {50, 99}, {50, 99}, {1, 3}},
+	}, // Green slime
+	{
+		16,
+		12,
+		true,
+		1,
+		35,
+		12,
+		SpriteSize_32x32,
+		ENTITY_TYPE_HOSTILE,
+		6,
+		{ITEM_COPPER_COIN, TILE_COPPER_ORE, TILE_TIN_ORE, ITEM_COPPER_COIN, ITEM_SILVER_COIN, ITEM_GOLD_COIN},
+		{1, 32, 32, 12, 12, 12},
+		{{8, 8}, {3, 13}, {3, 13}, {50, 99}, {50, 99}, {1, 3}},
+	}, // Red slime
+	{
+		16,
+		12,
+		true,
+		1,
+		100,
+		67,
+		SpriteSize_32x32,
+		ENTITY_TYPE_SPECIAL,
+		1,
+		{TILE_MUSHROOM},
+		{1},
+		{{1, 1}},
+	}, // Blue slime
+	{
+		16,
+		13,
+		true,
+		1,
+		5,
+		0,
+		SpriteSize_32x32,
+		ENTITY_TYPE_PASSIVE,
+		0,
+		{},
+		{},
+		{},
+	}, // Bunny
+	{
+		16,
+		24,
+		true,
+		1,
+		45,
+		14,
+		SpriteSize_32x64,
+		ENTITY_TYPE_HOSTILE,
+		1,
+		{ITEM_COPPER_COIN},
+		{1},
+		{{60, 60}},
+	}, // Zombie
 };
 
 // Define MAX_ITEMS_TOTAL slots for item entities

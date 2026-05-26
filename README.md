@@ -23,6 +23,7 @@ This project is not affiliated with Re-Logic or Terraria in any way. It is a fan
 ### Notes:
 - 17k downloads, love you guys
 - Summer break is here, I will be coming back to this project, expect an update soon.
+- I'm using the Terraria Wiki as a reference for the game, if you've found any mistakes, please let me know.
 
 ## Installation:
 You can either compile the game yourself (for nightly releases) or check for stable releases in the Releases page. Please check the Tested devices part before starting.
@@ -90,12 +91,12 @@ Initial commit with basic project structure.
 - Add more biomes (desert, jungle, etc.).
 - Add particles (for example when breaking blocks).
 - More bug fixes and optimizations.
-- Add currency.
 - Better and more efficient world generation.
 - Show health as hearts.
 - Add more music.
+- Add currency. ***(done)***
 - Add X axis velocity ***(done: this allowed to implement knockback and fix some collision bugs)***
-- Probably add a bit more entities. ***(done for now: Bunny, Zombie)***
+- Probably add a bit more entities. ***(done for now: Red Slime, Bunny, Zombie)***
 - Organize my messy code and split it to many files, won't change anything but will make it easier to add features. ***(done)***
 - Support for maps with more height (limit is 64 for now, that means chunking should happen in both X and Y axes). ***(done, worlds come in 4 sizes, with backwards compatibility with v0.1 maps)***
 - Move all assets back to ROM since my dumbass a year ago thought moving everything to NitroFS will free up RAM but it's already `const` so no need... ***(done: it's now even neater than before)***

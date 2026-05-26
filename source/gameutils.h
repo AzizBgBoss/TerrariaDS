@@ -234,6 +234,14 @@ int getItemTile(int item)
         return 88;
     case ITEM_TIN_HAMMER:
         return 92;
+    case ITEM_COPPER_COIN:
+        return 96;
+    case ITEM_SILVER_COIN:
+        return 100;
+    case ITEM_GOLD_COIN:
+        return 104;
+    case ITEM_PLATINUM_COIN:
+        return 108;
     default:
         return 56;
     }
@@ -430,6 +438,42 @@ int getItemSpeed(int item)
     case ITEM_TIN_AXE:
     case ITEM_TIN_LONGSWORD:
     case ITEM_TIN_HAMMER:
+        return 2;
+    default:
+        return 1;
+    }
+}
+
+int getItemDamage(int item)
+{
+    switch (item)
+    {
+    case ITEM_COPPER_LONGSWORD:
+        return 8;
+    case ITEM_TIN_LONGSWORD:
+        return 10;
+    case ITEM_COPPER_PICKAXE:
+    case ITEM_COPPER_AXE:
+        return 4;
+    case ITEM_TIN_PICKAXE:
+    case ITEM_TIN_AXE:
+        return 5;
+    default:
+        return 1;
+    }
+}
+
+int getItemKnockback(int item)
+{
+    switch (item)
+    {
+    case ITEM_COPPER_LONGSWORD:
+    case ITEM_TIN_LONGSWORD:
+        return 5;
+    case ITEM_COPPER_PICKAXE:
+    case ITEM_COPPER_AXE:
+    case ITEM_TIN_PICKAXE:
+    case ITEM_TIN_AXE:
         return 2;
     default:
         return 1;
@@ -734,23 +778,52 @@ void playerPutGameTerrain(int x, int y, int tile)
 
 bool giveInventory(int item, int quantity)
 {
-    for (int i = 0; i < 8 * 4; i++)
+    while (quantity > 0)
     {
-        if (inventory[i] == item && inventoryQuantity[i] < 100 - quantity)
+        bool changed = false;
+
+        // Fill existing stacks first
+        for (int i = 0; i < 8 * 4; i++)
         {
-            setInventory(i, item, inventoryQuantity[i] + quantity);
-            return true;
+            int j = (item >= ITEM_COPPER_COIN && item <= ITEM_PLATINUM_COIN) ? (8 * 4 - 1 - i) : i; // If it's a coin, start from the end for convenience
+            if (inventory[j] == item && inventoryQuantity[j] < 100)
+            {
+                int add = min(100 - inventoryQuantity[j], quantity);
+
+                setInventory(j, item, inventoryQuantity[j] + add);
+
+                quantity -= add;
+                changed = true;
+
+                if (quantity <= 0)
+                    return true;
+            }
         }
-    }
-    for (int i = 0; i < 8 * 4; i++)
-    {
-        if (inventory[i] == 0)
+
+        // Create new stacks
+        for (int i = 0; i < 8 * 4; i++)
         {
-            setInventory(i, item, quantity);
-            return true;
+            int j = (item >= ITEM_COPPER_COIN && item <= ITEM_PLATINUM_COIN) ? (8 * 4 - 1 - i) : i;
+            if (inventory[j] == 0)
+            {
+                int add = min(100, quantity);
+
+                setInventory(j, item, add);
+
+                quantity -= add;
+                changed = true;
+
+                if (quantity <= 0)
+                    return true;
+            }
         }
+
+        // No space left
+        if (!changed)
+            return false;
     }
-    return false;
+
+    return true;
 }
 
 bool playerHasItem(int item, int quantity)
@@ -1161,10 +1234,12 @@ void interact(int x, int y)
 int spawnEntity(int type, int x, int y)
 {
     int i = 0;
-    while (entity[i].exists && i < ENTITY_COUNT)
+    while (i < ENTITY_COUNT && entity[i].exists) // Check count first other wise it will overflow
         i++;
     if (i >= ENTITY_COUNT)
         return -1; // No available entity slot
+    if (x < 0 || x >= mapWidth * 8 || y < 0 || y >= mapHeight * 8)
+        return -1;
 
     entity[i].type = type;
     entity[i].exists = true;
@@ -1259,6 +1334,8 @@ void damageEntity(int id, int damage)
 
 int getHighestTileY(int x)
 {
+    if (x < 0 || x >= mapWidth)
+        return mapHeight;
     for (int y = 0; y < mapHeight; y++)
     {
         if (isTileSolid(gameTerrain[x + y * MAP_WIDTH_MAX]))

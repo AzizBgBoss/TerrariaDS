@@ -107,7 +107,12 @@ enum // Make sure the indexing follows the one in the textures
     ITEM_TIN_PICKAXE,
     ITEM_TIN_AXE,
     ITEM_TIN_LONGSWORD,
-    ITEM_TIN_HAMMER
+    ITEM_TIN_HAMMER,
+
+    ITEM_COPPER_COIN,
+    ITEM_SILVER_COIN,
+    ITEM_GOLD_COIN,
+    ITEM_PLATINUM_COIN,
 };
 
 enum // Entities

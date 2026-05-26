@@ -1062,8 +1062,8 @@ mainMenu:
 								if (e != -1 && inventory[inventorySelection] >= 100 && inventory[inventorySelection] < 200)
 								{
 									mmEffect(SFX_SWING);
-									damageEntity(e, 5);
-									knockBackEntity(e, (player.x > entity[e].x) ? -5 : 5, -5);
+									damageEntity(e, getItemDamage(inventory[inventorySelection]));
+									knockBackEntity(e, (player.x > entity[e].x) ? -getItemKnockback(inventory[inventorySelection]) : getItemKnockback(inventory[inventorySelection]), -getItemKnockback(inventory[inventorySelection]));
 								}
 								else if (inventory[inventorySelection] == TILE_MUSHROOM && inventoryQuantity[inventorySelection] && player.health < player.maxHealth)
 								{
@@ -1270,7 +1270,7 @@ mainMenu:
 
 				// Handle entity AI
 				entity[i].nextTick--;
-				if (entity[i].type == ENTITY_GREEN_SLIME)
+				if (entity[i].type == ENTITY_GREEN_SLIME || entity[i].type == ENTITY_RED_SLIME)
 				{
 					if (entity[i].nextTick <= 0 && entity[i].isOnGround) // Tick
 					{
@@ -1288,12 +1288,6 @@ mainMenu:
 							if (entity[i].velocityX > -1)
 								entity[i].velocityX--;
 						}
-					}
-
-					if (checkPlayerCollision(entity[i].x, entity[i].y, entity[i].sizeX, entity[i].sizeY))
-					{
-						knockBackPlayer((entity[i].x > player.x) ? -5 : 5, -5);
-						playerDamage(5);
 					}
 				}
 				else if (entity[i].type == ENTITY_BUNNY)
@@ -1381,12 +1375,12 @@ mainMenu:
 							entity[i].nextTick = rando(1 * 60, 3 * 60); // Jump every 1 to 3 seconds
 						}
 					}
+				}
 
-					if (checkPlayerCollision(entity[i].x, entity[i].y, entity[i].sizeX, entity[i].sizeY))
-					{
-						knockBackPlayer((entity[i].x > player.x) ? -5 : 5, -5);
-						playerDamage(10);
-					}
+				if (checkPlayerCollision(entity[i].x, entity[i].y, entity[i].sizeX, entity[i].sizeY))
+				{
+					knockBackPlayer((entity[i].x > player.x) ? -5 : 5, -5);
+					playerDamage(entities[entity[i].type].damage);
 				}
 			}
 		}
@@ -1412,6 +1406,17 @@ mainMenu:
 					{
 						destroyItem(i); // Only destroy item entity if the player has enough inventory space
 						mmEffect(SFX_RAB);
+						if (item[i].tile >= ITEM_COPPER_COIN && item[i].tile <= ITEM_GOLD_COIN) // Round up coins
+						{
+							for (int j = 0; j < 8 * 4; j++)
+							{
+								if (inventory[j] >= ITEM_COPPER_COIN && inventory[j] <= ITEM_GOLD_COIN && inventoryQuantity[j] == 100)
+								{
+									setInventory(j, 0, 0);
+									giveInventory(item[i].tile + 1, 1);
+								}
+							}
+						}
 					}
 				}
 
@@ -1525,6 +1530,19 @@ mainMenu:
 
 		if (debug)
 		{
+			int entityCount = 0;
+			int itemCount = 0;
+			for (int i = 0; i < ENTITY_COUNT; i++)
+			{
+				if (entity[i].exists)
+					entityCount++;
+			}
+			for (int i = 0; i < MAX_ITEMS; i++)
+			{
+				if (item[i].exists)
+					itemCount++;
+			}
+
 			printDirect("X, Y: ");
 			printValDirect(player.x);
 			printDirect(", ");
@@ -1540,6 +1558,15 @@ mainMenu:
 			printDirect("   \n");
 			printDirect("time: ");
 			printValDirect(gametime);
+			printDirect("   \n");
+			printDirect("entities: ");
+			printValDirect(entityCount);
+			printDirect("   \n");
+			printDirect("items: ");
+			printValDirect(itemCount);
+			printDirect("   \n");
+			printDirect("invincibility: ");
+			printValDirect(player.invincibilityFrames);
 			printDirect("   \n");
 		}
 
