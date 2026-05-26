@@ -85,9 +85,6 @@ Initial commit with basic project structure.
 - Ability to save character data and world data independently.
 - Probably converting all tile handling data to a struct.
 - Add swinging animation.
-- Add crimson/corruption.
-- Add ability to change button mappings (since many DS'es (including mine) have malfunctioning shoulder buttons because of dust accumulation under them over the years).
-- Add improved lighting.
 - Add more biomes (desert, jungle, etc.).
 - Add particles (for example when breaking blocks).
 - More bug fixes and optimizations.
@@ -105,6 +102,9 @@ Initial commit with basic project structure.
 - Fix misaligned sprites when zooming in/out ***(done: yeah I still don't understand why this happens, if you can please help me with it. But I just added more math to counter the offset)***
 
 ## Planned Features for the future:
+- Add ability to change button mappings (since many DS'es (including mine) have malfunctioning shoulder buttons because of dust accumulation under them over the years).
+- Add crimson/corruption.
+- Add improved lighting.
 - Multiplayer support.
 - Skins (or changeable player styles).
 - Add mana and magic items.

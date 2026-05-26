@@ -861,6 +861,10 @@ bool playerHasItem(int item, int quantity)
 
 void dropItem(int x, int y, int tile, int quantity)
 {
+    if (quantity <= 0)
+        return;
+    if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight)
+        return;
     int index = 0;
     while (item[index].exists)
         index++;
@@ -1307,10 +1311,15 @@ int spawnEntity(int type, int x, int y)
     return i;
 }
 
+void removeEntity(int id)
+{
+    entity[id].exists = false;
+}
+
 void killEntity(int id)
 {
+    removeEntity(id);
     EntityProperties *e = &entities[entity[id].type]; // Pointers are so sexy
-    entity[id].exists = false;
     if (e->dropCount > 0)
     {
         for (int i = 0; i < e->dropCount; i++)
@@ -2017,7 +2026,12 @@ void changeEntityVelocityY(int id, int y)
     }
 }
 
+bool isInPlayerRadius(int x, int y, float range)
+{
+    return (player.x - x) * (player.x - x) + (player.y - y) * (player.y - y) < range * range;
+}
+
 bool isInPlayerRange(int x, int y)
 {
-    return (player.x - x) * (player.x - x) + (player.y - y) * (player.y - y) < SCREEN_WIDTH * SCREEN_WIDTH / 4;
+    return isInPlayerRadius(x, y, SCREEN_WIDTH / 2);
 }

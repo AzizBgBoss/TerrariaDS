@@ -810,21 +810,26 @@ mainMenu:
 
 		if (player.velocityX > 0)
 		{
-			if (!isTileSolid(gameTerrain[(player.x + player.sizeX - 1 + player.velocityX) / 8 + player.y / 8 * MAP_WIDTH_MAX]) &&
-				!isTileSolid(gameTerrain[(player.x + player.sizeX - 1 + player.velocityX) / 8 + (player.y + player.sizeY / 2) / 8 * MAP_WIDTH_MAX]) &&
-				!isTileSolid(gameTerrain[(player.x + player.sizeX - 1 + player.velocityX) / 8 + (player.y + player.sizeY - 1) / 8 * MAP_WIDTH_MAX]))
-			{
-				player.x += player.velocityX;
-			}
+			int futureX = player.x + player.velocityX;
+			int futureRX = futureX + player.sizeX - 1;
+			if (futureRX < mapWidth * 8)
+				if (!isTileSolid(gameTerrain[(futureRX) / 8 + player.y / 8 * MAP_WIDTH_MAX]) &&
+					!isTileSolid(gameTerrain[(futureRX) / 8 + (player.y + player.sizeY / 2) / 8 * MAP_WIDTH_MAX]) &&
+					!isTileSolid(gameTerrain[(futureRX) / 8 + (player.y + player.sizeY - 1) / 8 * MAP_WIDTH_MAX]))
+				{
+					player.x += player.velocityX;
+				}
 		}
 		else if (player.velocityX < 0)
 		{
-			if (!isTileSolid(gameTerrain[(player.x + player.velocityX) / 8 + player.y / 8 * MAP_WIDTH_MAX]) &&
-				!isTileSolid(gameTerrain[(player.x + player.velocityX) / 8 + (player.y + player.sizeY / 2) / 8 * MAP_WIDTH_MAX]) &&
-				!isTileSolid(gameTerrain[(player.x + player.velocityX) / 8 + (player.y + player.sizeY - 1) / 8 * MAP_WIDTH_MAX]))
-			{
-				player.x += player.velocityX;
-			}
+			int futureX = player.x + player.velocityX;
+			if (futureX > 0)
+				if (!isTileSolid(gameTerrain[(futureX) / 8 + player.y / 8 * MAP_WIDTH_MAX]) &&
+					!isTileSolid(gameTerrain[(futureX) / 8 + (player.y + player.sizeY / 2) / 8 * MAP_WIDTH_MAX]) &&
+					!isTileSolid(gameTerrain[(futureX) / 8 + (player.y + player.sizeY - 1) / 8 * MAP_WIDTH_MAX]))
+				{
+					player.x += player.velocityX;
+				}
 		}
 
 		if (player.isOnGround) // Friction
@@ -1458,8 +1463,6 @@ mainMenu:
 			player.invincibilityFrames--;
 
 		// Time transitioning: 0 (for a while) -> goes slowly to 16 (full night) -> Transitions to night BG -> goes back to 0 -> stays until day -> goes to 16 -> Transitions to day BG -> goes back to 0 -> repeat
-		// One whole day is about 10 minutes (600 seconds)
-		// TODO: when background reaches full darkness, change bg to a night one and transition back to 100% opacity
 
 		if (frame % 60 == 0) // Every second
 		{
@@ -1489,17 +1492,17 @@ mainMenu:
 			{
 				darkness = (gametime - (DAY_LENGTH - 16)); // Transition to darkness
 			}
-			else if (gametime == DAY_LENGTH) // Copy day BG
+			else if (gametime == 0) // Copy day BG
 			{
 				darkness = 16;
 				dmaCopy(bgTiles, (void *)CHAR_BASE_BLOCK_SUB(1), bgTilesLen);
 				dmaCopy(bgMap, (void *)SCREEN_BASE_BLOCK_SUB(0), bgMapLen);
 			}
-			else if (gametime > DAY_LENGTH && gametime < DAY_LENGTH + 16)
+			else if (gametime > 0 && gametime < 16)
 			{
-				darkness = (DAY_LENGTH + 16) - gametime; // Transition to no darkness (to show day bg)
+				darkness = 16 - gametime; // Transition to no darkness (to show day bg)
 			}
-			else if (gametime >= DAY_LENGTH + 16 && gametime < DAY_LENGTH / 2 - 16)
+			else if (gametime >= 16 && gametime < DAY_LENGTH / 2 - 16)
 			{
 				darkness = 0; // Day time
 			}
@@ -1522,6 +1525,18 @@ mainMenu:
 								scrollX + SCREEN_WIDTH / 2 + spawnX,
 								getHighestTileY(spawnX / 8) - entities[entityToSpawn].sizeY);
 				}
+
+				for (int i = 0; i < ENTITY_COUNT; i++)
+				{
+					if (entity[i].exists && entities[entity[i].type].type == ENTITY_TYPE_PASSIVE)
+					{
+						Entity *E = &entity[i];
+						if (!isInPlayerRadius(E->x, E->y, SCREEN_WIDTH) && rando(1, 10) == 1) // 1 in 10 chance to despawn if out of range
+						{
+							removeEntity(i);
+						}
+					}
+				}
 			}
 			else
 			{ // Day time
@@ -1541,9 +1556,31 @@ mainMenu:
 								scrollX + SCREEN_WIDTH / 2 + spawnX,
 								getHighestTileY(spawnX / 8) - entities[entityToSpawn].sizeY);
 				}
+
+				for (int i = 0; i < ENTITY_COUNT; i++)
+				{
+					if (entity[i].exists && entities[entity[i].type].type == ENTITY_TYPE_HOSTILE)
+					{
+						Entity *E = &entity[i];
+						if (!isInPlayerRadius(E->x, E->y, SCREEN_WIDTH) && rando(1, 5) == 1) // 1 in 5 chance to despawn if out of range
+						{
+							removeEntity(i);
+						}
+					}
+				}
 			}
 
-			// TODO: Add entity dispawn if offscreen
+			for (int i = 0; i < ENTITY_COUNT; i++)
+			{
+				if (entity[i].exists)
+				{
+					Entity *E = &entity[i];
+					if (E->x < 0 || E->x >= mapWidth * 8 || E->y < 0 || E->y >= mapHeight * 8)
+					{
+						removeEntity(i);
+					}
+				}
+			}
 
 			REG_BLDALPHA_SUB =
 				(16 - darkness) | // BG0 weight
@@ -1722,7 +1759,7 @@ https://github.com/AzizBgBoss/TerrariaDS");
 		{
 			if (entity[i].exists)
 			{
-				if (entity[i].type <= ENTITY_BLUE_SLIME && entity[i].type >= ENTITY_GREEN_SLIME)
+				if (entities[entity[i].type].AItype == ENTITY_AI_SLIME)
 				{
 					// Animate slime
 					switch (entity[i].animation)
@@ -1735,7 +1772,7 @@ https://github.com/AzizBgBoss/TerrariaDS");
 						break;
 					}
 				}
-				if (entity[i].type == ENTITY_BUNNY)
+				if (entities[entity[i].type].AItype == ENTITY_AI_BUNNY)
 				{
 					// Animate bunny
 					switch (entity[i].animation)
@@ -1748,7 +1785,7 @@ https://github.com/AzizBgBoss/TerrariaDS");
 						break;
 					}
 				}
-				if (entity[i].type == ENTITY_ZOMBIE)
+				if (entities[entity[i].type].AItype == ENTITY_AI_ZOMBIE)
 				{
 					// Animate zombie
 					switch (entity[i].animation)
@@ -1764,7 +1801,7 @@ https://github.com/AzizBgBoss/TerrariaDS");
 						break;
 					}
 				}
-				if (entity[i].type == ENTITY_DEMON_EYE)
+				if (entities[entity[i].type].AItype == ENTITY_AI_EYE)
 				{
 					// Animate demon eye
 					switch (entity[i].animation)
