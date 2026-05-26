@@ -61,7 +61,7 @@
 #define MIN_SCALE 128
 
 #define ENTITY_SPRITESHEET_WIDTH 16
-#define ENTITIES 5
+#define ENTITIES 6
 
 // Define game elements
 
@@ -123,6 +123,7 @@ enum // Entities
     ENTITY_BLUE_SLIME,
     ENTITY_BUNNY,
     ENTITY_ZOMBIE,
+    ENTITY_DEMON_EYE,
 };
 
 enum // Entity type
@@ -130,6 +131,15 @@ enum // Entity type
     ENTITY_TYPE_PASSIVE,
     ENTITY_TYPE_HOSTILE,
     ENTITY_TYPE_SPECIAL,
+};
+
+enum // Entity AI type
+{
+    ENTITY_AI_NONE,
+    ENTITY_AI_EYE,
+    ENTITY_AI_SLIME,
+    ENTITY_AI_BUNNY,
+    ENTITY_AI_ZOMBIE,
 };
 
 enum // Animations

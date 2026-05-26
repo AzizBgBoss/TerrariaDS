@@ -1243,6 +1243,7 @@ int spawnEntity(int type, int x, int y)
 
     entity[i].type = type;
     entity[i].exists = true;
+    entity[i].angle = 0;
     entity[i].x = x;
     entity[i].y = y;
     entity[i].renderX = 0;
@@ -1262,15 +1263,22 @@ int spawnEntity(int type, int x, int y)
     entity[i].animation = ANIM_NONE;
     entity[i].nextTick = 0;
 
+    int offset = 0;
+    for (int i = 0; i < type; i++)
+    {
+        if (entities[i].spriteSize == SpriteSize_32x64)
+            offset++; // Since 32x64 sprites use two columns
+    }
+
     if (entities[type].spriteSize == SpriteSize_32x32)
     {
         entity[i].sprite_gfx_mem = oamAllocateGfx(&oamSub, SpriteSize_32x32, SpriteColorFormat_256Color);
-        dmaCopy(((const u8 *)entitiesTiles) + entity[i].type * 32 * 32, entity[i].sprite_gfx_mem, 32 * 32);
+        dmaCopy(((const u8 *)entitiesTiles) + entity[i].type * 32 * 32 + 32 * 32 * offset, entity[i].sprite_gfx_mem, 32 * 32);
     }
-    else if (entities[type].spriteSize == SpriteSize_32x64) // We have to glue two 32x32 sprites together
+    else if (entities[type].spriteSize == SpriteSize_32x64)
     {
         entity[i].sprite_gfx_mem = oamAllocateGfx(&oamSub, SpriteSize_32x64, SpriteColorFormat_256Color);
-        dmaCopy(((const u8 *)entitiesTiles) + entity[i].type * 32 * 32, entity[i].sprite_gfx_mem, 32 * 64);
+        dmaCopy(((const u8 *)entitiesTiles) + entity[i].type * 32 * 32 + 32 * 32 * offset, entity[i].sprite_gfx_mem, 32 * 64);
     }
 
     return i;
@@ -1363,13 +1371,21 @@ void setEntityAnimFrame(int id, int frame)
     if (frame < 0)
         frame = 0;
     entity[id].anim_frame = frame;
+
+    int offset = 0;
+    for (int i = 0; i < entity[id].type; i++)
+    {
+        if (entities[i].spriteSize == SpriteSize_32x64)
+            offset++; // Since 32x64 sprites use two columns
+    }
+
     if (entities[entity[id].type].spriteSize == SpriteSize_32x32)
     {
-        dmaCopy(((const u8 *)entitiesTiles) + entity[id].type * 32 * 32 + entity[id].anim_frame * 32 * 32 * ENTITY_SPRITESHEET_WIDTH, entity[id].sprite_gfx_mem, 32 * 32);
+        dmaCopy(((const u8 *)entitiesTiles) + offset * 32 * 32 + entity[id].type * 32 * 32 + entity[id].anim_frame * 32 * 32 * ENTITY_SPRITESHEET_WIDTH, entity[id].sprite_gfx_mem, 32 * 32);
     }
     else if (entities[entity[id].type].spriteSize == SpriteSize_32x64)
     {
-        dmaCopy(((const u8 *)entitiesTiles) + entity[id].type * 32 * 32 + entity[id].anim_frame * 32 * 32 * ENTITY_SPRITESHEET_WIDTH, entity[id].sprite_gfx_mem, 32 * 64);
+        dmaCopy(((const u8 *)entitiesTiles) + offset * 32 * 32 + entity[id].type * 32 * 32 + entity[id].anim_frame * 32 * 32 * ENTITY_SPRITESHEET_WIDTH, entity[id].sprite_gfx_mem, 32 * 64);
     }
 }
 
@@ -1543,6 +1559,8 @@ void playerDamage(int damage)
         clearPrint();
         player.x = mapWidth * 8 / 2;
         player.y = 0;
+        player.velocityX = 0;
+        player.velocity = 0;
         player.health = 100;
         player.invincibilityFrames = 300; // 5 seconds of invincibility after respawn
         inventorySetHotbar();
@@ -1928,6 +1946,48 @@ void knockBackPlayer(int x, int y)
 
 void knockBackEntity(int id, int x, int y)
 {
+    if (entities[entity[id].type].AItype == ENTITY_AI_EYE)
+        entity[id].angle = -entity[id].angle; // Reverse direction
     entity[id].velocityX += x;
     entity[id].velocity += y;
+}
+
+void changeEntityAngle(int id, float a)
+{
+    float diff = a - entity[id].angle;
+    while (diff >  M_PI) diff -= 2 * M_PI;
+    while (diff < -M_PI) diff += 2 * M_PI;
+
+    if (fabsf(diff) < DEG2RAD(5))
+        entity[id].angle = a;
+    else
+        entity[id].angle += (diff > 0) ? DEG2RAD(5) : DEG2RAD(-5);
+}
+
+void changeEntityVelocityX(int id, int x)
+{
+    if (x > 0)
+    {
+        if (entity[id].velocityX < x)
+            entity[id].velocityX++;
+    }
+    else
+    {
+        if (entity[id].velocityX > x)
+            entity[id].velocityX--;
+    }
+}
+
+void changeEntityVelocityY(int id, int y)
+{
+    if (y > 0)
+    {
+        if (entity[id].velocity < y)
+            entity[id].velocity++;
+    }
+    else
+    {
+        if (entity[id].velocity > y)
+            entity[id].velocity--;
+    }
 }

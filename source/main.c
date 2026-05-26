@@ -1150,7 +1150,7 @@ mainMenu:
 					killEntity(i);
 					continue;
 				}
-				if ((0 <= entity[i].type && entity[i].type < ENTITIES) && frame % 2 == 0) // Move every 2 frames to make it slower
+				if (frame % 2 == 0) // Move every 2 frames to make it slower
 				{
 					if (!entity[i].isOnGround || entity[i].velocity < 0)
 					{
@@ -1180,6 +1180,10 @@ mainMenu:
 						{
 							entity[i].x += entity[i].velocityX;
 						}
+						else if (entities[entity[i].type].AItype == ENTITY_AI_EYE) // When eye hits a wall, flip direction
+						{
+							entity[i].angle = 180 - entity[i].angle;
+						}
 					}
 					else if (entity[i].velocityX < 0)
 					{
@@ -1188,6 +1192,10 @@ mainMenu:
 							!isTileSolid(gameTerrain[(entity[i].x + entity[i].velocityX) / 8 + (entity[i].y + entity[i].sizeY - 1) / 8 * MAP_WIDTH_MAX]))
 						{
 							entity[i].x += entity[i].velocityX;
+						}
+						else if (entities[entity[i].type].AItype == ENTITY_AI_EYE) // When eye hits a wall, flip direction
+						{
+							entity[i].angle = 180 - entity[i].angle;
 						}
 					}
 
@@ -1245,32 +1253,10 @@ mainMenu:
 						}
 					}
 				}
-				else if (entity[i].type == ENTITY_RED_SLIME)
-				{
-					if (frame % 2 == 0)
-					{
-						if (player.x > entity[i].x)
-						{
-							entity[i].x++;
-						}
-						else
-						{
-							entity[i].x--;
-						}
-						if (player.y > entity[i].y)
-						{
-							entity[i].y++;
-						}
-						else
-						{
-							entity[i].y--;
-						}
-					}
-				}
 
 				// Handle entity AI
 				entity[i].nextTick--;
-				if (entity[i].type == ENTITY_GREEN_SLIME || entity[i].type == ENTITY_RED_SLIME)
+				if (entities[entity[i].type].AItype == ENTITY_AI_SLIME)
 				{
 					if (entity[i].nextTick <= 0 && entity[i].isOnGround) // Tick
 					{
@@ -1280,17 +1266,15 @@ mainMenu:
 						entity[i].nextTick = rando(1 * 60, 3 * 60); // Jump every 1 to 3 seconds
 						if (player.x > entity[i].x)
 						{
-							if (entity[i].velocityX < 1)
-								entity[i].velocityX++;
+							changeEntityVelocityX(i, 1);
 						}
 						else
 						{
-							if (entity[i].velocityX > -1)
-								entity[i].velocityX--;
+							changeEntityVelocityX(i, -1);
 						}
 					}
 				}
-				else if (entity[i].type == ENTITY_BUNNY)
+				else if (entities[entity[i].type].AItype == ENTITY_AI_BUNNY)
 				{
 					if (entity[i].nextTick <= 0 && entity[i].isOnGround) // Tick
 					{
@@ -1301,17 +1285,15 @@ mainMenu:
 						entity[i].nextTick = rando(2 * 60, 7 * 60); // Jump every 2 to 7 seconds
 						if (entity[i].isLookingLeft)
 						{
-							if (entity[i].velocityX > -1)
-								entity[i].velocityX--;
+							changeEntityVelocityX(i, -1);
 						}
 						else
 						{
-							if (entity[i].velocityX < 1)
-								entity[i].velocityX++;
+							changeEntityVelocityX(i, 1);
 						}
 					}
 				}
-				else if (entity[i].type == ENTITY_ZOMBIE)
+				else if (entities[entity[i].type].AItype == ENTITY_AI_ZOMBIE)
 				{
 					if (frame % 2 == 0)
 					{
@@ -1319,15 +1301,13 @@ mainMenu:
 						{
 							if (player.x > entity[i].x && entity[i].isOnGround)
 							{
-								if (entity[i].velocityX < 1)
-									entity[i].velocityX++;
+								changeEntityVelocityX(i, 1);
 								entity[i].isLookingLeft = false;
 								entity[i].animation = ANIM_WALK;
 							}
 							else if (player.x < entity[i].x && entity[i].isOnGround)
 							{
-								if (entity[i].velocityX > -1)
-									entity[i].velocityX--;
+								changeEntityVelocityX(i, -1);
 								entity[i].isLookingLeft = true;
 								entity[i].animation = ANIM_WALK;
 							}
@@ -1336,15 +1316,13 @@ mainMenu:
 						{
 							if (player.x < entity[i].x && entity[i].isOnGround)
 							{
-								if (entity[i].velocityX < 1)
-									entity[i].velocityX++;
+								changeEntityVelocityX(i, 1);
 								entity[i].isLookingLeft = false;
 								entity[i].animation = ANIM_WALK;
 							}
 							else if (player.x > entity[i].x && entity[i].isOnGround)
 							{
-								if (entity[i].velocityX > -1)
-									entity[i].velocityX--;
+								changeEntityVelocityX(i, -1);
 								entity[i].isLookingLeft = true;
 								entity[i].animation = ANIM_WALK;
 							}
@@ -1376,8 +1354,14 @@ mainMenu:
 						}
 					}
 				}
+				else if (entities[entity[i].type].AItype == ENTITY_AI_EYE)
+				{
+					changeEntityAngle(i, atan2(player.y - entity[i].y, player.x - entity[i].x));
+					changeEntityVelocityX(i, 2 * cos(entity[i].angle));
+					changeEntityVelocityY(i, 2 * sin(entity[i].angle));
+				}
 
-				if (checkPlayerCollision(entity[i].x, entity[i].y, entity[i].sizeX, entity[i].sizeY))
+				if (checkPlayerCollision(entity[i].x, entity[i].y, entity[i].sizeX, entity[i].sizeY) && entities[entity[i].type].type == ENTITY_TYPE_HOSTILE)
 				{
 					knockBackPlayer((entity[i].x > player.x) ? -5 : 5, -5);
 					playerDamage(entities[entity[i].type].damage);
@@ -1558,6 +1542,8 @@ mainMenu:
 		printValDirect(player.maxHealth);
 		printDirect("   \n");
 
+		// TODO: Show 5 nearest entities health + items
+
 		if (debug)
 		{
 			int entityCount = 0;
@@ -1613,7 +1599,11 @@ mainMenu:
 		{
 			if (entity[i].exists)
 			{
-				oamRotateScale(&oamSub, 2 + i, degreesToAngle(0), scale * 2 * (entity[i].isLookingLeft ? -1 : 1), scale * 2);
+				oamRotateScale(&oamSub,
+							   2 + i,
+							   degreesToAngle(RAD2DEG(-entity[i].angle)),
+							   scale * 2 * (entity[i].isLookingLeft ? -1 : 1),
+							   scale * 2);
 			}
 		}
 		REG_BG0HOFS_SUB = scrollX / 8;
@@ -1679,6 +1669,22 @@ mainMenu:
 						break;
 					}
 				}
+				if (entity[i].type == ENTITY_DEMON_EYE)
+				{
+					// Animate demon eye
+					switch (entity[i].animation)
+					{
+					case ANIM_NONE:
+						setEntityAnimFrame(i, 0);
+						break;
+					case ANIM_WALK:
+						setEntityAnimFrame(i, 0);
+						break;
+					case ANIM_JUMP:
+						setEntityAnimFrame(i, (frame / 8) % 2);
+						break;
+					}
+				}
 			}
 		}
 
@@ -1736,8 +1742,8 @@ mainMenu:
 		else
 			oamSet(&oamSub, 0,
 				   player.renderX - (player.sizeX / 2),
-				   player.renderY - (player.sizeY / 2) - 4 * (scale - 128) / 128, // using a proportional offset to fix my bad math
-				   1, 0, SpriteSize_32x64, SpriteColorFormat_256Color, player.sprite_gfx_mem, 0, false, false, player.isLookingLeft, false, false);
+				   player.renderY - (player.sizeY / 2) - 4 * (scale - 128) / 128,													 // using a proportional offset to fix my bad math
+				   1, 0, SpriteSize_32x64, SpriteColorFormat_256Color, player.sprite_gfx_mem, 0, false, false, false, false, false); // Don't use flip with oamRotateScale bruh
 		// oamSet(&oamSub, 1, player.renderX, player.renderY, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, itemHandSprite, -1, false, false, player.isLookingLeft, false, false);
 
 		// Render entities
@@ -1754,7 +1760,7 @@ mainMenu:
 					oamSet(&oamSub, renderedEntities + 2,
 						   entity[i].renderX,
 						   entity[i].renderY,
-						   1, 0, entities[entity[i].type].spriteSize, SpriteColorFormat_256Color, entity[i].sprite_gfx_mem, i + 2, false, false, entity[i].isLookingLeft, false, false);
+						   1, 0, entities[entity[i].type].spriteSize, SpriteColorFormat_256Color, entity[i].sprite_gfx_mem, i + 2, false, false, false, false, false);
 					renderedEntities++;
 				}
 			}
@@ -1780,7 +1786,7 @@ mainMenu:
 					if (item[i].renderX + 16 >= 0 && item[i].renderX < SCREEN_WIDTH && item[i].renderY + 16 >= 0 && item[i].renderY < SCREEN_HEIGHT)
 					{
 						oamRotateScale(&oamSub, renderedItems + ENTITY_COUNT + 2, degreesToAngle(0), scale * 2, scale * 2);
-						oamSet(&oamSub, renderedItems + ENTITY_COUNT + 2, item[i].renderX, item[i].renderY, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, item[i].sprite_gfx_mem, renderedItems + 2, false, false, false, false, false);
+						oamSet(&oamSub, renderedItems + ENTITY_COUNT + 2, item[i].renderX, item[i].renderY, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, item[i].sprite_gfx_mem, i + ENTITY_COUNT + 2, false, false, false, false, false);
 						renderedItems++;
 					}
 				}

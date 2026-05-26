@@ -114,6 +114,7 @@ typedef struct
 {
 	int type;
 	bool exists;
+	float angle;
 	int x, y; // Entity position
 	int renderX, renderY;
 	int anim_frame;		 // Animation frame
@@ -134,6 +135,7 @@ typedef struct
 
 typedef struct
 {
+	char name[32];
 	int sizeX;
 	int sizeY;
 	bool isSolid;
@@ -142,6 +144,7 @@ typedef struct
 	int damage;
 	int spriteSize;
 	int type;
+	int AItype;
 	int dropCount;
 	int drops[8];
 	int dropChance[8];	 // 1/x chance (example: 100% is 1, 50% is 2, 25% is 4, etc...)
@@ -183,6 +186,7 @@ Entity entity[ENTITY_COUNT];
 
 EntityProperties entities[ENTITIES] = {
 	{
+		"Green Slime",
 		16,
 		12,
 		true,
@@ -191,12 +195,14 @@ EntityProperties entities[ENTITIES] = {
 		6,
 		SpriteSize_32x32,
 		ENTITY_TYPE_HOSTILE,
+		ENTITY_AI_SLIME,
 		6,
 		{ITEM_COPPER_COIN, TILE_COPPER_ORE, TILE_TIN_ORE, ITEM_COPPER_COIN, ITEM_SILVER_COIN, ITEM_GOLD_COIN},
 		{1, 32, 32, 12, 12, 12},
 		{{3, 3}, {3, 13}, {3, 13}, {50, 99}, {50, 99}, {1, 3}},
-	}, // Green slime
+	},
 	{
+		"Red Slime",
 		16,
 		12,
 		true,
@@ -205,12 +211,14 @@ EntityProperties entities[ENTITIES] = {
 		12,
 		SpriteSize_32x32,
 		ENTITY_TYPE_HOSTILE,
+		ENTITY_AI_SLIME,
 		6,
 		{ITEM_COPPER_COIN, TILE_COPPER_ORE, TILE_TIN_ORE, ITEM_COPPER_COIN, ITEM_SILVER_COIN, ITEM_GOLD_COIN},
 		{1, 32, 32, 12, 12, 12},
 		{{8, 8}, {3, 13}, {3, 13}, {50, 99}, {50, 99}, {1, 3}},
-	}, // Red slime
+	},
 	{
+		"Blue Slime",
 		16,
 		12,
 		true,
@@ -219,12 +227,14 @@ EntityProperties entities[ENTITIES] = {
 		67,
 		SpriteSize_32x32,
 		ENTITY_TYPE_SPECIAL,
+		ENTITY_AI_NONE,
 		1,
 		{TILE_MUSHROOM},
 		{1},
 		{{1, 1}},
-	}, // Blue slime
+	},
 	{
+		"Bunny",
 		16,
 		13,
 		true,
@@ -233,12 +243,14 @@ EntityProperties entities[ENTITIES] = {
 		0,
 		SpriteSize_32x32,
 		ENTITY_TYPE_PASSIVE,
+		ENTITY_AI_BUNNY,
 		0,
 		{},
 		{},
 		{},
-	}, // Bunny
+	},
 	{
+		"Zombie",
 		16,
 		24,
 		true,
@@ -247,11 +259,28 @@ EntityProperties entities[ENTITIES] = {
 		14,
 		SpriteSize_32x64,
 		ENTITY_TYPE_HOSTILE,
+		ENTITY_AI_ZOMBIE,
 		1,
 		{ITEM_COPPER_COIN},
 		{1},
 		{{60, 60}},
-	}, // Zombie
+	},
+	{
+		"Demon eye",
+		16,
+		16,
+		true,
+		0,
+		60,
+		18,
+		SpriteSize_32x32,
+		ENTITY_TYPE_HOSTILE,
+		ENTITY_AI_EYE,
+		1,
+		{ITEM_COPPER_COIN},
+		{1},
+		{{75, 75}},
+	},
 };
 
 // Define MAX_ITEMS_TOTAL slots for item entities

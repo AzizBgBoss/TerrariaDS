@@ -1,5 +1,8 @@
 // Math utilities for Perlin noise and other functions
 
+#define DEG2RAD(x) ((x) * (M_PI / 180.0f))
+#define RAD2DEG(x) ((x) * (180.0f / M_PI))
+
 static int clamp(int val, int min, int max)
 {
 	if (val < min)

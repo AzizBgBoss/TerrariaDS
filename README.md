@@ -97,7 +97,7 @@ Initial commit with basic project structure.
 - Add more crafting recipes.
 - Add currency. ***(done)***
 - Add X axis velocity ***(done: this allowed to implement knockback and fix some collision bugs)***
-- Probably add a bit more entities. ***(done for now: Red Slime, Bunny, Zombie)***
+- Probably add a bit more entities. ***(done for now: Demon eye, Red Slime, Bunny, Zombie)***
 - Organize my messy code and split it to many files, won't change anything but will make it easier to add features. ***(done)***
 - Support for maps with more height (limit is 64 for now, that means chunking should happen in both X and Y axes). ***(done, worlds come in 4 sizes, with backwards compatibility with v0.1 maps)***
 - Move all assets back to ROM since my dumbass a year ago thought moving everything to NitroFS will free up RAM but it's already `const` so no need... ***(done: it's now even neater than before)***
