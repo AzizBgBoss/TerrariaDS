@@ -289,7 +289,7 @@ mainMenu:
 						{
 							if (strstr(ent->d_name, ".ter") != NULL)
 							{
-								strcpy(worldFiles[worldFileCount], ent->d_name);
+								snprintf(worldFiles[worldFileCount], sizeof(worldFiles[worldFileCount]), "%s", ent->d_name);
 								worldFileCount++;
 								if (worldFileCount >= 10)
 									break; // Max 10 worlds for now
