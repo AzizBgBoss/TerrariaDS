@@ -1542,7 +1542,81 @@ mainMenu:
 		printValDirect(player.maxHealth);
 		printDirect("   \n");
 
-		// TODO: Show 5 nearest entities health + items
+		print(0, 8, "");
+
+		if (!inventoryOpen)
+		{
+			inventorySetHotbar();
+			int nearestEntities[5] = {-1, -1, -1, -1, -1}; // IDs of the nearest 5 entities
+
+			for (int i = 0; i < ENTITY_COUNT; i++)
+			{
+				if (entity[i].exists)
+				{
+					int dist = abs(player.x - entity[i].x) + abs(player.y - entity[i].y);
+					for (int j = 0; j < 5; j++)
+					{
+						if ((nearestEntities[j] == -1 || dist < abs(player.x - entity[nearestEntities[j]].x) + abs(player.y - entity[nearestEntities[j]].y)) &&
+							isInPlayerRange(entity[i].x, entity[i].y))
+						{
+							for (int k = 4; k > j; k--)
+							{
+								nearestEntities[k] = nearestEntities[k - 1];
+							}
+							nearestEntities[j] = i;
+							break;
+						}
+					}
+				}
+			}
+
+			for (int i = 0; i < 5; i++)
+			{
+				if (nearestEntities[i] != -1)
+				{
+					printDirect(entities[entity[nearestEntities[i]].type].name);
+					printDirect(" ");
+					printValDirect(entity[nearestEntities[i]].health);
+					printDirect("/");
+					printValDirect(entities[entity[nearestEntities[i]].type].health);
+					printDirect("     \n");
+				}
+			}
+
+			int nearestItems[5] = {-1, -1, -1, -1, -1}; // IDs of the nearest 5 items
+
+			for (int i = 0; i < MAX_ITEMS; i++)
+			{
+				if (item[i].exists)
+				{
+					int dist = abs(player.x - item[i].x) + abs(player.y - item[i].y);
+					for (int j = 0; j < 5; j++)
+					{
+						if ((nearestItems[j] == -1 || dist < abs(player.x - item[nearestItems[j]].x) + abs(player.y - item[nearestItems[j]].y)) &&
+							isInPlayerRange(item[i].x, item[i].y))
+						{
+							for (int k = 4; k > j; k--)
+							{
+								nearestItems[k] = nearestItems[k - 1];
+							}
+							nearestItems[j] = i;
+							break;
+						}
+					}
+				}
+			}
+
+			for (int i = 0; i < 5; i++)
+			{
+				if (nearestItems[i] != -1)
+				{
+					printValDirect(item[nearestItems[i]].quantity);
+					printDirect(" ");
+					printDirect(getElementName(item[nearestItems[i]].tile));
+					printDirect("     \n");
+				}
+			}
+		}
 
 		if (debug)
 		{

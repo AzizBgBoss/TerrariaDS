@@ -293,6 +293,14 @@ char *getElementName(int element)
         return "Tin Hammer";
     case TILE_WOODEN_DOOR_CLOSED_3:
         return "Wooden Door";
+    case ITEM_COPPER_COIN:
+        return "Copper Coin";
+    case ITEM_SILVER_COIN:
+        return "Silver Coin";
+    case ITEM_GOLD_COIN:
+        return "Gold Coin";
+    case ITEM_PLATINUM_COIN:
+        return "Platinum Coin";
     default:
         return "";
     }
@@ -1990,4 +1998,8 @@ void changeEntityVelocityY(int id, int y)
         if (entity[id].velocity > y)
             entity[id].velocity--;
     }
+}
+
+bool isInPlayerRange(int x, int y) {
+    return (player.x - x) * (player.x - x) + (player.y - y) * (player.y - y) < SCREEN_WIDTH * SCREEN_WIDTH / 4;
 }
