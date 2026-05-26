@@ -1719,34 +1719,19 @@ void generateMap()
     }
 
     // Generate ores
-    printDirect("Generating copper...\n");
+    printDirect("Generating ores...\n");
     for (int x = 0; x < mapWidth; x++)
     {
         for (int y = 0; y < mapHeight; y++)
         {
             if (y >= stoneSurface[x])
             {
-                float caveNoise = fractalPerlin2D(x, y, 6, 0.4f, 0.05f, seed + 69);
+                float caveNoise = fractalPerlin2D(x, y, 6, 0.4f, 0.06f, seed + 69);
                 if (caveNoise < -0.2f) // Adjust this threshold to control ores density
                 {
                     setGameTerrain(x, y, TILE_COPPER_ORE);
                 }
-            }
-        }
-        if (x % (mapWidth / 32) == 0)
-        {
-            printDirect(".");
-        }
-    }
-    printDirect("Generating tin...\n");
-    for (int x = 0; x < mapWidth; x++)
-    {
-        for (int y = 0; y < mapHeight; y++)
-        {
-            if (y >= stoneSurface[x])
-            {
-                float caveNoise = fractalPerlin2D(x, y, 6, 0.4f, 0.05f, seed + 420);
-                if (caveNoise < -0.25f) // tin is more rare
+                else if (caveNoise > 0.2f)
                 {
                     setGameTerrain(x, y, TILE_TIN_ORE);
                 }

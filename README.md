@@ -88,11 +88,11 @@ Initial commit with basic project structure.
 - Add more biomes (desert, jungle, etc.).
 - Add particles (for example when breaking blocks).
 - More bug fixes and optimizations.
-- Better and more efficient world generation.
 - Show health as hearts.
 - Add more music.
 - Add more crafting recipes.
 - Use more pointers for cleaner code.
+- Better and more efficient world generation. ***(done: it's a bit faster now)***
 - Add currency. ***(done)***
 - Add X axis velocity ***(done: this allowed to implement knockback and fix some collision bugs)***
 - Probably add a bit more entities. ***(done for now: Eyes, Slimes, Bunny, Zombies)***
