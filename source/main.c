@@ -1017,7 +1017,6 @@ mainMenu:
 		}
 		else
 		{ // Game world interaction on sub-screen
-			// TODO: add entity damaging with swords wow
 			if (pressed & KEY_TOUCH)
 			{
 				interacting = true;
