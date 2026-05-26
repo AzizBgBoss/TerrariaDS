@@ -863,7 +863,7 @@ mainMenu:
 						int y = ((i / 4) * -4 + 20) * 8;
 						if (touch.px >= x && touch.px < x + 32 && touch.py >= y && touch.py < y + 32)
 						{
-							if (i < sizeof(craftingRecipes) / sizeof(craftingRecipes[0]))
+							if (i < (sizeof(craftingRecipes) / sizeof(craftingRecipes[0]) - craftingOffset * 16))
 							{
 								setCraftingSelection(i);
 								renderCrafting();
@@ -875,28 +875,28 @@ mainMenu:
 					{
 						inventorySetFull();
 					}
-					if (touch.px >= 23 * 8 && touch.px < 31 * 8 && touch.py >= 20 * 8 && touch.py < 24 * 8) // player touched the Craft button
+					if (touch.px >= 24 * 8 && touch.px < 32 * 8 && touch.py >= 20 * 8 && touch.py < 24 * 8) // player touched the Craft button
 					{
 						if (craftingSelection >= 0 && craftingSelection < sizeof(craftingRecipes) / sizeof(craftingRecipes[0]))
 						{
 							bool craftable = true;
-							for (int i = 0; i < craftingRecipes[craftingSelection].ingredientCount; i++)
+							for (int i = 0; i < craftingRecipes[craftingSelection + craftingOffset * 16].ingredientCount; i++)
 							{
-								if (playerHasItem(craftingRecipes[craftingSelection].itemsNeeded[i], craftingRecipes[craftingSelection].itemsNeededQuantity[i]) == false)
+								if (playerHasItem(craftingRecipes[craftingSelection + craftingOffset * 16].itemsNeeded[i], craftingRecipes[craftingSelection + craftingOffset * 16].itemsNeededQuantity[i]) == false)
 								{
 									craftable = false;
 								}
 							}
 							if (craftable)
 							{
-								for (int i = 0; i < craftingRecipes[craftingSelection].ingredientCount; i++)
+								for (int i = 0; i < craftingRecipes[craftingSelection + craftingOffset * 16].ingredientCount; i++)
 								{
-									giveInventory(craftingRecipes[craftingSelection].itemsNeeded[i], -craftingRecipes[craftingSelection].itemsNeededQuantity[i]);
+									giveInventory(craftingRecipes[craftingSelection + craftingOffset * 16].itemsNeeded[i], -craftingRecipes[craftingSelection + craftingOffset * 16].itemsNeededQuantity[i]);
 								}
-								giveInventory(craftingRecipes[craftingSelection].item, craftingRecipes[craftingSelection].quantity);
+								giveInventory(craftingRecipes[craftingSelection + craftingOffset * 16].item, craftingRecipes[craftingSelection + craftingOffset * 16].quantity);
 								print(0, 1, "                                  ");
 								print(0, 1, "Crafted ");
-								printDirect(getElementName(craftingRecipes[craftingSelection].item));
+								printDirect(getElementName(craftingRecipes[craftingSelection + craftingOffset * 16].item));
 							}
 							else
 							{
@@ -904,6 +904,22 @@ mainMenu:
 								print(0, 1, "Oops! You don't have enough items!");
 							}
 						}
+					}
+					if (touch.px >= 16 * 8 && touch.px < 20 * 8 && touch.py >= 20 * 8 && touch.py < 24 * 8) // player touched the < button
+					{
+						craftingOffset--;
+						if (craftingOffset < 0)
+							craftingOffset = 0;
+						setCraftingSelection(0);
+						renderCrafting();
+					}
+					if (touch.px >= 20 * 8 && touch.px < 24 * 8 && touch.py >= 20 * 8 && touch.py < 24 * 8) // player touched the > button
+					{
+						craftingOffset++;
+						if (craftingOffset > (sizeof(craftingRecipes) / sizeof(craftingRecipes[0])) / 16)
+							craftingOffset = (sizeof(craftingRecipes) / sizeof(craftingRecipes[0])) / 16;
+						setCraftingSelection(0);
+						renderCrafting();
 					}
 				}
 				else
@@ -1536,17 +1552,16 @@ mainMenu:
 
 		// Rendering Part
 
-		print(0, 0, "Health: ");
-		printValDirect(player.health);
-		printDirect("/");
-		printValDirect(player.maxHealth);
-		printDirect("   \n");
-
-		print(0, 8, "");
-
 		if (!inventoryOpen)
 		{
-			inventorySetHotbar();
+			clearPrint();
+			print(0, 3, "TerrariaDS v" VERSION "\n\
+By AzizBgBoss\n\
+https://github.com/AzizBgBoss/TerrariaDS");
+			renderInventoryNoSound();
+
+			print(0, 8, "");
+
 			int nearestEntities[5] = {-1, -1, -1, -1, -1}; // IDs of the nearest 5 entities
 
 			for (int i = 0; i < ENTITY_COUNT; i++)
@@ -1617,6 +1632,12 @@ mainMenu:
 				}
 			}
 		}
+
+		print(0, 0, "Health: ");
+		printValDirect(player.health);
+		printDirect("/");
+		printValDirect(player.maxHealth);
+		printDirect("   \n");
 
 		if (debug)
 		{

@@ -242,6 +242,8 @@ int getItemTile(int item)
         return 104;
     case ITEM_PLATINUM_COIN:
         return 108;
+    case ITEM_GEL:
+        return 112;
     default:
         return 56;
     }
@@ -301,6 +303,8 @@ char *getElementName(int element)
         return "Gold Coin";
     case ITEM_PLATINUM_COIN:
         return "Platinum Coin";
+    case ITEM_GEL:
+        return "Gel";
     default:
         return "";
     }
@@ -529,17 +533,17 @@ void setCraftingSelection(u8 slot)
     if (craftingOpen)
     {
         print(16, 7, "              ");
-        print(16, 7, getElementName(craftingRecipes[slot].item));
-        for (int i = 0; i < craftingRecipes[slot].ingredientCount; i++)
+        print(16, 7, getElementName(craftingRecipes[slot + craftingOffset * 16].item));
+        for (int i = 0; i < craftingRecipes[slot + craftingOffset * 16].ingredientCount; i++)
         {
-            Bg1UpSetTile(16, 8 + i * 2, getItemTile(craftingRecipes[slot].itemsNeeded[i]) + 0);
-            Bg1UpSetTile(16 + 1, 8 + i * 2, getItemTile(craftingRecipes[slot].itemsNeeded[i]) + 1);
-            Bg1UpSetTile(16, 8 + 1 + i * 2, getItemTile(craftingRecipes[slot].itemsNeeded[i]) + 2);
-            Bg1UpSetTile(16 + 1, 8 + 1 + i * 2, getItemTile(craftingRecipes[slot].itemsNeeded[i]) + 3);
+            Bg1UpSetTile(16, 8 + i * 2, getItemTile(craftingRecipes[slot + craftingOffset * 16].itemsNeeded[i]) + 0);
+            Bg1UpSetTile(16 + 1, 8 + i * 2, getItemTile(craftingRecipes[slot + craftingOffset * 16].itemsNeeded[i]) + 1);
+            Bg1UpSetTile(16, 8 + 1 + i * 2, getItemTile(craftingRecipes[slot + craftingOffset * 16].itemsNeeded[i]) + 2);
+            Bg1UpSetTile(16 + 1, 8 + 1 + i * 2, getItemTile(craftingRecipes[slot + craftingOffset * 16].itemsNeeded[i]) + 3);
             print(16 + 2, 8 + i * 2, "              ");
-            print(16 + 2, 8 + i * 2, getElementName(craftingRecipes[slot].itemsNeeded[i]));
+            print(16 + 2, 8 + i * 2, getElementName(craftingRecipes[slot + craftingOffset * 16].itemsNeeded[i]));
             print(16 + 2, 9 + i * 2, "              ");
-            printVal(16 + 2, 9 + i * 2, craftingRecipes[slot].itemsNeededQuantity[i]);
+            printVal(16 + 2, 9 + i * 2, craftingRecipes[slot + craftingOffset * 16].itemsNeededQuantity[i]);
         }
         oamSet(&oamMain, 0, x, y, 0, 0, SpriteSize_32x32, SpriteColorFormat_256Color, inventorySelectionSprite, -1, false, false, false, false, false);
         oamUpdate(&oamMain);
@@ -547,7 +551,7 @@ void setCraftingSelection(u8 slot)
     mmEffect(SFX_ENU_TICK);
 }
 
-void renderInventory()
+void renderInventoryNoSound()
 {
     if (!craftingOpen)
     {
@@ -577,9 +581,17 @@ void renderInventory()
                 }
             }
         }
-        setInventorySelection(inventorySelection);
     }
 }
+
+void renderInventory()
+{
+    if (!craftingOpen)
+    {
+        renderInventoryNoSound();
+        setInventorySelection(inventorySelection);
+    }
+};
 
 void renderCrafting()
 {
@@ -587,17 +599,19 @@ void renderCrafting()
     {
         Bg1UpFill(63);
         setCraftingSelection(craftingSelection);
-        int tilesToRender = (sizeof(craftingRecipes) / sizeof(craftingRecipes[0]) <= 16) ? sizeof(craftingRecipes) / sizeof(craftingRecipes[0]) : 16;
+        int tilesToRender = ((sizeof(craftingRecipes) / sizeof(craftingRecipes[0])) - craftingOffset * 16 <= 16)
+                                ? ((sizeof(craftingRecipes) / sizeof(craftingRecipes[0])) - craftingOffset * 16)
+                                : 16;
         for (int i = 0; i < tilesToRender; i++)
         {
-            Bg1UpSetTile((i % 4) * 4 + 1, (i / 4) * -4 + 21, getItemTile(craftingRecipes[i].item) + 0);
-            Bg1UpSetTile((i % 4) * 4 + 2, (i / 4) * -4 + 21, getItemTile(craftingRecipes[i].item) + 1);
-            Bg1UpSetTile((i % 4) * 4 + 1, (i / 4) * -4 + 22, getItemTile(craftingRecipes[i].item) + 2);
-            Bg1UpSetTile((i % 4) * 4 + 2, (i / 4) * -4 + 22, getItemTile(craftingRecipes[i].item) + 3);
+            Bg1UpSetTile((i % 4) * 4 + 1, (i / 4) * -4 + 21, getItemTile(craftingRecipes[i + craftingOffset * 16].item) + 0);
+            Bg1UpSetTile((i % 4) * 4 + 2, (i / 4) * -4 + 21, getItemTile(craftingRecipes[i + craftingOffset * 16].item) + 1);
+            Bg1UpSetTile((i % 4) * 4 + 1, (i / 4) * -4 + 22, getItemTile(craftingRecipes[i + craftingOffset * 16].item) + 2);
+            Bg1UpSetTile((i % 4) * 4 + 2, (i / 4) * -4 + 22, getItemTile(craftingRecipes[i + craftingOffset * 16].item) + 3);
             print((i % 4) * 4 + 1, (i / 4) * -4 + 23, "   ");
-            if (craftingRecipes[i].quantity > 1)
+            if (craftingRecipes[i + craftingOffset * 16].quantity > 1)
             {
-                printVal((i % 4) * 4 + 1, (i / 4) * -4 + 23, craftingRecipes[i].quantity);
+                printVal((i % 4) * 4 + 1, (i / 4) * -4 + 23, craftingRecipes[i + craftingOffset * 16].quantity);
             }
         }
     }
@@ -679,10 +693,11 @@ void inventorySetCrafting()
 
     for (int j = 0; j < 16; j++)
         Bg0UpSetTile(27 + j % 4, j / 4, 48 + j);
+
     for (int j = 0; j < 16; j++)
-        Bg0UpSetTile(23 + j % 4, 20 + j / 4, 64 + j);
+        Bg0UpSetTile(24 + j % 4, 20 + j / 4, 64 + j);
     for (int j = 0; j < 16; j++)
-        Bg0UpSetTile(27 + j % 4, 20 + j / 4, 80 + j);
+        Bg0UpSetTile(28 + j % 4, 20 + j / 4, 80 + j);
     clearPrint();
     renderCrafting();
     mmEffect(SFX_ENU_OPEN);
@@ -1963,8 +1978,10 @@ void knockBackEntity(int id, int x, int y)
 void changeEntityAngle(int id, float a)
 {
     float diff = a - entity[id].angle;
-    while (diff >  M_PI) diff -= 2 * M_PI;
-    while (diff < -M_PI) diff += 2 * M_PI;
+    while (diff > M_PI)
+        diff -= 2 * M_PI;
+    while (diff < -M_PI)
+        diff += 2 * M_PI;
 
     if (fabsf(diff) < DEG2RAD(5))
         entity[id].angle = a;
@@ -2000,6 +2017,7 @@ void changeEntityVelocityY(int id, int y)
     }
 }
 
-bool isInPlayerRange(int x, int y) {
+bool isInPlayerRange(int x, int y)
+{
     return (player.x - x) * (player.x - x) + (player.y - y) * (player.y - y) < SCREEN_WIDTH * SCREEN_WIDTH / 4;
 }

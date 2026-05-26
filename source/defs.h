@@ -61,7 +61,7 @@
 #define MIN_SCALE 128
 
 #define ENTITY_SPRITESHEET_WIDTH 16
-#define ENTITIES 6
+#define ENTITIES 8
 
 // Define game elements
 
@@ -114,6 +114,8 @@ enum // Make sure the indexing follows the one in the textures
     ITEM_SILVER_COIN,
     ITEM_GOLD_COIN,
     ITEM_PLATINUM_COIN,
+
+    ITEM_GEL,
 };
 
 enum // Entities
@@ -124,6 +126,8 @@ enum // Entities
     ENTITY_BUNNY,
     ENTITY_ZOMBIE,
     ENTITY_DEMON_EYE,
+    ENTITY_CATARACT_EYE,
+    ENTITY_SLIMED_ZOMBIE,
 };
 
 enum // Entity type
