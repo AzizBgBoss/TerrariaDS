@@ -299,8 +299,8 @@ const EntityProperties entities[ENTITIES] = {
 		{},
 		{},
 		{},
-		1,
-		{BIOME_FOREST},
+		2,
+		{BIOME_FOREST, BIOME_SNOW},
 		false,
 		true,
 	},
@@ -404,6 +404,46 @@ const EntityProperties entities[ENTITIES] = {
 		false,
 		true,
 	},
+	{
+		"Ice Slime",
+		16,
+		12,
+		true,
+		1,
+		30,
+		8,
+		SpriteSize_32x32,
+		ENTITY_TYPE_HOSTILE,
+		ENTITY_AI_SLIME,
+		2,
+		{ITEM_COPPER_COIN, ITEM_GEL},
+		{1, 1},
+		{{50, 50}, {1, 2}},
+		1,
+		{BIOME_SNOW},
+		false,
+		true,
+	},
+	{
+		"Frozen Zombie",
+		16,
+		24,
+		true,
+		1,
+		50,
+		16,
+		SpriteSize_32x64,
+		ENTITY_TYPE_HOSTILE,
+		ENTITY_AI_ZOMBIE,
+		1,
+		{ITEM_COPPER_COIN},
+		{1},
+		{{80, 80}},
+		1,
+		{BIOME_SNOW},
+		false,
+		true,
+	},
 };
 
 const TileProperties tileProperties[TILES] = {
@@ -456,11 +496,15 @@ const TileProperties tileProperties[TILES] = {
 	{"Sand", false, 13, 116, 100, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false},
 	{"Sandstone Wall", false, 14, 120, 100, false, 0, 1, {TOOL_TYPE_HAMMER}, false, true, false, 0, 0, -1, 0, false},
 	{"Hardened Sand", false, 15, 124, 150, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false},
+
+	{"Snow", false, 16, 128, 100, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false},
+	{"Ice", false, 17, 132, 150, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false},
 };
 
 const BiomeProperties biomes[BIOMES] = {
 	{"Forest", TILE_DIRT, TILE_DIRT_WALL, TILE_STONE, TILE_STONE_WALL},
 	{"Desert", TILE_SAND, TILE_SANDSTONE_WALL, TILE_HARDENED_SAND, TILE_SANDSTONE_WALL},
+	{"Snow Biome", TILE_SNOW, TILE_DIRT_WALL, TILE_ICE, TILE_STONE_WALL},
 };
 // Define MAX_ITEMS_TOTAL slots for item entities
 Item item[MAX_ITEMS_TOTAL];
@@ -485,6 +529,8 @@ const CraftingRecipe craftingRecipes[] = {
 	{TILE_HARDENED_SAND, 1, 1, {TILE_SAND}, {2}},
 	{TILE_SANDSTONE_WALL, 4, 1, {TILE_HARDENED_SAND}, {1}},
 	{TILE_HARDENED_SAND, 1, 1, {TILE_SANDSTONE_WALL}, {4}},
+	{TILE_ICE, 1, 1, {TILE_SNOW}, {2}},
+	{TILE_SNOW, 2, 1, {TILE_ICE}, {1}},
 };
 
 u16 *bg2Map;

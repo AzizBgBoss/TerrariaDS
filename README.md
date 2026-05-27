@@ -91,7 +91,7 @@ Initial commit with basic project structure.
 - Use more pointers for cleaner code.
 - Probably converting all tile handling data to a struct. ***(done)***
 - Add more crafting recipes. ***(done: now implemented pages)***
-- Add more biomes. ***(done: desert)***
+- Add more biomes. ***(done: desert, snow)***
 - Implement entity spawning based on biome and layer ***(done: it was a bit complicated, but now entities spawn based on time, biome, and layer (surface/underground))***
 - Better and more efficient world generation. ***(done: it's a bit faster now)***
 - Add currency. ***(done)***

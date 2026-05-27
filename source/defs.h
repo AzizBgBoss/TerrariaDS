@@ -124,6 +124,9 @@ enum // Make sure the indexing follows the one in the textures
     TILE_SANDSTONE_WALL,
     TILE_HARDENED_SAND,
 
+    TILE_SNOW,
+    TILE_ICE,
+
     TILES,
 };
 
@@ -140,6 +143,8 @@ enum // Entities
     ENTITY_CATARACT_EYE,
     ENTITY_SLIMED_ZOMBIE,
     ENTITY_SAND_SLIME,
+    ENTITY_ICE_SLIME,
+    ENTITY_FROZEN_ZOMBIE,
 
     ENTITIES, // This is a cursed technique I learned in a Dojo in Tokyo where it automatically defines the size of the enum
 };
@@ -171,6 +176,7 @@ enum // Biomes
 {
     BIOME_FOREST,
     BIOME_DESERT,
+    BIOME_SNOW,
 
     BIOMES, // Long live the C-monks
 };
