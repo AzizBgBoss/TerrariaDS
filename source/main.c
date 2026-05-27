@@ -1045,7 +1045,7 @@ mainMenu:
 					{
 						if (frame - touchFrame > 10)
 						{
-							if (inventory[inventorySelection] >= 1 && inventory[inventorySelection] < 100 // Object is a tile, not an item
+							if (!tileProperties[inventory[inventorySelection]].isItem // Object is a tile, not an item
 								&& inventoryQuantity[inventorySelection])
 							{
 								if (!gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH_MAX])
@@ -1065,7 +1065,7 @@ mainMenu:
 									breakTile(worldTouchX, worldTouchY, 1);
 								}
 							}
-							else if (inventory[inventorySelection] >= 100 && inventory[inventorySelection] < 200 // Object is an item, not a tile
+							else if (tileProperties[inventory[inventorySelection]].isTool
 									 && inventoryQuantity[inventorySelection])
 							{
 								if (isToolCompatible(inventory[inventorySelection], gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH_MAX])) // Check if the tool can break the tile
@@ -1080,7 +1080,7 @@ mainMenu:
 							if (interacting == true)
 							{
 								int e = detectEntity(worldX, worldY); // Check if an entity is at the touched location
-								if (e != -1 && inventory[inventorySelection] >= 100 && inventory[inventorySelection] < 200)
+								if (e != -1 && tileProperties[inventory[inventorySelection]].isTool)
 								{
 									mmEffect(SFX_SWING);
 									damageEntity(e, getItemDamage(inventory[inventorySelection]));
@@ -1558,7 +1558,7 @@ mainMenu:
 				if (entity[i].exists)
 				{
 					Entity *E = &entity[i];
-					if (!isInPlayerRadius(E->x, E->y, SCREEN_WIDTH * 2) &&
+					if (!isInPlayerRadius(E->x, E->y, SCREEN_WIDTH) &&
 						((entities[E->type].type == ENTITY_TYPE_HOSTILE && rando(1, 15) == 1) ||
 						 (entities[E->type].type == ENTITY_TYPE_PASSIVE && rando(1, 30) == 1)))
 					{

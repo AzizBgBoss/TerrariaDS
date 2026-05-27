@@ -83,13 +83,13 @@ Initial commit with basic project structure.
 ### Version 0.2 (In progress):
 - Rework special tiles.
 - Ability to save character data and world data independently.
-- Probably converting all tile handling data to a struct.
 - Add swinging animation.
 - Add particles (for example when breaking blocks).
 - More bug fixes and optimizations.
 - Show health as hearts.
 - Add more music.
 - Use more pointers for cleaner code.
+- Probably converting all tile handling data to a struct. ***(done)***
 - Add more crafting recipes. ***(done: now implemented pages)***
 - Add more biomes. ***(done: desert)***
 - Implement entity spawning based on biome and layer ***(done: it was a bit complicated, but now entities spawn based on time, biome, and layer (surface/underground))***

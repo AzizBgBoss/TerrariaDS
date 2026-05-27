@@ -10,85 +10,11 @@ int getElementTile(int tile, int x, int y) // Tile will change based on surround
     int tileright = (x < mapWidth - 1) ? gameTerrain[x + 1 + y * MAP_WIDTH_MAX] : TILE_AIR;
 
     int offset = 0;
-    switch (tile)
+    if (tileProperties[tile].isTileUnique)
     {
-    case TILE_AIR:
-        return 0;
-    case TILE_DIRT:
-        offset = 1;
-        break;
-    case TILE_STONE:
-        offset = 2;
-        break;
-    case TILE_LEAVES:
-        offset = 3;
-        break;
-    case TILE_PLANKS:
-        offset = 4;
-        break;
-    case TILE_DIRT_WALL:
-        offset = 5;
-        break;
-    case TILE_STONE_WALL:
-        offset = 6;
-        break;
-    case TILE_DEMONITE_BRICK:
-        offset = 7;
-        break;
-    case TILE_WOOD_WALL:
-        offset = 8;
-        break;
-    case TILE_COPPER_ORE:
-        offset = 9;
-        break;
-    case TILE_TIN_ORE:
-        offset = 12;
-        break;
-    case TILE_SAND:
-        offset = 13;
-        break;
-    case TILE_SANDSTONE_WALL:
-        offset = 14;
-        break;
-    case TILE_HARDENED_SAND:
-        offset = 15;
-        break;
-    case TILE_WOODLOG:
-        return 2;
-    case TILE_MUSHROOM:
-        return 1;
-    case TILE_WOODEN_DOOR_CLOSED_1:
-        return 92;
-    case TILE_WOODEN_DOOR_CLOSED_2:
-        return 95;
-    case TILE_WOODEN_DOOR_CLOSED_3:
-        return 98;
-    case TILE_WOODEN_DOOR_OPEN_1:
-        return 90;
-    case TILE_WOODEN_DOOR_OPEN_2:
-        return 91;
-    case TILE_WOODEN_DOOR_OPEN_3:
-        return 93;
-    case TILE_WOODEN_DOOR_OPEN_4:
-        return 94;
-    case TILE_WOODEN_DOOR_OPEN_5:
-        return 96;
-    case TILE_WOODEN_DOOR_OPEN_6:
-        return 97;
-    case TILE_WOODEN_DOOR_OPEN_RIGHT_1:
-        return 99;
-    case TILE_WOODEN_DOOR_OPEN_RIGHT_2:
-        return 100;
-    case TILE_WOODEN_DOOR_OPEN_RIGHT_3:
-        return 102;
-    case TILE_WOODEN_DOOR_OPEN_RIGHT_4:
-        return 103;
-    case TILE_WOODEN_DOOR_OPEN_RIGHT_5:
-        return 105;
-    case TILE_WOODEN_DOOR_OPEN_RIGHT_6:
-        return 106;
-    default:
-        return 8;
+        return tileProperties[tile].tile;
+    } else {
+        offset = tileProperties[tile].tile;
     }
 
     if (tileabove == TILE_AIR)
@@ -201,321 +127,65 @@ int getElementTile(int tile, int x, int y) // Tile will change based on surround
 
 int getItemTile(int item)
 {
-    switch (item)
-    {
-    case ITEM_COPPER_LONGSWORD:
-        return 0;
-    case ITEM_COPPER_PICKAXE:
-        return 4;
-    case ITEM_COPPER_AXE:
-        return 8;
-    case ITEM_COPPER_HAMMER:
-        return 12;
-    case TILE_DIRT:
-        return 16;
-    case TILE_STONE:
-        return 20;
-    case TILE_MUSHROOM:
-        return 24;
-    case TILE_PLANKS:
-        return 28;
-    case TILE_LEAVES:
-        return 32;
-    case TILE_DIRT_WALL:
-        return 36;
-    case TILE_STONE_WALL:
-        return 40;
-    case TILE_DEMONITE_BRICK:
-        return 44;
-    case TILE_WOOD_WALL:
-        return 48;
-    case TILE_COPPER_ORE:
-        return 52;
-    case TILE_WOODEN_DOOR_CLOSED_3:
-        return 64;
-    case TILE_TIN_ORE:
-        return 68;
-    case ITEM_TIN_LONGSWORD:
-        return 80;
-    case ITEM_TIN_PICKAXE:
-        return 84;
-    case ITEM_TIN_AXE:
-        return 88;
-    case ITEM_TIN_HAMMER:
-        return 92;
-    case ITEM_COPPER_COIN:
-        return 96;
-    case ITEM_SILVER_COIN:
-        return 100;
-    case ITEM_GOLD_COIN:
-        return 104;
-    case ITEM_PLATINUM_COIN:
-        return 108;
-    case ITEM_GEL:
-        return 112;
-    case TILE_SAND:
-        return 116;
-    case TILE_SANDSTONE_WALL:
-        return 120;
-    case TILE_HARDENED_SAND:
-        return 124;
-    default:
-        return 56;
-    }
+    return tileProperties[item].itemTile;
 }
 
-char *getElementName(int element)
+const char *getElementName(int element)
 {
-    switch (element)
-    {
-    case TILE_DIRT:
-        return "Dirt";
-    case TILE_STONE:
-        return "Stone";
-    case TILE_WOODLOG:
-        return "Wood Log";
-    case TILE_PLANKS:
-        return "Planks";
-    case TILE_MUSHROOM:
-        return "Mushroom";
-    case TILE_LEAVES:
-        return "Leaves";
-    case TILE_DIRT_WALL:
-        return "Dirt Wall";
-    case TILE_STONE_WALL:
-        return "Stone Wall";
-    case TILE_DEMONITE_BRICK:
-        return "Demonite Brick";
-    case TILE_WOOD_WALL:
-        return "Wood Wall";
-    case TILE_COPPER_ORE:
-        return "Copper Ore";
-    case ITEM_COPPER_PICKAXE:
-        return "Copper Pickaxe";
-    case ITEM_COPPER_LONGSWORD:
-        return "Copper Long Sword";
-    case ITEM_COPPER_AXE:
-        return "Copper Axe";
-    case ITEM_COPPER_HAMMER:
-        return "Copper Hammer";
-    case TILE_TIN_ORE:
-        return "Tin Ore";
-    case ITEM_TIN_PICKAXE:
-        return "Tin Pickaxe";
-    case ITEM_TIN_LONGSWORD:
-        return "Tin Long Sword";
-    case ITEM_TIN_AXE:
-        return "Tin Axe";
-    case ITEM_TIN_HAMMER:
-        return "Tin Hammer";
-    case TILE_WOODEN_DOOR_CLOSED_3:
-        return "Wooden Door";
-    case ITEM_COPPER_COIN:
-        return "Copper Coin";
-    case ITEM_SILVER_COIN:
-        return "Silver Coin";
-    case ITEM_GOLD_COIN:
-        return "Gold Coin";
-    case ITEM_PLATINUM_COIN:
-        return "Platinum Coin";
-    case ITEM_GEL:
-        return "Gel";
-    case TILE_SAND:
-        return "Sand";
-    case TILE_SANDSTONE_WALL:
-        return "Sandstone Wall";
-    case TILE_HARDENED_SAND:
-        return "Hardened Sand";
-    default:
-        return "";
-    }
+    return tileProperties[element].name;
 }
 
 int getElementHealth(int element)
 {
-    switch (element)
-    {
-    case TILE_DIRT:
-    case TILE_SAND:
-        return 100;
-    case TILE_STONE:
-    case TILE_HARDENED_SAND:
-        return 150;
-    case TILE_WOODLOG:
-        return 200;
-    case TILE_PLANKS:
-        return 100;
-    case TILE_LEAVES:
-        return 50;
-    case TILE_MUSHROOM:
-        return 10;
-    case TILE_DIRT_WALL:
-    case TILE_STONE_WALL:
-    case TILE_WOOD_WALL:
-    case TILE_SANDSTONE_WALL:
-        return 100;
-    case TILE_DEMONITE_BRICK:
-        return INFINITY;
-    case TILE_COPPER_ORE:
-    case TILE_TIN_ORE:
-        return 200;
-    case TILE_WOODEN_DOOR_CLOSED_1:
-    case TILE_WOODEN_DOOR_CLOSED_2:
-    case TILE_WOODEN_DOOR_CLOSED_3:
-    case TILE_WOODEN_DOOR_OPEN_1:
-    case TILE_WOODEN_DOOR_OPEN_2:
-    case TILE_WOODEN_DOOR_OPEN_3:
-    case TILE_WOODEN_DOOR_OPEN_4:
-    case TILE_WOODEN_DOOR_OPEN_5:
-    case TILE_WOODEN_DOOR_OPEN_6:
-    case TILE_WOODEN_DOOR_OPEN_RIGHT_1:
-    case TILE_WOODEN_DOOR_OPEN_RIGHT_2:
-    case TILE_WOODEN_DOOR_OPEN_RIGHT_3:
-    case TILE_WOODEN_DOOR_OPEN_RIGHT_4:
-    case TILE_WOODEN_DOOR_OPEN_RIGHT_5:
-    case TILE_WOODEN_DOOR_OPEN_RIGHT_6:
-        return 50;
-    default:
-        return 0;
-    }
+    return tileProperties[element].health;
 }
 
 int getElementDrop(int element)
 {
-    switch (element)
-    {
-    case TILE_WOODLOG:
-        return TILE_PLANKS; // Drops planks when broken
-    case TILE_WOODEN_DOOR_CLOSED_1:
-    case TILE_WOODEN_DOOR_CLOSED_2:
-    case TILE_WOODEN_DOOR_CLOSED_3:
-    case TILE_WOODEN_DOOR_OPEN_1:
-    case TILE_WOODEN_DOOR_OPEN_2:
-    case TILE_WOODEN_DOOR_OPEN_3:
-    case TILE_WOODEN_DOOR_OPEN_4:
-    case TILE_WOODEN_DOOR_OPEN_5:
-    case TILE_WOODEN_DOOR_OPEN_6:
-    case TILE_WOODEN_DOOR_OPEN_RIGHT_1:
-    case TILE_WOODEN_DOOR_OPEN_RIGHT_2:
-    case TILE_WOODEN_DOOR_OPEN_RIGHT_3:
-    case TILE_WOODEN_DOOR_OPEN_RIGHT_4:
-    case TILE_WOODEN_DOOR_OPEN_RIGHT_5:
-    case TILE_WOODEN_DOOR_OPEN_RIGHT_6:
-        return TILE_WOODEN_DOOR_CLOSED_3;
-    default:
-        return element; // Drops itself
+    if (tileProperties[element].isDropUnique) {
+        return tileProperties[element].drop;
+    } else {
+        return element;
     }
 }
 
 bool isToolCompatible(int tool, int tile)
 {
-    switch (tool)
+    bool ok = false;
+    for (int i = 0; i < tileProperties[tile].toolCount; i++)
     {
-    case ITEM_COPPER_PICKAXE:
-    case ITEM_TIN_PICKAXE:
-        return tile == TILE_STONE || tile == TILE_DIRT || tile == TILE_PLANKS || tile == TILE_MUSHROOM || tile == TILE_DEMONITE_BRICK || tile == TILE_COPPER_ORE || tile == TILE_TIN_ORE || tile == TILE_WOODEN_DOOR_CLOSED_1 || tile == TILE_WOODEN_DOOR_CLOSED_2 || tile == TILE_WOODEN_DOOR_CLOSED_3 || tile == TILE_WOODEN_DOOR_OPEN_1 || tile == TILE_WOODEN_DOOR_OPEN_2 || tile == TILE_WOODEN_DOOR_OPEN_3 || tile == TILE_WOODEN_DOOR_OPEN_4 || tile == TILE_WOODEN_DOOR_OPEN_5 || tile == TILE_WOODEN_DOOR_OPEN_6 || tile == TILE_HARDENED_SAND || tile == TILE_SAND;
-    case ITEM_COPPER_AXE:
-    case ITEM_TIN_AXE:
-        return tile == TILE_WOODLOG || tile == TILE_LEAVES || tile == TILE_MUSHROOM;
-    case ITEM_COPPER_LONGSWORD:
-    case ITEM_TIN_LONGSWORD:
-        return tile == TILE_MUSHROOM; // Can break mushrooms
-    case ITEM_COPPER_HAMMER:
-    case ITEM_TIN_HAMMER:
-        return tile == TILE_DIRT_WALL || tile == TILE_STONE_WALL || tile == TILE_WOOD_WALL || tile == TILE_SANDSTONE_WALL; // Can break walls
-    default:
-        return false;
+        if (tileProperties[tile].tools[i] == tileProperties[tool].toolType)
+        {
+            ok = true;
+            break;
+        }
     }
+    return ok;
 }
 
 bool isTileSolid(int tile)
 {
-    switch (tile)
-    {
-    case TILE_DIRT:
-    case TILE_STONE:
-    case TILE_PLANKS:
-    case TILE_DEMONITE_BRICK:
-    case TILE_COPPER_ORE:
-    case TILE_TIN_ORE:
-    case TILE_WOODEN_DOOR_CLOSED_1:
-    case TILE_WOODEN_DOOR_CLOSED_2:
-    case TILE_WOODEN_DOOR_CLOSED_3:
-    case TILE_SAND:
-    case TILE_HARDENED_SAND:
-        return true;
-    default:
-        return false;
-    }
+    return tileProperties[tile].isSolid;
 }
 
 bool isElementWall(int tile)
 {
-    switch (tile)
-    {
-    case TILE_DIRT_WALL:
-    case TILE_STONE_WALL:
-    case TILE_WOOD_WALL:
-    case TILE_SANDSTONE_WALL:
-        return true;
-    default:
-        return false;
-    }
+    return tileProperties[tile].isWall;
 }
 
 int getItemSpeed(int item)
 {
-    switch (item)
-    {
-    case ITEM_COPPER_PICKAXE:
-    case ITEM_COPPER_AXE:
-    case ITEM_COPPER_LONGSWORD:
-    case ITEM_COPPER_HAMMER:
-        return 1;
-    case ITEM_TIN_PICKAXE:
-    case ITEM_TIN_AXE:
-    case ITEM_TIN_LONGSWORD:
-    case ITEM_TIN_HAMMER:
-        return 2;
-    default:
-        return 1;
-    }
+    return tileProperties[item].toolSpeed;
 }
 
 int getItemDamage(int item)
 {
-    switch (item)
-    {
-    case ITEM_COPPER_LONGSWORD:
-        return 8;
-    case ITEM_TIN_LONGSWORD:
-        return 10;
-    case ITEM_COPPER_PICKAXE:
-    case ITEM_COPPER_AXE:
-        return 4;
-    case ITEM_TIN_PICKAXE:
-    case ITEM_TIN_AXE:
-        return 5;
-    default:
-        return 1;
-    }
+    return tileProperties[item].toolDamage;
 }
 
 int getItemKnockback(int item)
 {
-    switch (item)
-    {
-    case ITEM_COPPER_LONGSWORD:
-    case ITEM_TIN_LONGSWORD:
-        return 5;
-    case ITEM_COPPER_PICKAXE:
-    case ITEM_COPPER_AXE:
-    case ITEM_TIN_PICKAXE:
-    case ITEM_TIN_AXE:
-        return 2;
-    default:
-        return 1;
-    }
+    return tileProperties[item].toolKnockBack;
 }
 
 void changeTextBackground()
@@ -1590,6 +1260,8 @@ bool loadMapFromFile(const char *filen)
         fclose(file);
         mapWidth = 1024;
         mapHeight = 64;
+        memset(stoneSurface,(int) 64 * MAX_STONE_HEIGHT, sizeof(stoneSurface));
+        memset(biomeSurface, BIOME_FOREST, sizeof(biomeSurface));
 
         if (bytesRead != 4 + 1024 * 64 * sizeof(u8) + sizeof(inventory) + sizeof(inventoryQuantity))
         {
@@ -1751,7 +1423,7 @@ void generateMap()
     while (idx < mapWidth)
     {
         int biome = rando(0, BIOMES - 1);
-        int len = rando(1, mapWidth - idx);
+        int len = rando(32, mapWidth - idx);
         for (int i = 0; i < len && idx < mapWidth; i++)
         {
             biomeSurface[idx++] = biome;

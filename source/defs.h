@@ -64,6 +64,8 @@
 #define MAX_SCALE 256
 #define MIN_SCALE 128
 
+#define INT_MAX 0x7fffffff
+
 // Define game elements
 
 enum // Make sure the indexing follows the one in the textures
@@ -101,7 +103,7 @@ enum // Make sure the indexing follows the one in the textures
 
     TILE_TIN_ORE,
 
-    ITEM_COPPER_PICKAXE = 101,
+    ITEM_COPPER_PICKAXE,
     ITEM_COPPER_AXE,
     ITEM_COPPER_LONGSWORD,
     ITEM_COPPER_HAMMER,
@@ -121,6 +123,8 @@ enum // Make sure the indexing follows the one in the textures
     TILE_SAND,
     TILE_SANDSTONE_WALL,
     TILE_HARDENED_SAND,
+
+    TILES,
 };
 
 #define ENTITY_SPRITESHEET_WIDTH 16
@@ -169,4 +173,12 @@ enum // Biomes
     BIOME_DESERT,
 
     BIOMES, // Long live the C-monks
+};
+
+enum // Tool type
+{
+    TOOL_TYPE_PICKAXE,
+    TOOL_TYPE_AXE,
+    TOOL_TYPE_LONGSWORD,
+    TOOL_TYPE_HAMMER,
 };
