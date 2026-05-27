@@ -1094,7 +1094,7 @@ mainMenu:
 									playerHeal(10);
 									setInventory(inventorySelection, inventory[inventorySelection], inventoryQuantity[inventorySelection] - 1);
 								}
-								else if (gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH_MAX] != 0)
+								else if (tileProperties[gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH_MAX]].specialParam != SPECIAL_NONE)
 									interact(worldTouchX, worldTouchY);
 								else // Make a swing sfx so the user knows the touch is registered but their dumbass can't use it
 									mmEffect(SFX_SWING);

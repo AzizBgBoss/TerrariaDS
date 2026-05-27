@@ -89,7 +89,7 @@ Initial commit with basic project structure.
 - Show health as hearts.
 - Add more music.
 - Use more pointers for cleaner code.
-- Probably converting all tile handling data to a struct. ***(done)***
+- Probably converting all tile handling data to a struct (even special tiles). ***(done: this is great news, now I can add a huge variety of special tiles with the same function easily)***
 - Add more crafting recipes. ***(done: now implemented pages)***
 - Add more biomes. ***(done: desert, snow)***
 - Implement entity spawning based on biome and layer ***(done: it was a bit complicated, but now entities spawn based on time, biome, and layer (surface/underground))***

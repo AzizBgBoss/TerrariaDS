@@ -188,3 +188,10 @@ enum // Tool type
     TOOL_TYPE_LONGSWORD,
     TOOL_TYPE_HAMMER,
 };
+
+enum // Special parameter for tiles
+{
+    SPECIAL_NONE,
+    SPECIAL_DOOR, // specialParams[] = {int isOpen (0-1), int isRight (0-1), int part (1-6)}
+    SPECIAL_TREE, // specialParams[] = {int leafTile}
+};

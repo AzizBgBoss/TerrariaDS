@@ -13,7 +13,9 @@ int getElementTile(int tile, int x, int y) // Tile will change based on surround
     if (tileProperties[tile].isTileUnique)
     {
         return tileProperties[tile].tile;
-    } else {
+    }
+    else
+    {
         offset = tileProperties[tile].tile;
     }
 
@@ -142,9 +144,12 @@ int getElementHealth(int element)
 
 int getElementDrop(int element)
 {
-    if (tileProperties[element].isDropUnique) {
+    if (tileProperties[element].isDropUnique)
+    {
         return tileProperties[element].drop;
-    } else {
+    }
+    else
+    {
         return element;
     }
 }
@@ -643,27 +648,27 @@ void breakTile(int x, int y, int speed)
     if (gameTerrainHealth[x + y * MAP_WIDTH_MAX] >= getElementHealth(gameTerrain[x + y * MAP_WIDTH_MAX]))
     {
         // Special blocks handling
-        if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODLOG)
+        if (tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParam == SPECIAL_TREE)
         {
             // Trees have special treatment: break all the logs and leaves above it
-            for (int i = y - 1; i >= 0; i--)
+            for (int i = y; i >= 0; i--)
             {
-                if (gameTerrain[x + i * MAP_WIDTH_MAX] == TILE_WOODLOG)
+                if (gameTerrain[x + i * MAP_WIDTH_MAX] == gameTerrain[x + y * MAP_WIDTH_MAX])
                 {
-                    dropItem(x, i, getElementDrop(TILE_WOODLOG), 1);
+                    dropItem(x, i, getElementDrop(gameTerrain[x + y * MAP_WIDTH_MAX]), 1);
                     setGameTerrain(x, i, 0);
                     gameTerrainHealth[x + i * MAP_WIDTH_MAX] = 0;
                 }
-                else if (gameTerrain[x + i * MAP_WIDTH_MAX] == TILE_LEAVES)
+                else if (gameTerrain[x + i * MAP_WIDTH_MAX] == tileProperties[gameTerrain[x + i * MAP_WIDTH_MAX]].specialParams[0])
                 { // Leaves don't drop anything if broken from tree
                     setGameTerrain(x, i, 0);
                     gameTerrainHealth[x + i * MAP_WIDTH_MAX] = 0;
-                    if (gameTerrain[x - 1 + i * MAP_WIDTH_MAX] == TILE_LEAVES)
+                    if (gameTerrain[x - 1 + i * MAP_WIDTH_MAX] == tileProperties[gameTerrain[x + i * MAP_WIDTH_MAX]].specialParams[0])
                     {
                         setGameTerrain(x - 1, i, 0);
                         gameTerrainHealth[x - 1 + i * MAP_WIDTH_MAX] = 0;
                     }
-                    if (gameTerrain[x + 1 + i * MAP_WIDTH_MAX] == TILE_LEAVES)
+                    if (gameTerrain[x + 1 + i * MAP_WIDTH_MAX] == tileProperties[gameTerrain[x + i * MAP_WIDTH_MAX]].specialParams[0])
                     {
                         setGameTerrain(x + 1, i, 0);
                         gameTerrainHealth[x + 1 + i * MAP_WIDTH_MAX] = 0;
@@ -675,120 +680,36 @@ void breakTile(int x, int y, int speed)
                 }
             }
         }
-        else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_CLOSED_1)
+        else if (tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParam == SPECIAL_DOOR)
         {
-            setGameTerrain(x, y + 1, TILE_AIR);
-            setGameTerrain(x, y + 2, TILE_AIR);
+            dropItem(x, y, getElementDrop(gameTerrain[x + y * MAP_WIDTH_MAX]), 1);
+            if (tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParams[0] == 0) // Closed door
+            {
+                int offset = tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParams[2] - 1;
+                for (int i = 0; i < 3; i++)
+                {
+                    setGameTerrain(x, y - offset + i, TILE_AIR);
+                }
+            }
+            else if (tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParams[0] == 1) // Open door
+            {
+                int offsetX = (tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParams[2] - 1) % 2;
+                int offsetY = (tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParams[2] - 1) / 2;
+                for (int i = 0; i < 3; i++)
+                {
+                    for (int j = 0; j < 2; j++)
+                    {
+                        setGameTerrain(x - offsetX + j, y - offsetY + i, TILE_AIR);
+                    }
+                }
+            }
         }
-        else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_CLOSED_2)
+        else
         {
-            setGameTerrain(x, y - 1, TILE_AIR);
-            setGameTerrain(x, y + 1, TILE_AIR);
-        }
-        else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_CLOSED_3)
-        {
-            setGameTerrain(x, y - 1, TILE_AIR);
-            setGameTerrain(x, y - 2, TILE_AIR);
-        }
-        else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_1)
-        {
-            setGameTerrain(x + 1, y, TILE_AIR);
-            setGameTerrain(x, y + 1, TILE_AIR);
-            setGameTerrain(x + 1, y + 1, TILE_AIR);
-            setGameTerrain(x, y + 2, TILE_AIR);
-            setGameTerrain(x + 1, y + 2, TILE_AIR);
-        }
-        else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_2)
-        {
-            setGameTerrain(x - 1, y, TILE_AIR);
-            setGameTerrain(x, y + 1, TILE_AIR);
-            setGameTerrain(x - 1, y + 1, TILE_AIR);
-            setGameTerrain(x, y + 2, TILE_AIR);
-            setGameTerrain(x - 1, y + 2, TILE_AIR);
-        }
-        else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_3)
-        {
-            setGameTerrain(x, y - 1, TILE_AIR);
-            setGameTerrain(x + 1, y - 1, TILE_AIR);
-            setGameTerrain(x + 1, y, TILE_AIR);
-            setGameTerrain(x, y + 1, TILE_AIR);
-            setGameTerrain(x + 1, y + 1, TILE_AIR);
-        }
-        else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_4)
-        {
-            setGameTerrain(x - 1, y, TILE_AIR);
-            setGameTerrain(x, y - 1, TILE_AIR);
-            setGameTerrain(x - 1, y - 1, TILE_AIR);
-            setGameTerrain(x, y + 1, TILE_AIR);
-            setGameTerrain(x - 1, y + 1, TILE_AIR);
-        }
-        else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_5)
-        {
-            setGameTerrain(x, y - 2, TILE_AIR);
-            setGameTerrain(x + 1, y - 2, TILE_AIR);
-            setGameTerrain(x + 1, y - 1, TILE_AIR);
+            dropItem(x, y, getElementDrop(gameTerrain[x + y * MAP_WIDTH_MAX]), 1);
             setGameTerrain(x, y, TILE_AIR);
-            setGameTerrain(x + 1, y, TILE_AIR);
+            gameTerrainHealth[x + y * MAP_WIDTH_MAX] = 0;
         }
-        else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_6)
-        {
-            setGameTerrain(x - 1, y - 2, TILE_AIR);
-            setGameTerrain(x, y - 2, TILE_AIR);
-            setGameTerrain(x - 1, y - 1, TILE_AIR);
-            setGameTerrain(x, y, TILE_AIR);
-            setGameTerrain(x - 1, y, TILE_AIR);
-        }
-        else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_RIGHT_1)
-        {
-            setGameTerrain(x + 1, y, TILE_AIR);
-            setGameTerrain(x, y + 1, TILE_AIR);
-            setGameTerrain(x + 1, y + 1, TILE_AIR);
-            setGameTerrain(x, y + 2, TILE_AIR);
-            setGameTerrain(x + 1, y + 2, TILE_AIR);
-        }
-        else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_RIGHT_2)
-        {
-            setGameTerrain(x - 1, y, TILE_AIR);
-            setGameTerrain(x, y + 1, TILE_AIR);
-            setGameTerrain(x - 1, y + 1, TILE_AIR);
-            setGameTerrain(x, y + 2, TILE_AIR);
-            setGameTerrain(x - 1, y + 2, TILE_AIR);
-        }
-        else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_RIGHT_3)
-        {
-            setGameTerrain(x, y - 1, TILE_AIR);
-            setGameTerrain(x + 1, y - 1, TILE_AIR);
-            setGameTerrain(x + 1, y, TILE_AIR);
-            setGameTerrain(x, y + 1, TILE_AIR);
-            setGameTerrain(x + 1, y + 1, TILE_AIR);
-        }
-        else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_RIGHT_4)
-        {
-            setGameTerrain(x - 1, y, TILE_AIR);
-            setGameTerrain(x, y - 1, TILE_AIR);
-            setGameTerrain(x - 1, y - 1, TILE_AIR);
-            setGameTerrain(x, y + 1, TILE_AIR);
-            setGameTerrain(x - 1, y + 1, TILE_AIR);
-        }
-        else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_RIGHT_5)
-        {
-            setGameTerrain(x, y - 2, TILE_AIR);
-            setGameTerrain(x + 1, y - 2, TILE_AIR);
-            setGameTerrain(x + 1, y - 1, TILE_AIR);
-            setGameTerrain(x, y, TILE_AIR);
-            setGameTerrain(x + 1, y, TILE_AIR);
-        }
-        else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_RIGHT_6)
-        {
-            setGameTerrain(x - 1, y - 2, TILE_AIR);
-            setGameTerrain(x, y - 2, TILE_AIR);
-            setGameTerrain(x - 1, y - 1, TILE_AIR);
-            setGameTerrain(x, y, TILE_AIR);
-            setGameTerrain(x - 1, y, TILE_AIR);
-        }
-        dropItem(x, y, getElementDrop(gameTerrain[x + y * MAP_WIDTH_MAX]), 1);
-        setGameTerrain(x, y, TILE_AIR);
-        gameTerrainHealth[x + y * MAP_WIDTH_MAX] = 0;
     }
     // Random sound effect for breaking tiles
     if (frame % 15 == 0) // Play sound every 10 frames
@@ -808,207 +729,58 @@ void breakTile(int x, int y, int speed)
     }
 }
 
-// FIXME: this feels inefficient, need to fix it
 void interact(int x, int y)
 {
-    if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_CLOSED_1)
+    if (tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParam == SPECIAL_DOOR)
     {
-        mmEffect(SFX_DOOR_OPEN);
-        // Open to the left
-        if (gameTerrain[x - 1 + y * MAP_WIDTH_MAX] == TILE_AIR &&
-            gameTerrain[x - 1 + (y + 1) * MAP_WIDTH_MAX] == TILE_AIR &&
-            gameTerrain[x - 1 + (y + 2) * MAP_WIDTH_MAX] == TILE_AIR)
+        if (tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParams[0] == 0) // Closed door
         {
-            setGameTerrain(x - 1, y, TILE_WOODEN_DOOR_OPEN_1);
-            setGameTerrain(x, y, TILE_WOODEN_DOOR_OPEN_2);
-            setGameTerrain(x - 1, y + 1, TILE_WOODEN_DOOR_OPEN_3);
-            setGameTerrain(x, y + 1, TILE_WOODEN_DOOR_OPEN_4);
-            setGameTerrain(x - 1, y + 2, TILE_WOODEN_DOOR_OPEN_5);
-            setGameTerrain(x, y + 2, TILE_WOODEN_DOOR_OPEN_6);
+            int offset = tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParams[2] - 1;
+
+            int buildTo = 0; // 0 = don't, -1 = left, 1 = right
+            if (gameTerrain[x - 1 + (y - offset) * MAP_WIDTH_MAX] == TILE_AIR &&
+                gameTerrain[x - 1 + (y - offset + 1) * MAP_WIDTH_MAX] == TILE_AIR &&
+                gameTerrain[x - 1 + (y - offset + 2) * MAP_WIDTH_MAX] == TILE_AIR)
+            {
+                buildTo = -1;
+            }
+            else if (gameTerrain[x + 1 + (y - offset) * MAP_WIDTH_MAX] == TILE_AIR &&
+                     gameTerrain[x + 1 + (y - offset + 1) * MAP_WIDTH_MAX] == TILE_AIR &&
+                     gameTerrain[x + 1 + (y - offset + 2) * MAP_WIDTH_MAX] == TILE_AIR)
+            {
+                buildTo = 1;
+            }
+
+            if (buildTo != 0)
+            {
+                for (int i = 0; i < 6; i++)
+                {
+                    setGameTerrain(x + i % 2 + ((buildTo == 1) ? 0 : -1),
+                                   y - offset + i / 2,
+                                   tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].drop + 1 + i + ((buildTo == 1) ? 6 : 0));
+                }
+            }
         }
-        // Open to the right
-        else if (gameTerrain[x + 1 + y * MAP_WIDTH_MAX] == TILE_AIR &&
-                 gameTerrain[x + 1 + (y + 1) * MAP_WIDTH_MAX] == TILE_AIR &&
-                 gameTerrain[x + 1 + (y + 2) * MAP_WIDTH_MAX] == TILE_AIR)
+        else if (tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParams[0] == 1) // Open door
         {
-            setGameTerrain(x, y, TILE_WOODEN_DOOR_OPEN_RIGHT_1);
-            setGameTerrain(x + 1, y, TILE_WOODEN_DOOR_OPEN_RIGHT_2);
-            setGameTerrain(x, y + 1, TILE_WOODEN_DOOR_OPEN_RIGHT_3);
-            setGameTerrain(x + 1, y + 1, TILE_WOODEN_DOOR_OPEN_RIGHT_4);
-            setGameTerrain(x, y + 2, TILE_WOODEN_DOOR_OPEN_RIGHT_5);
-            setGameTerrain(x + 1, y + 2, TILE_WOODEN_DOOR_OPEN_RIGHT_6);
+            int offsetX = (tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParams[2] - 1) % 2;
+            int offsetY = (tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParams[2] - 1) / 2;
+            int door = tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].drop - 2;
+            int isDoorRight = tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParams[1];
+            for (int i = 0; i < 3; i++)
+            {
+                for (int j = 0; j < 2; j++)
+                {
+                    setGameTerrain(x - offsetX + j, y - offsetY + i, TILE_AIR);
+                }
+            }
+            for (int i = 0; i < 3; i++)
+            {
+                setGameTerrain(x - offsetX + ((isDoorRight == 0) ? 1 : 0),
+                               y - offsetY + i,
+                               door + i);
+            }
         }
-    }
-    else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_CLOSED_2)
-    {
-        mmEffect(SFX_DOOR_OPEN);
-        if (gameTerrain[x - 1 + (y - 1) * MAP_WIDTH_MAX] == TILE_AIR &&
-            gameTerrain[x - 1 + y * MAP_WIDTH_MAX] == TILE_AIR &&
-            gameTerrain[x - 1 + (y + 1) * MAP_WIDTH_MAX] == TILE_AIR)
-        {
-            setGameTerrain(x - 1, y - 1, TILE_WOODEN_DOOR_OPEN_1);
-            setGameTerrain(x, y - 1, TILE_WOODEN_DOOR_OPEN_2);
-            setGameTerrain(x - 1, y, TILE_WOODEN_DOOR_OPEN_3);
-            setGameTerrain(x, y, TILE_WOODEN_DOOR_OPEN_4);
-            setGameTerrain(x - 1, y + 1, TILE_WOODEN_DOOR_OPEN_5);
-            setGameTerrain(x, y + 1, TILE_WOODEN_DOOR_OPEN_6);
-        }
-        else if (gameTerrain[x + 1 + (y - 1) * MAP_WIDTH_MAX] == TILE_AIR &&
-                 gameTerrain[x + 1 + y * MAP_WIDTH_MAX] == TILE_AIR &&
-                 gameTerrain[x + 1 + (y + 1) * MAP_WIDTH_MAX] == TILE_AIR)
-        {
-            setGameTerrain(x, y - 1, TILE_WOODEN_DOOR_OPEN_RIGHT_1);
-            setGameTerrain(x + 1, y - 1, TILE_WOODEN_DOOR_OPEN_RIGHT_2);
-            setGameTerrain(x, y, TILE_WOODEN_DOOR_OPEN_RIGHT_3);
-            setGameTerrain(x + 1, y, TILE_WOODEN_DOOR_OPEN_RIGHT_4);
-            setGameTerrain(x, y + 1, TILE_WOODEN_DOOR_OPEN_RIGHT_5);
-            setGameTerrain(x + 1, y + 1, TILE_WOODEN_DOOR_OPEN_RIGHT_6);
-        }
-    }
-    else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_CLOSED_3)
-    {
-        mmEffect(SFX_DOOR_OPEN);
-        if (gameTerrain[x - 1 + (y - 2) * MAP_WIDTH_MAX] == TILE_AIR &&
-            gameTerrain[x - 1 + (y - 1) * MAP_WIDTH_MAX] == TILE_AIR &&
-            gameTerrain[x - 1 + y * MAP_WIDTH_MAX] == TILE_AIR)
-        {
-            setGameTerrain(x - 1, y - 2, TILE_WOODEN_DOOR_OPEN_1);
-            setGameTerrain(x, y - 2, TILE_WOODEN_DOOR_OPEN_2);
-            setGameTerrain(x - 1, y - 1, TILE_WOODEN_DOOR_OPEN_3);
-            setGameTerrain(x, y - 1, TILE_WOODEN_DOOR_OPEN_4);
-            setGameTerrain(x - 1, y, TILE_WOODEN_DOOR_OPEN_5);
-            setGameTerrain(x, y, TILE_WOODEN_DOOR_OPEN_6);
-        }
-        else if (gameTerrain[x + 1 + (y - 2) * MAP_WIDTH_MAX] == TILE_AIR &&
-                 gameTerrain[x + 1 + (y - 1) * MAP_WIDTH_MAX] == TILE_AIR &&
-                 gameTerrain[x + 1 + y * MAP_WIDTH_MAX] == TILE_AIR)
-        {
-            setGameTerrain(x, y - 2, TILE_WOODEN_DOOR_OPEN_RIGHT_1);
-            setGameTerrain(x + 1, y - 2, TILE_WOODEN_DOOR_OPEN_RIGHT_2);
-            setGameTerrain(x, y - 1, TILE_WOODEN_DOOR_OPEN_RIGHT_3);
-            setGameTerrain(x + 1, y - 1, TILE_WOODEN_DOOR_OPEN_RIGHT_4);
-            setGameTerrain(x, y, TILE_WOODEN_DOOR_OPEN_RIGHT_5);
-            setGameTerrain(x + 1, y, TILE_WOODEN_DOOR_OPEN_RIGHT_6);
-        }
-    }
-    // Closing left-opening door
-    else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_1)
-    {
-        mmEffect(SFX_DOOR_CLOSE);
-        setGameTerrain(x, y, TILE_AIR);
-        setGameTerrain(x, y + 1, TILE_AIR);
-        setGameTerrain(x, y + 2, TILE_AIR);
-        setGameTerrain(x + 1, y, TILE_WOODEN_DOOR_CLOSED_1);
-        setGameTerrain(x + 1, y + 1, TILE_WOODEN_DOOR_CLOSED_2);
-        setGameTerrain(x + 1, y + 2, TILE_WOODEN_DOOR_CLOSED_3);
-    }
-    else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_2)
-    {
-        mmEffect(SFX_DOOR_CLOSE);
-        setGameTerrain(x - 1, y, TILE_AIR);
-        setGameTerrain(x - 1, y + 1, TILE_AIR);
-        setGameTerrain(x - 1, y + 2, TILE_AIR);
-        setGameTerrain(x, y, TILE_WOODEN_DOOR_CLOSED_1);
-        setGameTerrain(x, y + 1, TILE_WOODEN_DOOR_CLOSED_2);
-        setGameTerrain(x, y + 2, TILE_WOODEN_DOOR_CLOSED_3);
-    }
-    else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_3)
-    {
-        mmEffect(SFX_DOOR_CLOSE);
-        setGameTerrain(x, y - 1, TILE_AIR);
-        setGameTerrain(x, y, TILE_AIR);
-        setGameTerrain(x, y + 1, TILE_AIR);
-        setGameTerrain(x + 1, y - 1, TILE_WOODEN_DOOR_CLOSED_1);
-        setGameTerrain(x + 1, y, TILE_WOODEN_DOOR_CLOSED_2);
-        setGameTerrain(x + 1, y + 1, TILE_WOODEN_DOOR_CLOSED_3);
-    }
-    else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_4)
-    {
-        mmEffect(SFX_DOOR_CLOSE);
-        setGameTerrain(x - 1, y - 1, TILE_AIR);
-        setGameTerrain(x - 1, y, TILE_AIR);
-        setGameTerrain(x - 1, y + 1, TILE_AIR);
-        setGameTerrain(x, y - 1, TILE_WOODEN_DOOR_CLOSED_1);
-        setGameTerrain(x, y, TILE_WOODEN_DOOR_CLOSED_2);
-        setGameTerrain(x, y + 1, TILE_WOODEN_DOOR_CLOSED_3);
-    }
-    else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_5)
-    {
-        mmEffect(SFX_DOOR_CLOSE);
-        setGameTerrain(x, y - 2, TILE_AIR);
-        setGameTerrain(x + 1, y - 2, TILE_AIR);
-        setGameTerrain(x + 1, y - 1, TILE_AIR);
-        setGameTerrain(x, y, TILE_AIR);
-        setGameTerrain(x + 1, y, TILE_AIR);
-    }
-    else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_6)
-    {
-        mmEffect(SFX_DOOR_CLOSE);
-        setGameTerrain(x - 1, y - 2, TILE_AIR);
-        setGameTerrain(x, y - 2, TILE_AIR);
-        setGameTerrain(x - 1, y - 1, TILE_AIR);
-        setGameTerrain(x, y, TILE_AIR);
-        setGameTerrain(x - 1, y, TILE_AIR);
-    }
-    // Closing right-opening door
-    else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_RIGHT_1)
-    {
-        mmEffect(SFX_DOOR_CLOSE);
-        setGameTerrain(x, y, TILE_WOODEN_DOOR_CLOSED_1);
-        setGameTerrain(x, y + 1, TILE_WOODEN_DOOR_CLOSED_2);
-        setGameTerrain(x, y + 2, TILE_WOODEN_DOOR_CLOSED_3);
-        setGameTerrain(x + 1, y, TILE_AIR);
-        setGameTerrain(x + 1, y + 1, TILE_AIR);
-        setGameTerrain(x + 1, y + 2, TILE_AIR);
-    }
-    else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_RIGHT_2)
-    {
-        mmEffect(SFX_DOOR_CLOSE);
-        setGameTerrain(x - 1, y, TILE_WOODEN_DOOR_CLOSED_1);
-        setGameTerrain(x - 1, y + 1, TILE_WOODEN_DOOR_CLOSED_2);
-        setGameTerrain(x - 1, y + 2, TILE_WOODEN_DOOR_CLOSED_3);
-        setGameTerrain(x, y, TILE_AIR);
-        setGameTerrain(x, y + 1, TILE_AIR);
-        setGameTerrain(x, y + 2, TILE_AIR);
-    }
-    else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_RIGHT_3)
-    {
-        mmEffect(SFX_DOOR_CLOSE);
-        setGameTerrain(x, y - 1, TILE_WOODEN_DOOR_CLOSED_1);
-        setGameTerrain(x, y, TILE_WOODEN_DOOR_CLOSED_2);
-        setGameTerrain(x, y + 1, TILE_WOODEN_DOOR_CLOSED_3);
-        setGameTerrain(x + 1, y - 1, TILE_AIR);
-        setGameTerrain(x + 1, y, TILE_AIR);
-        setGameTerrain(x + 1, y + 1, TILE_AIR);
-    }
-    else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_RIGHT_4)
-    {
-        mmEffect(SFX_DOOR_CLOSE);
-        setGameTerrain(x - 1, y - 1, TILE_WOODEN_DOOR_CLOSED_1);
-        setGameTerrain(x - 1, y, TILE_WOODEN_DOOR_CLOSED_2);
-        setGameTerrain(x - 1, y + 1, TILE_WOODEN_DOOR_CLOSED_3);
-        setGameTerrain(x, y - 1, TILE_AIR);
-        setGameTerrain(x, y, TILE_AIR);
-        setGameTerrain(x, y + 1, TILE_AIR);
-    }
-    else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_RIGHT_5)
-    {
-        mmEffect(SFX_DOOR_CLOSE);
-        setGameTerrain(x, y - 2, TILE_WOODEN_DOOR_CLOSED_1);
-        setGameTerrain(x, y - 1, TILE_WOODEN_DOOR_CLOSED_2);
-        setGameTerrain(x, y, TILE_WOODEN_DOOR_CLOSED_3);
-        setGameTerrain(x + 1, y - 2, TILE_AIR);
-        setGameTerrain(x + 1, y - 1, TILE_AIR);
-        setGameTerrain(x + 1, y, TILE_AIR);
-    }
-    else if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_WOODEN_DOOR_OPEN_RIGHT_6)
-    {
-        mmEffect(SFX_DOOR_CLOSE);
-        setGameTerrain(x - 1, y - 2, TILE_WOODEN_DOOR_CLOSED_1);
-        setGameTerrain(x, y - 2, TILE_WOODEN_DOOR_CLOSED_2);
-        setGameTerrain(x - 1, y - 1, TILE_WOODEN_DOOR_CLOSED_3);
-        setGameTerrain(x, y, TILE_AIR);
-        setGameTerrain(x - 1, y, TILE_AIR);
     }
 }
 
@@ -1275,7 +1047,7 @@ bool loadMapFromFile(const char *filen)
         fclose(file);
         mapWidth = 1024;
         mapHeight = 64;
-        memset(stoneSurface,(int) 64 * MAX_STONE_HEIGHT, sizeof(stoneSurface));
+        memset(stoneSurface, (int)64 * MAX_STONE_HEIGHT, sizeof(stoneSurface));
         memset(biomeSurface, BIOME_FOREST, sizeof(biomeSurface));
         for (int i = 0; i < 8 * 4; i++)
         {
