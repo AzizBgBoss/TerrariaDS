@@ -196,6 +196,19 @@ void changeTextBackground()
     Bg0UpFill(0);
 };
 
+int getPlayerItemQuantity(int item)
+{
+    int count = 0;
+    for (int i = 0; i < 8 * 4; i++)
+    {
+        if (inventory[i] == item)
+        {
+            count += inventoryQuantity[i];
+        }
+    }
+    return count;
+}
+
 void setInventorySelectionNoSound(u8 slot)
 {
     slot = slot % (inventoryOpen ? 32 : 8);
@@ -244,7 +257,9 @@ void setCraftingSelection(u8 slot)
             print(16 + 2, 8 + i * 2, "              ");
             print(16 + 2, 8 + i * 2, getElementName(craftingRecipes[slot + craftingOffset * 16].itemsNeeded[i]));
             print(16 + 2, 9 + i * 2, "              ");
-            printVal(16 + 2, 9 + i * 2, craftingRecipes[slot + craftingOffset * 16].itemsNeededQuantity[i]);
+            printVal(16 + 2, 9 + i * 2, getPlayerItemQuantity(craftingRecipes[slot + craftingOffset * 16].itemsNeeded[i]));
+            printDirect("/");
+            printValDirect(craftingRecipes[slot + craftingOffset * 16].itemsNeededQuantity[i]);
         }
         oamSet(&oamMain, 0, x, y, 0, 0, SpriteSize_32x32, SpriteColorFormat_256Color, inventorySelectionSprite, -1, false, false, false, false, false);
         oamUpdate(&oamMain);
