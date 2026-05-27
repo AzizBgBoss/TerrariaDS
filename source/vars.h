@@ -510,6 +510,7 @@ const BiomeProperties biomes[BIOMES] = {
 Item item[MAX_ITEMS_TOTAL];
 
 // Define crafting recipes
+// TODO: this will no longer become a static array, it will change based on nearby stations
 const CraftingRecipe craftingRecipes[] = {
 	{TILE_WOOD_WALL, 4, 1, {TILE_PLANKS}, {1}},
 	{TILE_STONE_WALL, 4, 1, {TILE_STONE}, {1}},
