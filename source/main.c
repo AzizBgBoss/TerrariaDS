@@ -1823,7 +1823,7 @@ https://github.com/AzizBgBoss/TerrariaDS");
 		int camTileX = (scrollX / 8) - 32 + 1;
 		int camTileY = (scrollY / 8) - 32 + 1;
 
-		if (camTileX > lastCamTileX)
+		while (camTileX > lastCamTileX)
 		{
 			lastCamTileX++;
 			for (int y = 0; y < 64; y++)
@@ -1833,7 +1833,7 @@ https://github.com/AzizBgBoss/TerrariaDS");
 				Bg1SetTile((63 + lastCamTileX) % 64, (y + camTileY) % 64, getElementTile(gameTerrain[mapX + mapY * MAP_WIDTH_MAX], mapX, mapY));
 			}
 		}
-		else if (camTileX < lastCamTileX)
+		while (camTileX < lastCamTileX)
 		{
 			lastCamTileX--;
 			for (int y = 0; y < 64; y++)
@@ -1844,7 +1844,7 @@ https://github.com/AzizBgBoss/TerrariaDS");
 			}
 		}
 
-		if (camTileY > lastCamTileY)
+		while (camTileY > lastCamTileY)
 		{
 			lastCamTileY++;
 			for (int x = 0; x < 64; x++)
@@ -1854,7 +1854,7 @@ https://github.com/AzizBgBoss/TerrariaDS");
 				Bg1SetTile((x + camTileX) % 64, (63 + lastCamTileY) % 64, getElementTile(gameTerrain[mapX + mapY * MAP_WIDTH_MAX], mapX, mapY));
 			}
 		}
-		else if (camTileY < lastCamTileY)
+		while (camTileY < lastCamTileY)
 		{
 			lastCamTileY--;
 			for (int x = 0; x < 64; x++)
