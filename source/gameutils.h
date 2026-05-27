@@ -1262,6 +1262,11 @@ bool loadMapFromFile(const char *filen)
         mapHeight = 64;
         memset(stoneSurface,(int) 64 * MAX_STONE_HEIGHT, sizeof(stoneSurface));
         memset(biomeSurface, BIOME_FOREST, sizeof(biomeSurface));
+        for (int i = 0; i < 8 * 4; i++)
+        {
+            if (inventory[i] >= 100)
+                inventory[i] -= 73; // New version removes the 100 offset of items
+        }
 
         if (bytesRead != 4 + 1024 * 64 * sizeof(u8) + sizeof(inventory) + sizeof(inventoryQuantity))
         {
@@ -1270,8 +1275,8 @@ bool loadMapFromFile(const char *filen)
         }
 
         clearPrint();
-        printSmart(0, 0, "Old world loaded successfully! Consider saving it in the new format to avoid issues in the future.");
-        delay(3);
+        printSmart(0, 0, "Old world loaded successfully! Consider saving it in the new format to avoid issues in the future.\n\nEven if backwards compatibility was implemented, this world can still experience some issues.");
+        delay(5);
     }
     else
     {
@@ -1475,33 +1480,11 @@ void generateMap()
         {
             if (y >= grassSurface[x] && y < stoneSurface[x])
             {
-                switch (biomeSurface[x])
-                {
-                case BIOME_FOREST:
-                    setGameTerrain(x, y, TILE_DIRT);
-                    break;
-                case BIOME_DESERT:
-                    setGameTerrain(x, y, TILE_SAND);
-                    break;
-                default: // Just in case
-                    setGameTerrain(x, y, TILE_DIRT);
-                    break;
-                }
+                setGameTerrain(x, y, biomes[biomeSurface[x]].surfaceTile);
             }
             else if (y >= stoneSurface[x])
             {
-                switch (biomeSurface[x])
-                {
-                case BIOME_FOREST:
-                    setGameTerrain(x, y, TILE_STONE);
-                    break;
-                case BIOME_DESERT:
-                    setGameTerrain(x, y, TILE_HARDENED_SAND);
-                    break;
-                default: // Just in case
-                    setGameTerrain(x, y, TILE_STONE);
-                    break;
-                }
+                setGameTerrain(x, y, biomes[biomeSurface[x]].undergroundTile);
             }
         }
         if (x % (mapWidth / 32) == 0)
@@ -1566,33 +1549,11 @@ void generateMap()
             {
                 if (y >= grassSurface[x] && y < stoneSurface[x])
                 {
-                    switch (biomeSurface[x])
-                    {
-                    case BIOME_FOREST:
-                        setGameTerrain(x, y, TILE_DIRT_WALL);
-                        break;
-                    case BIOME_DESERT:
-                        setGameTerrain(x, y, TILE_SANDSTONE_WALL);
-                        break;
-                    default: // Just in case
-                        setGameTerrain(x, y, TILE_DIRT_WALL);
-                        break;
-                    }
+                    setGameTerrain(x, y, biomes[biomeSurface[x]].surfaceWall);
                 }
                 else if (y >= stoneSurface[x])
                 {
-                    switch (biomeSurface[x])
-                    {
-                    case BIOME_FOREST:
-                        setGameTerrain(x, y, TILE_STONE_WALL);
-                        break;
-                    case BIOME_DESERT:
-                        setGameTerrain(x, y, TILE_SANDSTONE_WALL);
-                        break;
-                    default: // Just in case
-                        setGameTerrain(x, y, TILE_STONE_WALL);
-                        break;
-                    }
+                    setGameTerrain(x, y, biomes[biomeSurface[x]].undergroundWall);
                 }
             }
         }
@@ -1606,7 +1567,7 @@ void generateMap()
     printDirect("Placing trees...\n");
     for (int x = 1; x < mapWidth - 1; x++)
     {
-        if (rando(1, TREE_CHANCE) == 1 && gameTerrain[x + (grassSurface[x] + 1) * MAP_WIDTH_MAX] == TILE_DIRT)
+        if (rando(1, TREE_CHANCE) == 1 && gameTerrain[x + (grassSurface[x] + 1) * MAP_WIDTH_MAX] == TILE_DIRT && biomeSurface[x] == BIOME_FOREST)
         {
             int tree_height = rando(MIN_TREE_HEIGHT, MAX_TREE_HEIGHT);
             // Tree trunk
@@ -1634,7 +1595,7 @@ void generateMap()
     printDirect("Placing mushrooms...\n");
     for (int x = 1; x < mapWidth - 1; x++)
     {
-        if (rando(1, MUSHROOM_CHANCE) == 1 && gameTerrain[x + grassSurface[x] * MAP_WIDTH_MAX] == TILE_DIRT && gameTerrain[x + (grassSurface[x] - 1) * MAP_WIDTH_MAX] == TILE_AIR)
+        if (rando(1, MUSHROOM_CHANCE) == 1 && gameTerrain[x + grassSurface[x] * MAP_WIDTH_MAX] == TILE_DIRT && gameTerrain[x + (grassSurface[x] - 1) * MAP_WIDTH_MAX] == TILE_AIR && biomeSurface[x] == BIOME_FOREST)
         {
             setGameTerrain(x, grassSurface[x] - 1, TILE_MUSHROOM);
         }

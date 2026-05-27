@@ -209,6 +209,15 @@ typedef struct
 	bool isItem; // To distinguish between non-placeable tiles and so
 } TileProperties;
 
+typedef struct
+{
+	char name[32];
+	int surfaceTile;
+	int surfaceWall;
+	int undergroundTile;
+	int undergroundWall;
+} BiomeProperties;
+
 // Define the player entity
 Player player = {0, 0, 0, 0, 0, NULL, 16, 24, false, true, 1, 0, 0, true, false, 4, 100, 100, 0, 0, ANIM_NONE};
 
@@ -449,6 +458,10 @@ const TileProperties tileProperties[TILES] = {
 	{"Hardened Sand", false, 15, 124, 150, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false},
 };
 
+const BiomeProperties biomes[BIOMES] = {
+	{"Forest", TILE_DIRT, TILE_DIRT_WALL, TILE_STONE, TILE_STONE_WALL},
+	{"Desert", TILE_SAND, TILE_SANDSTONE_WALL, TILE_HARDENED_SAND, TILE_SANDSTONE_WALL},
+};
 // Define MAX_ITEMS_TOTAL slots for item entities
 Item item[MAX_ITEMS_TOTAL];
 
