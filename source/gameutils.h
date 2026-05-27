@@ -44,6 +44,15 @@ int getElementTile(int tile, int x, int y) // Tile will change based on surround
     case TILE_TIN_ORE:
         offset = 12;
         break;
+    case TILE_SAND:
+        offset = 13;
+        break;
+    case TILE_SANDSTONE_WALL:
+        offset = 14;
+        break;
+    case TILE_HARDENED_SAND:
+        offset = 15;
+        break;
     case TILE_WOODLOG:
         return 2;
     case TILE_MUSHROOM:
@@ -244,6 +253,12 @@ int getItemTile(int item)
         return 108;
     case ITEM_GEL:
         return 112;
+    case TILE_SAND:
+        return 116;
+    case TILE_SANDSTONE_WALL:
+        return 120;
+    case TILE_HARDENED_SAND:
+        return 124;
     default:
         return 56;
     }
@@ -305,6 +320,12 @@ char *getElementName(int element)
         return "Platinum Coin";
     case ITEM_GEL:
         return "Gel";
+    case TILE_SAND:
+        return "Sand";
+    case TILE_SANDSTONE_WALL:
+        return "Sandstone Wall";
+    case TILE_HARDENED_SAND:
+        return "Hardened Sand";
     default:
         return "";
     }
@@ -315,9 +336,11 @@ int getElementHealth(int element)
     switch (element)
     {
     case TILE_DIRT:
+    case TILE_SAND:
         return 100;
     case TILE_STONE:
-        return 300;
+    case TILE_HARDENED_SAND:
+        return 150;
     case TILE_WOODLOG:
         return 200;
     case TILE_PLANKS:
@@ -328,11 +351,11 @@ int getElementHealth(int element)
         return 10;
     case TILE_DIRT_WALL:
     case TILE_STONE_WALL:
+    case TILE_WOOD_WALL:
+    case TILE_SANDSTONE_WALL:
         return 100;
     case TILE_DEMONITE_BRICK:
         return INFINITY;
-    case TILE_WOOD_WALL:
-        return 100;
     case TILE_COPPER_ORE:
     case TILE_TIN_ORE:
         return 200;
@@ -390,7 +413,7 @@ bool isToolCompatible(int tool, int tile)
     {
     case ITEM_COPPER_PICKAXE:
     case ITEM_TIN_PICKAXE:
-        return tile == TILE_STONE || tile == TILE_DIRT || tile == TILE_PLANKS || tile == TILE_MUSHROOM || tile == TILE_DEMONITE_BRICK || tile == TILE_COPPER_ORE || tile == TILE_WOODEN_DOOR_CLOSED_1 || tile == TILE_WOODEN_DOOR_CLOSED_2 || tile == TILE_WOODEN_DOOR_CLOSED_3 || tile == TILE_WOODEN_DOOR_OPEN_1 || tile == TILE_WOODEN_DOOR_OPEN_2 || tile == TILE_WOODEN_DOOR_OPEN_3 || TILE_WOODEN_DOOR_OPEN_4 || TILE_WOODEN_DOOR_OPEN_5 || TILE_WOODEN_DOOR_OPEN_6;
+        return tile == TILE_STONE || tile == TILE_DIRT || tile == TILE_PLANKS || tile == TILE_MUSHROOM || tile == TILE_DEMONITE_BRICK || tile == TILE_COPPER_ORE || tile == TILE_TIN_ORE || tile == TILE_WOODEN_DOOR_CLOSED_1 || tile == TILE_WOODEN_DOOR_CLOSED_2 || tile == TILE_WOODEN_DOOR_CLOSED_3 || tile == TILE_WOODEN_DOOR_OPEN_1 || tile == TILE_WOODEN_DOOR_OPEN_2 || tile == TILE_WOODEN_DOOR_OPEN_3 || tile == TILE_WOODEN_DOOR_OPEN_4 || tile == TILE_WOODEN_DOOR_OPEN_5 || tile == TILE_WOODEN_DOOR_OPEN_6 || tile == TILE_HARDENED_SAND || tile == TILE_SAND;
     case ITEM_COPPER_AXE:
     case ITEM_TIN_AXE:
         return tile == TILE_WOODLOG || tile == TILE_LEAVES || tile == TILE_MUSHROOM;
@@ -399,7 +422,7 @@ bool isToolCompatible(int tool, int tile)
         return tile == TILE_MUSHROOM; // Can break mushrooms
     case ITEM_COPPER_HAMMER:
     case ITEM_TIN_HAMMER:
-        return tile == TILE_DIRT_WALL || tile == TILE_STONE_WALL || tile == TILE_WOOD_WALL; // Can break walls
+        return tile == TILE_DIRT_WALL || tile == TILE_STONE_WALL || tile == TILE_WOOD_WALL || tile == TILE_SANDSTONE_WALL; // Can break walls
     default:
         return false;
     }
@@ -418,6 +441,8 @@ bool isTileSolid(int tile)
     case TILE_WOODEN_DOOR_CLOSED_1:
     case TILE_WOODEN_DOOR_CLOSED_2:
     case TILE_WOODEN_DOOR_CLOSED_3:
+    case TILE_SAND:
+    case TILE_HARDENED_SAND:
         return true;
     default:
         return false;
@@ -431,6 +456,7 @@ bool isElementWall(int tile)
     case TILE_DIRT_WALL:
     case TILE_STONE_WALL:
     case TILE_WOOD_WALL:
+    case TILE_SANDSTONE_WALL:
         return true;
     default:
         return false;
@@ -500,7 +526,7 @@ void changeTextBackground()
     Bg0UpFill(0);
 };
 
-void setInventorySelection(u8 slot)
+void setInventorySelectionNoSound(u8 slot)
 {
     slot = slot % (inventoryOpen ? 32 : 8);
     inventorySelection = inventoryOpen ? clamp(slot, 0, 31) : clamp(slot, 0, 7);
@@ -521,6 +547,11 @@ void setInventorySelection(u8 slot)
         oamSet(&oamMain, 0, x, y, 0, 0, SpriteSize_32x32, SpriteColorFormat_256Color, inventorySelectionSprite, -1, false, false, false, false, false);
         oamUpdate(&oamMain);
     }
+}
+
+void setInventorySelection(u8 slot)
+{
+    setInventorySelectionNoSound(slot);
     mmEffect(SFX_ENU_TICK);
 }
 
@@ -614,6 +645,9 @@ void renderCrafting()
                 printVal((i % 4) * 4 + 1, (i / 4) * -4 + 23, craftingRecipes[i + craftingOffset * 16].quantity);
             }
         }
+        printVal(16, 19, craftingOffset + 1);
+        printDirect("/");
+        printValDirect(((sizeof(craftingRecipes) / sizeof(craftingRecipes[0])) / 16) + 1);
     }
 }
 
@@ -693,6 +727,11 @@ void inventorySetCrafting()
 
     for (int j = 0; j < 16; j++)
         Bg0UpSetTile(27 + j % 4, j / 4, 48 + j);
+
+    for (int j = 0; j < 16; j++)
+        Bg0UpSetTile(16 + j % 4, 20 + j / 4, 96 + j);
+    for (int j = 0; j < 16; j++)
+        Bg0UpSetTile(20 + j % 4, 20 + j / 4, 112 + j);
 
     for (int j = 0; j < 16; j++)
         Bg0UpSetTile(24 + j % 4, 20 + j / 4, 64 + j);
@@ -797,6 +836,36 @@ void playerPutGameTerrain(int x, int y, int tile)
         mmEffect(SFX_IG_2);
         break;
     }
+}
+
+bool takeInventory(int item, int quantity)
+{
+    // Count total first to fail early
+    int total = 0;
+    for (int i = 0; i < 8 * 4; i++)
+        if (inventory[i] == item)
+            total += inventoryQuantity[i];
+    if (total < quantity)
+        return false; // Can't remove more than we have
+
+    while (quantity > 0)
+    {
+        for (int i = 0; i < 8 * 4; i++)
+        {
+            int j = (item >= ITEM_COPPER_COIN && item <= ITEM_PLATINUM_COIN) ? (8 * 4 - 1 - i) : i;
+            if (inventory[j] == item && inventoryQuantity[j] > 0)
+            {
+                int remove = min(inventoryQuantity[j], quantity);
+                setInventory(j, item, inventoryQuantity[j] - remove);
+                if (inventoryQuantity[j] == 0)
+                    setInventory(j, 0, 0); // Clear slot
+                quantity -= remove;
+                if (quantity <= 0)
+                    return true;
+            }
+        }
+    }
+    return true;
 }
 
 bool giveInventory(int item, int quantity)
@@ -1319,7 +1388,7 @@ void removeEntity(int id)
 void killEntity(int id)
 {
     removeEntity(id);
-    EntityProperties *e = &entities[entity[id].type]; // Pointers are so sexy
+    const EntityProperties *e = &entities[entity[id].type]; // Pointers are so sexy
     if (e->dropCount > 0)
     {
         for (int i = 0; i < e->dropCount; i++)
@@ -1372,11 +1441,20 @@ void damageEntity(int id, int damage)
     }
 }
 
-int getHighestTileY(int x)
+int getHighestTileYFrom(int x, int yy)
 {
+
     if (x < 0 || x >= mapWidth)
         return mapHeight;
-    for (int y = 0; y < mapHeight; y++)
+    for (int y = yy; y < mapHeight; y++)
+    {
+        if (isTileSolid(gameTerrain[x + y * MAP_WIDTH_MAX]))
+        {
+            return y;
+        }
+    }
+    // else
+    for (int y = 0; y < yy; y++)
     {
         if (isTileSolid(gameTerrain[x + y * MAP_WIDTH_MAX]))
         {
@@ -1384,6 +1462,11 @@ int getHighestTileY(int x)
         }
     }
     return mapHeight; // No solid tile found
+}
+
+int getHighestTileY(int x)
+{
+    return getHighestTileYFrom(x, 0);
 }
 
 void setPlayerAnimFrame(int frame)
@@ -1460,12 +1543,14 @@ bool saveMapToFile(const char *filen)
     size_t bytesWritten = fwrite(&magic, 1, 4, file);
     bytesWritten += fwrite(&mapWidth, 1, 4, file);
     bytesWritten += fwrite(&mapHeight, 1, 4, file);
+    bytesWritten += fwrite(stoneSurface, 1, sizeof(stoneSurface), file);
+    bytesWritten += fwrite(biomeSurface, 1, sizeof(biomeSurface), file);
     bytesWritten += fwrite(gameTerrain, 1, sizeof(gameTerrain), file);
     bytesWritten += fwrite(inventory, 1, sizeof(inventory), file);
     bytesWritten += fwrite(inventoryQuantity, 1, sizeof(inventoryQuantity), file);
     fclose(file);
 
-    if (bytesWritten != 4 + 4 + 4 + sizeof(gameTerrain) + sizeof(inventory) + sizeof(inventoryQuantity))
+    if (bytesWritten != 4 + 4 + 4 + sizeof(stoneSurface) + sizeof(biomeSurface) + sizeof(gameTerrain) + sizeof(inventory) + sizeof(inventoryQuantity))
     {
         print(0, 0, "Map save error");
         return false;
@@ -1527,12 +1612,14 @@ bool loadMapFromFile(const char *filen)
         }
         bytesRead += fread(&mapWidth, 1, 4, file);
         bytesRead += fread(&mapHeight, 1, 4, file);
+        bytesRead += fread(stoneSurface, 1, sizeof(stoneSurface), file);
+        bytesRead += fread(biomeSurface, 1, sizeof(biomeSurface), file);
         bytesRead += fread(gameTerrain, 1, sizeof(gameTerrain), file);
         bytesRead += fread(inventory, 1, sizeof(inventory), file);
         bytesRead += fread(inventoryQuantity, 1, sizeof(inventoryQuantity), file);
         fclose(file);
 
-        if (bytesRead != 4 + 4 + 4 + sizeof(gameTerrain) + sizeof(inventory) + sizeof(inventoryQuantity))
+        if (bytesRead != 4 + 4 + 4 + sizeof(stoneSurface) + sizeof(biomeSurface) + sizeof(gameTerrain) + sizeof(inventory) + sizeof(inventoryQuantity))
         {
             print(0, 0, "Map load error");
             return false;
@@ -1541,8 +1628,9 @@ bool loadMapFromFile(const char *filen)
 
     player.x = mapWidth * 8 / 2;
     player.y = 0;
-    lastCamTileX = -33;
-    lastCamTileY = -33;
+    player.invincibilityFrames = 60 * 3;
+    lastCamTileX = -67;
+    lastCamTileY = -67;
     renderInventory();
     renderCrafting();
     print(0, 0, "Map loaded from ");
@@ -1648,7 +1736,6 @@ void generateWorldName(char *nameBuffer, size_t bufferSize)
 void generateMap()
 {
     u8 grassSurface[mapWidth];
-    u8 stoneSurface[mapWidth];
     int seed = rando(0, 99999999);
 
     generateWorldName(worldFileName, sizeof(worldFileName));
@@ -1659,6 +1746,17 @@ void generateMap()
     printDirect(worldFileName);
     printDirect("...\n");
     strcat(worldFileName, ".ter");
+
+    int idx = 0;
+    while (idx < mapWidth)
+    {
+        int biome = rando(0, BIOMES - 1);
+        int len = rando(1, mapWidth - idx);
+        for (int i = 0; i < len && idx < mapWidth; i++)
+        {
+            biomeSurface[idx++] = biome;
+        }
+    }
 
     for (int x = 0; x < mapWidth; x++)
     {
@@ -1705,11 +1803,33 @@ void generateMap()
         {
             if (y >= grassSurface[x] && y < stoneSurface[x])
             {
-                setGameTerrain(x, y, TILE_DIRT);
+                switch (biomeSurface[x])
+                {
+                case BIOME_FOREST:
+                    setGameTerrain(x, y, TILE_DIRT);
+                    break;
+                case BIOME_DESERT:
+                    setGameTerrain(x, y, TILE_SAND);
+                    break;
+                default: // Just in case
+                    setGameTerrain(x, y, TILE_DIRT);
+                    break;
+                }
             }
             else if (y >= stoneSurface[x])
             {
-                setGameTerrain(x, y, TILE_STONE);
+                switch (biomeSurface[x])
+                {
+                case BIOME_FOREST:
+                    setGameTerrain(x, y, TILE_STONE);
+                    break;
+                case BIOME_DESERT:
+                    setGameTerrain(x, y, TILE_HARDENED_SAND);
+                    break;
+                default: // Just in case
+                    setGameTerrain(x, y, TILE_STONE);
+                    break;
+                }
             }
         }
         if (x % (mapWidth / 32) == 0)
@@ -1773,9 +1893,35 @@ void generateMap()
             if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_AIR)
             {
                 if (y >= grassSurface[x] && y < stoneSurface[x])
-                    setGameTerrain(x, y, TILE_DIRT_WALL);
+                {
+                    switch (biomeSurface[x])
+                    {
+                    case BIOME_FOREST:
+                        setGameTerrain(x, y, TILE_DIRT_WALL);
+                        break;
+                    case BIOME_DESERT:
+                        setGameTerrain(x, y, TILE_SANDSTONE_WALL);
+                        break;
+                    default: // Just in case
+                        setGameTerrain(x, y, TILE_DIRT_WALL);
+                        break;
+                    }
+                }
                 else if (y >= stoneSurface[x])
-                    setGameTerrain(x, y, TILE_STONE_WALL);
+                {
+                    switch (biomeSurface[x])
+                    {
+                    case BIOME_FOREST:
+                        setGameTerrain(x, y, TILE_STONE_WALL);
+                        break;
+                    case BIOME_DESERT:
+                        setGameTerrain(x, y, TILE_SANDSTONE_WALL);
+                        break;
+                    default: // Just in case
+                        setGameTerrain(x, y, TILE_STONE_WALL);
+                        break;
+                    }
+                }
             }
         }
         if (x % (mapWidth / 32) == 0)
@@ -1851,6 +1997,16 @@ void generateMap()
     player.maxHealth = 100;
     player.invincibilityFrames = 300;
     gametime = 0;
+
+    for (int i = 0; i < ENTITY_COUNT; i++)
+    {
+        removeEntity(i);
+    }
+
+    for (int i = 0; i < MAX_ITEMS; i++)
+    {
+        destroyItem(i);
+    }
 
     printDirect("Giving you some tools to start with...");
     giveInventory(ITEM_COPPER_LONGSWORD, 1);

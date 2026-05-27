@@ -50,6 +50,8 @@
 #define MAX_ITEMS_TOTAL 64 // Maximum items in the world at once
 #define ENTITY_COUNT 16 // Maximum number of entities in the game at once
 
+#define MAX_ITEM_AGE 60 * 60 * 5 // 5 minutes
+
 #define TREE_CHANCE 3
 #define MUSHROOM_CHANCE 4
 #define MIN_TREE_HEIGHT 3
@@ -61,9 +63,6 @@
 
 #define MAX_SCALE 256
 #define MIN_SCALE 128
-
-#define ENTITY_SPRITESHEET_WIDTH 16
-#define ENTITIES 8
 
 // Define game elements
 
@@ -118,7 +117,13 @@ enum // Make sure the indexing follows the one in the textures
     ITEM_PLATINUM_COIN,
 
     ITEM_GEL,
+
+    TILE_SAND,
+    TILE_SANDSTONE_WALL,
+    TILE_HARDENED_SAND,
 };
+
+#define ENTITY_SPRITESHEET_WIDTH 16
 
 enum // Entities
 {
@@ -130,6 +135,9 @@ enum // Entities
     ENTITY_DEMON_EYE,
     ENTITY_CATARACT_EYE,
     ENTITY_SLIMED_ZOMBIE,
+    ENTITY_SAND_SLIME,
+
+    ENTITIES, // This is a cursed technique I learned in a Dojo in Tokyo where it automatically defines the size of the enum
 };
 
 enum // Entity type
@@ -153,4 +161,12 @@ enum // Animations
     ANIM_NONE,
     ANIM_WALK,
     ANIM_JUMP,
+};
+
+enum // Biomes
+{
+    BIOME_FOREST,
+    BIOME_DESERT,
+
+    BIOMES, // Long live the C-monks
 };

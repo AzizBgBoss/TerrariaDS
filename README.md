@@ -85,13 +85,14 @@ Initial commit with basic project structure.
 - Ability to save character data and world data independently.
 - Probably converting all tile handling data to a struct.
 - Add swinging animation.
-- Add more biomes (desert, jungle, etc.).
 - Add particles (for example when breaking blocks).
 - More bug fixes and optimizations.
 - Show health as hearts.
 - Add more music.
-- Add more crafting recipes.
 - Use more pointers for cleaner code.
+- Add more crafting recipes. ***(done: now implemented pages)***
+- Add more biomes. ***(done: desert)***
+- Implement entity spawning based on biome and layer ***(done: it was a bit complicated, but now entities spawn based on time, biome, and layer (surface/underground))***
 - Better and more efficient world generation. ***(done: it's a bit faster now)***
 - Add currency. ***(done)***
 - Add X axis velocity ***(done: this allowed to implement knockback and fix some collision bugs)***

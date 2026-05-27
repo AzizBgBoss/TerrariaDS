@@ -610,6 +610,7 @@ mainMenu:
 						printDirect("\nAll entities killed!");
 						break;
 					case 3:
+						player.invincibilityFrames = 0;
 						playerDamage(9999);
 						printDirect("\nPlayer killed!");
 						break;
@@ -896,7 +897,7 @@ mainMenu:
 							{
 								for (int i = 0; i < craftingRecipes[craftingSelection + craftingOffset * 16].ingredientCount; i++)
 								{
-									giveInventory(craftingRecipes[craftingSelection + craftingOffset * 16].itemsNeeded[i], -craftingRecipes[craftingSelection + craftingOffset * 16].itemsNeededQuantity[i]);
+									takeInventory(craftingRecipes[craftingSelection + craftingOffset * 16].itemsNeeded[i], craftingRecipes[craftingSelection + craftingOffset * 16].itemsNeededQuantity[i]);
 								}
 								giveInventory(craftingRecipes[craftingSelection + craftingOffset * 16].item, craftingRecipes[craftingSelection + craftingOffset * 16].quantity);
 								print(0, 1, "                                  ");
@@ -1393,6 +1394,11 @@ mainMenu:
 		{
 			if (item[i].exists)
 			{
+				if (frame - item[i].atFrame >= MAX_ITEM_AGE)
+				{
+					destroyItem(i);
+					continue;
+				}
 				// Item falls until it hits a tile
 				// TODO: if item inside a tile, try to get it to the closest side with a non solid tile
 				if (!isTileSolid(gameTerrain[item[i].x / 8 + (item[i].y + 8 + item[i].velocity) / 8 * MAP_WIDTH_MAX]))
@@ -1432,6 +1438,7 @@ mainMenu:
 					if (item[i].exists && item[j].exists && item[j].tile == item[i].tile && item[j].x >= item[i].x - 32 && item[j].x < item[i].x + 32 && item[j].y >= item[i].y - 32 && item[j].y < item[i].y + 32)
 					{
 						item[i].quantity += item[j].quantity;
+						item[i].atFrame = frame;
 						destroyItem(j);
 					}
 				}
@@ -1506,66 +1513,43 @@ mainMenu:
 				darkness = 0; // Day time
 			}
 
-			if (gametime >= DAY_LENGTH / 2 && gametime < DAY_LENGTH - 16)
-			{ // Night time
-				if (rando(0, 15) == 0)
-				{
-					int entityToSpawn = -1;
-					while (entityToSpawn == -1)
-					{
-						int i = rando(0, sizeof(entities) / sizeof(entities[0]) - 1);
-						if (entities[i].type == ENTITY_TYPE_HOSTILE)
-						{
-							entityToSpawn = i;
-						}
-					}
-					int spawnX = rando(0, 1) ? rando(-SCREEN_WIDTH * 2, -SCREEN_WIDTH) : rando(SCREEN_WIDTH, SCREEN_WIDTH * 2); // Spawn on left or right side of the screen
-					spawnEntity(entityToSpawn,
-								scrollX + SCREEN_WIDTH / 2 + spawnX,
-								getHighestTileY(spawnX / 8) - entities[entityToSpawn].sizeY);
-				}
+			bool isDay = gametime >= 0 && gametime < DAY_LENGTH / 2;
 
-				for (int i = 0; i < ENTITY_COUNT; i++)
+			if (rando(0, 10) == 0)
+			{
+				int spawnX, spawnY;
+				int attempts = 0; // A failsafe if we can't find an entity to spawn, kept it shared just in case of a very bad luck
+				do
 				{
-					if (entity[i].exists && entities[entity[i].type].type == ENTITY_TYPE_PASSIVE)
-					{
-						Entity *E = &entity[i];
-						if (!isInPlayerRadius(E->x, E->y, SCREEN_WIDTH) && rando(1, 10) == 1) // 1 in 10 chance to despawn if out of range
-						{
-							removeEntity(i);
-						}
-					}
-				}
-			}
-			else
-			{ // Day time
-				if (rando(0, 20) == 0)
-				{
-					int entityToSpawn = -1;
-					while (entityToSpawn == -1)
-					{
-						int i = rando(0, sizeof(entities) / sizeof(entities[0]) - 1);
-						if (entities[i].type == ENTITY_TYPE_PASSIVE)
-						{
-							entityToSpawn = i;
-						}
-					}
-					int spawnX = rando(0, 1) ? rando(-SCREEN_WIDTH * 2, -SCREEN_WIDTH) : rando(SCREEN_WIDTH, SCREEN_WIDTH * 2); // Spawn on left or right side of the screen
-					spawnEntity(entityToSpawn,
-								scrollX + SCREEN_WIDTH / 2 + spawnX,
-								getHighestTileY(spawnX / 8) - entities[entityToSpawn].sizeY);
-				}
+					int offsetX = rando(SCREEN_WIDTH / 2, SCREEN_WIDTH / 2 + 64) * (rando(0, 1) ? 1 : -1);
+					int offsetY = rando(SCREEN_HEIGHT / 2, SCREEN_HEIGHT / 2 + 64) * (rando(0, 1) ? 1 : -1);
 
-				for (int i = 0; i < ENTITY_COUNT; i++)
+					spawnX = clamp(scrollX + SCREEN_WIDTH / 2 + offsetX, 0, mapWidth * 8 - 1);
+					spawnY = clamp(scrollY + SCREEN_HEIGHT / 2 + offsetY, 0, mapHeight * 8 - 1);
+					spawnY = (getHighestTileYFrom(spawnX / 8, spawnY / 8) - 1) * 8;
+				} while ((isTileSolid(gameTerrain[spawnX / 8 + (spawnY / 8) * MAP_WIDTH_MAX]) ||
+						  !isTileSolid(gameTerrain[spawnX / 8 + (spawnY / 8 + 1) * MAP_WIDTH_MAX])) &&
+						 attempts++ < 100);
+				int entityToSpawn = -1;
+				while (entityToSpawn == -1 && attempts++ < 100)
 				{
-					if (entity[i].exists && entities[entity[i].type].type == ENTITY_TYPE_HOSTILE)
+					int i = rando(0, sizeof(entities) / sizeof(entities[0]) - 1);
+					if ((entities[i].isUnderground && spawnY / 8 >= stoneSurface[spawnX / 8]) ||
+						(entities[i].type == ENTITY_TYPE_HOSTILE && entities[i].isSurface && spawnY / 8 < stoneSurface[spawnX / 8] && !isDay) ||
+						(entities[i].type == ENTITY_TYPE_PASSIVE && entities[i].isSurface && spawnY / 8 < stoneSurface[spawnX / 8] && isDay))
 					{
-						Entity *E = &entity[i];
-						if (!isInPlayerRadius(E->x, E->y, SCREEN_WIDTH) && rando(1, 5) == 1) // 1 in 5 chance to despawn if out of range
+						for (int j = 0; j < entities[i].biomeCount; j++)
 						{
-							removeEntity(i);
+							if (biomeSurface[spawnX / 8] == entities[i].biomes[j])
+								entityToSpawn = i;
 						}
 					}
+				}
+				if (entityToSpawn != -1 && attempts < 100)
+				{
+					spawnEntity(entityToSpawn,
+								spawnX,
+								spawnY - entities[entityToSpawn].sizeY);
 				}
 			}
 
@@ -1574,17 +1558,31 @@ mainMenu:
 				if (entity[i].exists)
 				{
 					Entity *E = &entity[i];
-					if (E->x < 0 || E->x >= mapWidth * 8 || E->y < 0 || E->y >= mapHeight * 8)
+					if (!isInPlayerRadius(E->x, E->y, SCREEN_WIDTH * 2) &&
+						((entities[E->type].type == ENTITY_TYPE_HOSTILE && rando(1, 15) == 1) ||
+						 (entities[E->type].type == ENTITY_TYPE_PASSIVE && rando(1, 30) == 1)))
 					{
 						removeEntity(i);
 					}
 				}
 			}
-
-			REG_BLDALPHA_SUB =
-				(16 - darkness) | // BG0 weight
-				(darkness << 8);  // BG1 weight
 		}
+
+		for (int i = 0; i < ENTITY_COUNT; i++)
+		{
+			if (entity[i].exists)
+			{
+				Entity *E = &entity[i];
+				if (E->x < 0 || E->x >= mapWidth * 8 || E->y < 0 || E->y >= mapHeight * 8)
+				{
+					removeEntity(i);
+				}
+			}
+		}
+
+		REG_BLDALPHA_SUB =
+			(16 - darkness) | // BG0 weight
+			(darkness << 8);  // BG1 weight
 
 		// Rendering Part
 
@@ -1595,6 +1593,7 @@ mainMenu:
 By AzizBgBoss\n\
 https://github.com/AzizBgBoss/TerrariaDS");
 			renderInventoryNoSound();
+			setInventorySelectionNoSound(inventorySelection);
 
 			print(0, 8, "");
 

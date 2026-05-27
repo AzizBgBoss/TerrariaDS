@@ -16,6 +16,8 @@ int darkness = 0;
 
 char worldFileName[64];
 
+u8 stoneSurface[MAP_WIDTH_MAX] = {0};
+u8 biomeSurface[MAP_WIDTH_MAX] = {0};
 u8 gameTerrain[MAP_WIDTH_MAX * MAP_HEIGHT_MAX] = {0};
 u16 gameTerrainHealth[MAP_WIDTH_MAX * MAP_HEIGHT_MAX] = {0};
 
@@ -150,6 +152,10 @@ typedef struct
 	int drops[8];
 	int dropChance[8];	 // 1/x chance (example: 100% is 1, 50% is 2, 25% is 4, etc...)
 	int dropRange[8][2]; // [min, max] range for each drop
+	int biomeCount;
+	u8 biomes[8];
+	bool isUnderground;
+	bool isSurface;
 } EntityProperties;
 
 typedef struct
@@ -162,6 +168,7 @@ typedef struct
 	int tile;
 	u8 quantity;
 	int velocity;
+	int atFrame;
 } Item;
 
 typedef struct
@@ -185,7 +192,7 @@ Player player = {0, 0, 0, 0, 0, NULL, 16, 24, false, true, 1, 0, 0, true, false,
 
 Entity entity[ENTITY_COUNT];
 
-EntityProperties entities[ENTITIES] = {
+const EntityProperties entities[ENTITIES] = {
 	{
 		"Green Slime",
 		16,
@@ -201,6 +208,10 @@ EntityProperties entities[ENTITIES] = {
 		{ITEM_COPPER_COIN, TILE_COPPER_ORE, TILE_TIN_ORE, ITEM_COPPER_COIN, ITEM_SILVER_COIN, ITEM_GOLD_COIN, ITEM_GEL},
 		{1, 32, 32, 12, 12, 12, 1},
 		{{3, 3}, {3, 13}, {3, 13}, {50, 99}, {50, 99}, {1, 3}, {1, 2}},
+		1,
+		{BIOME_FOREST},
+		false,
+		true,
 	},
 	{
 		"Red Slime",
@@ -217,6 +228,10 @@ EntityProperties entities[ENTITIES] = {
 		{ITEM_COPPER_COIN, TILE_COPPER_ORE, TILE_TIN_ORE, ITEM_COPPER_COIN, ITEM_SILVER_COIN, ITEM_GOLD_COIN, ITEM_GEL},
 		{1, 32, 32, 12, 12, 12, 1},
 		{{8, 8}, {3, 13}, {3, 13}, {50, 99}, {50, 99}, {1, 3}, {2, 5}},
+		1,
+		{BIOME_FOREST},
+		true,
+		false,
 	},
 	{
 		"Blue Slime",
@@ -233,6 +248,10 @@ EntityProperties entities[ENTITIES] = {
 		{ITEM_COPPER_COIN, TILE_COPPER_ORE, TILE_TIN_ORE, ITEM_COPPER_COIN, ITEM_SILVER_COIN, ITEM_GOLD_COIN, ITEM_GEL},
 		{1, 32, 32, 12, 12, 12, 1},
 		{{25, 25}, {3, 13}, {3, 13}, {50, 99}, {50, 99}, {1, 3}, {1, 2}},
+		1,
+		{BIOME_FOREST},
+		true,
+		true,
 	},
 	{
 		"Bunny",
@@ -249,6 +268,10 @@ EntityProperties entities[ENTITIES] = {
 		{},
 		{},
 		{},
+		1,
+		{BIOME_FOREST},
+		false,
+		true,
 	},
 	{
 		"Zombie",
@@ -265,6 +288,10 @@ EntityProperties entities[ENTITIES] = {
 		{ITEM_COPPER_COIN},
 		{1},
 		{{60, 60}},
+		1,
+		{BIOME_FOREST},
+		false,
+		true,
 	},
 	{
 		"Demon Eye",
@@ -281,6 +308,10 @@ EntityProperties entities[ENTITIES] = {
 		{ITEM_COPPER_COIN},
 		{1},
 		{{75, 75}},
+		1,
+		{BIOME_FOREST},
+		false,
+		true,
 	},
 	{
 		"Cataract Eye",
@@ -297,6 +328,10 @@ EntityProperties entities[ENTITIES] = {
 		{ITEM_COPPER_COIN},
 		{1},
 		{{75, 75}},
+		1,
+		{BIOME_FOREST},
+		false,
+		true,
 	},
 	{
 		"Slimed Zombie",
@@ -313,6 +348,30 @@ EntityProperties entities[ENTITIES] = {
 		{ITEM_COPPER_COIN, ITEM_GEL},
 		{1, 1},
 		{{55, 55}, {1, 3}},
+		1,
+		{BIOME_FOREST},
+		false,
+		true,
+	},
+	{
+		"Sand Slime",
+		16,
+		12,
+		true,
+		1,
+		50,
+		15,
+		SpriteSize_32x32,
+		ENTITY_TYPE_HOSTILE,
+		ENTITY_AI_SLIME,
+		2,
+		{ITEM_COPPER_COIN, ITEM_GEL},
+		{1, 1},
+		{{75, 75}, {1, 2}},
+		1,
+		{BIOME_DESERT},
+		false,
+		true,
 	},
 };
 
@@ -320,7 +379,7 @@ EntityProperties entities[ENTITIES] = {
 Item item[MAX_ITEMS_TOTAL];
 
 // Define crafting recipes
-CraftingRecipe craftingRecipes[] = {
+const CraftingRecipe craftingRecipes[] = {
 	{TILE_WOOD_WALL, 4, 1, {TILE_PLANKS}, {1}},
 	{TILE_STONE_WALL, 4, 1, {TILE_STONE}, {1}},
 	{TILE_DIRT_WALL, 4, 1, {TILE_DIRT}, {1}},
@@ -336,6 +395,9 @@ CraftingRecipe craftingRecipes[] = {
 	{ITEM_COPPER_AXE, 1, 2, {TILE_PLANKS, TILE_COPPER_ORE}, {1, 3}},
 	{ITEM_COPPER_LONGSWORD, 1, 2, {TILE_PLANKS, TILE_COPPER_ORE}, {1, 3}},
 	{ITEM_COPPER_HAMMER, 1, 2, {TILE_PLANKS, TILE_COPPER_ORE}, {1, 1}},
+	{TILE_HARDENED_SAND, 1, 1, {TILE_SAND}, {2}},
+	{TILE_SANDSTONE_WALL, 4, 1, {TILE_HARDENED_SAND}, {1}},
+	{TILE_HARDENED_SAND, 1, 1, {TILE_SANDSTONE_WALL}, {4}},
 };
 
 u16 *bg2Map;
