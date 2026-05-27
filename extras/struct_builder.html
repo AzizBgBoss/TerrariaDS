@@ -881,7 +881,7 @@
         const tr = document.createElement('tr');
         tr.className = 'field-row-tr';
         tr.innerHTML = `
-      <td><input type="text" value="${esc(f.name)}" placeholder="fieldName" oninput="fields[${i}].name=this.value;renderFields();regenOutput()" style="width:100px"></td>
+      <td><input type="text" value="${esc(f.name)}" placeholder="fieldName" oninput="fields[${i}].name=this.value;regenOutput()" style="width:100px"></td>
       <td><select onchange="fields[${i}].type=this.value;renderFields();regenOutput()" style="width:120px">${typeOptions(f.type)}</select></td>
       <td><input type="text" value="${esc(f.extra)}" placeholder="${extraPH(f.type)}" oninput="fields[${i}].extra=this.value;regenOutput()" style="width:80px"></td>
       <td>${showLinked
