@@ -469,12 +469,32 @@ void playerPutGameTerrain(int x, int y, int tile)
     bool canPlace = false;
     if (tileProperties[tile].specialParam == SPECIAL_DOOR)
     {
-        if (isTileSolid(gameTerrain[x + (y + 1) * MAP_WIDTH_MAX]) &&
-            isTileSolid(gameTerrain[x + (y - 3) * MAP_WIDTH_MAX]))
+        if (y - 3 < 0 || y + 1 >= mapHeight) // Whole door is out of bounds
+        {
+            canPlace = false;
+        }
+        else if (isTileSolid(gameTerrain[x + (y + 1) * MAP_WIDTH_MAX]) && // Check if the 2 tiles below and above the door are solid
+                 isTileSolid(gameTerrain[x + (y - 3) * MAP_WIDTH_MAX]))
         {
             if (!isTileSolid(gameTerrain[x + y * MAP_WIDTH_MAX]) &&
                 !isTileSolid(gameTerrain[x + (y - 1) * MAP_WIDTH_MAX]) &&
                 !isTileSolid(gameTerrain[x + (y - 2) * MAP_WIDTH_MAX]))
+            {
+                canPlace = true;
+            }
+        }
+    }
+    else if (tileProperties[tile].specialParam == SPECIAL_WORKBENCH)
+    {
+        if (x + 1 >= mapWidth || y + 1 >= mapHeight) // Whole bench is out of bounds
+        {
+            canPlace = false;
+        }
+        else if (isTileSolid(gameTerrain[x + (y + 1) * MAP_WIDTH_MAX]) && // Check if the 2 tiles below and to the right of the bench are solid
+                 isTileSolid(gameTerrain[x + 1 + (y + 1) * MAP_WIDTH_MAX]))
+        {
+            if (!isTileSolid(gameTerrain[x + y * MAP_WIDTH_MAX]) &&
+                !isTileSolid(gameTerrain[x + 1 + y * MAP_WIDTH_MAX]))
             {
                 canPlace = true;
             }
@@ -509,10 +529,15 @@ void playerPutGameTerrain(int x, int y, int tile)
     inventoryQuantity[inventorySelection]--;
     setInventory(inventorySelection, inventory[inventorySelection], inventoryQuantity[inventorySelection]);
     setGameTerrain(x, y, tile);
+
     if (tileProperties[tile].specialParam == SPECIAL_DOOR)
     {
         setGameTerrain(x, y - 1, tile - 1);
         setGameTerrain(x, y - 2, tile - 2);
+    }
+    else if (tileProperties[tile].specialParam == SPECIAL_WORKBENCH)
+    {
+        setGameTerrain(x + 1, y, tile + 1);
     }
     switch (rando(0, 2))
     {
@@ -704,6 +729,15 @@ void breakTile(int x, int y, int speed)
                 }
             }
         }
+        else if (tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParam == SPECIAL_WORKBENCH)
+        {
+            dropItem(x, y, getElementDrop(gameTerrain[x + y * MAP_WIDTH_MAX]), 1);
+            int offset = tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParams[0] - 1;
+            for (int i = 0; i < 2; i++)
+            {
+                setGameTerrain(x- offset + i, y, TILE_AIR);
+            }
+        }
         else
         {
             dropItem(x, y, getElementDrop(gameTerrain[x + y * MAP_WIDTH_MAX]), 1);
@@ -782,7 +816,7 @@ void interact(int x, int y)
                                y - offsetY + i,
                                door + i);
             }
-            
+
             mmEffect(SFX_DOOR_CLOSE);
         }
     }

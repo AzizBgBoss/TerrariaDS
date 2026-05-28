@@ -501,6 +501,9 @@ const TileProperties tileProperties[TILES] = {
 
 	{"Snow", false, 16, 128, 100, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}},
 	{"Ice", false, 17, 132, 150, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}},
+
+	{"Workbench", true, 162, 136, 50, true, TILE_WORKBENCH_1, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_WORKBENCH, {1}},
+	{"", true, 163, 56, 50, true, TILE_WORKBENCH_1, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_WORKBENCH, {2}},
 };
 
 const BiomeProperties biomes[BIOMES] = {
@@ -534,6 +537,7 @@ const CraftingRecipe craftingRecipes[] = {
 	{TILE_HARDENED_SAND, 1, 1, {TILE_SANDSTONE_WALL}, {4}},
 	{TILE_ICE, 1, 1, {TILE_SNOW}, {2}},
 	{TILE_SNOW, 2, 1, {TILE_ICE}, {1}},
+	{TILE_WORKBENCH_1, 1, 1, {TILE_PLANKS}, {3}},
 };
 
 u16 *bg2Map;

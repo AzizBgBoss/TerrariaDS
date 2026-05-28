@@ -903,7 +903,7 @@ mainMenu:
 								print(0, 1, "                                  ");
 								print(0, 1, "Crafted ");
 								printDirect(getElementName(craftingRecipes[craftingSelection + craftingOffset * 16].item));
-								setCraftingSelection(craftingSelection + craftingOffset * 16);
+								setCraftingSelection(craftingSelection);
 								renderCrafting();
 							}
 							else

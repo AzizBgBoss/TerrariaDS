@@ -46,9 +46,9 @@
 
 #define DAY_LENGTH 600 // Day length in seconds
 
-#define MAX_ITEMS 16    // Maximum items to be rendered
+#define MAX_ITEMS 16       // Maximum items to be rendered
 #define MAX_ITEMS_TOTAL 64 // Maximum items in the world at once
-#define ENTITY_COUNT 16 // Maximum number of entities in the game at once
+#define ENTITY_COUNT 16    // Maximum number of entities in the game at once
 
 #define MAX_ITEM_AGE 60 * 60 * 5 // 5 minutes
 
@@ -127,6 +127,9 @@ enum // Make sure the indexing follows the one in the textures
     TILE_SNOW,
     TILE_ICE,
 
+    TILE_WORKBENCH_1,
+    TILE_WORKBENCH_2,
+
     TILES,
 };
 
@@ -192,6 +195,7 @@ enum // Tool type
 enum // Special parameter for tiles
 {
     SPECIAL_NONE,
-    SPECIAL_DOOR, // specialParams[] = {int isOpen (0-1), int isRight (0-1), int part (1-6)}
-    SPECIAL_TREE, // specialParams[] = {int leafTile}
+    SPECIAL_DOOR,      // specialParams[] = {int isOpen (0-1), int isRight (0-1), int part (1-6)}
+    SPECIAL_TREE,      // specialParams[] = {int leafTile}
+    SPECIAL_WORKBENCH, // specialParams[] = {int part (1-2)}
 };
