@@ -81,7 +81,6 @@ Initial commit with basic project structure.
 - Add sound effects. ***(done)***
 
 ### Version 0.2 (In progress):
-- Rework special tiles.
 - Ability to save character data and world data independently.
 - Add swinging animation.
 - Add particles (for example when breaking blocks).
@@ -89,7 +88,8 @@ Initial commit with basic project structure.
 - Show health as hearts.
 - Add more music and intros.
 - Use more pointers for cleaner code.
-- Implement dynamic crafting recipes (based on nearby stations) ***(done)***.
+- Add chests.
+- Implement dynamic crafting recipes (based on nearby stations). ***(done)***
 - Add crafting stations (workbench, furnace, etc...). ***(done for now: Workbench)***
 - Probably converting all tile handling data to a struct (even special tiles). ***(done: this is great news, now I can add a huge variety of special tiles with the same function easily)***
 - Add more crafting recipes. ***(done: now implemented pages)***
@@ -108,7 +108,7 @@ Initial commit with basic project structure.
 - Add ability to change button mappings (since many DS'es (including mine) have malfunctioning shoulder buttons because of dust accumulation under them over the years).
 - Add crimson/corruption.
 - Add improved lighting.
-- Multiplayer support.
+- Multiplayer support (based on my experience, this will be a fucking nightmare).
 - Skins (or changeable player styles).
 - Add mana and magic items.
 - Add bosses.
