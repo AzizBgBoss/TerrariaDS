@@ -132,6 +132,9 @@ enum // Make sure the indexing follows the one in the textures
     TILE_WORKBENCH_1,
     TILE_WORKBENCH_2,
 
+    TILE_IRON_ORE,
+    TILE_GOLD_ORE,
+
     TILES,
 };
 

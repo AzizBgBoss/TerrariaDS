@@ -1332,27 +1332,42 @@ void generateMap()
 
     // Generate ores
     printDirect("Generating ores...\n");
-    for (int x = 0; x < mapWidth; x++)
+    int veins = rando(mapWidth * mapHeight / (64 * 2), mapWidth * mapHeight / (64 * 1)); // Number of ore veins to generate (proportional to map size)
+    const int ores[] = {TILE_COPPER_ORE, TILE_TIN_ORE, TILE_IRON_ORE, TILE_GOLD_ORE};
+    const int oresSize = sizeof(ores) / sizeof(ores[0]);
+    for (int i = 0; i < veins; i++)
     {
-        for (int y = 0; y < mapHeight; y++)
+        int centerX = rando(0, mapWidth - 1);
+        int centerY = rando(stoneSurface[centerX], mapHeight - 1);
+        int ore = ores[rando(0, oresSize - 1)];
+
+        int x = centerX, y = centerY;
+        if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_AIR)
+            continue;
+        setGameTerrain(x, y, ore);
+
+        while (true)
         {
-            if (y >= stoneSurface[x])
+            x += rando(-1, 1);
+            y += rando(-1, 1);
+            if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight)
             {
-                float caveNoise = fractalPerlin2D(x, y, 6, 0.4f, 0.06f, seed + 69);
-                if (caveNoise < -0.2f) // Adjust this threshold to control ores density
-                {
-                    setGameTerrain(x, y, TILE_COPPER_ORE);
-                }
-                else if (caveNoise > 0.2f)
-                {
-                    setGameTerrain(x, y, TILE_TIN_ORE);
-                }
+                continue;
             }
-        }
-        if (x % (mapWidth / 32) == 0)
-        {
+            if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_AIR)
+                continue;
+            setGameTerrain(x, y, ore);
+
+            int dist = abs(centerX - x) + abs(centerY - y);
+
+            if (rando(0, 100) < dist * 2) // Chance to stop the vein (grows with distance)
+                break;
+        }   
+
+        int step = (veins > 32) ? (veins / 32) : 1;
+
+        if (i % step == 0)
             printDirect(".");
-        }
     }
 
     // Generate caves

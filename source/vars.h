@@ -81,6 +81,8 @@ const char *titleSplashes[] = {
 	"Please don't sue me :(",
 	"The comments are not only for you to understand, but for me to not make the same mistake again...",
 	"Using a copper pickaxe, you can break a Demonite tile after exactly 68 years",
+	"Never speak ill of Triple T",
+	"NO, IT'S NOT 2D MINECRAFT"
 };
 
 u16 *nullSprite;
@@ -506,6 +508,9 @@ const TileProperties tileProperties[TILES] = {
 
 	{"Workbench", true, 162, 136, 50, true, TILE_WORKBENCH_1, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_WORKBENCH, {1}},
 	{"", true, 163, 56, 50, true, TILE_WORKBENCH_1, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_WORKBENCH, {2}},
+
+	{"Iron Ore", false, 19, 140, 200, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}},
+	{"Gold Ore", false, 20, 144, 200, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}},
 };
 
 const BiomeProperties biomes[BIOMES] = {
