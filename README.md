@@ -87,8 +87,9 @@ Initial commit with basic project structure.
 - Add particles (for example when breaking blocks).
 - More bug fixes and optimizations.
 - Show health as hearts.
-- Add more music.
+- Add more music and intros.
 - Use more pointers for cleaner code.
+- Add crafting stations (workbench, furnace, etc...).
 - Probably converting all tile handling data to a struct (even special tiles). ***(done: this is great news, now I can add a huge variety of special tiles with the same function easily)***
 - Add more crafting recipes. ***(done: now implemented pages)***
 - Add more biomes. ***(done: desert, snow)***
