@@ -467,7 +467,7 @@ void playerPutGameTerrain(int x, int y, int tile)
 
     // The difference is that we check the surrounding tiles to prevent placing tiles out of thin air
     bool canPlace = false;
-    if (tile == TILE_WOODEN_DOOR_CLOSED_3)
+    if (tileProperties[tile].specialParam == SPECIAL_DOOR)
     {
         if (isTileSolid(gameTerrain[x + (y + 1) * MAP_WIDTH_MAX]) &&
             isTileSolid(gameTerrain[x + (y - 3) * MAP_WIDTH_MAX]))
@@ -509,10 +509,10 @@ void playerPutGameTerrain(int x, int y, int tile)
     inventoryQuantity[inventorySelection]--;
     setInventory(inventorySelection, inventory[inventorySelection], inventoryQuantity[inventorySelection]);
     setGameTerrain(x, y, tile);
-    if (tile == TILE_WOODEN_DOOR_CLOSED_3)
+    if (tileProperties[tile].specialParam == SPECIAL_DOOR)
     {
-        setGameTerrain(x, y - 1, TILE_WOODEN_DOOR_CLOSED_2);
-        setGameTerrain(x, y - 2, TILE_WOODEN_DOOR_CLOSED_1);
+        setGameTerrain(x, y - 1, tile - 1);
+        setGameTerrain(x, y - 2, tile - 2);
     }
     switch (rando(0, 2))
     {
@@ -760,6 +760,8 @@ void interact(int x, int y)
                                    tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].drop + 1 + i + ((buildTo == 1) ? 6 : 0));
                 }
             }
+
+            mmEffect(SFX_DOOR_OPEN);
         }
         else if (tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParams[0] == 1) // Open door
         {
@@ -780,6 +782,8 @@ void interact(int x, int y)
                                y - offsetY + i,
                                door + i);
             }
+            
+            mmEffect(SFX_DOOR_CLOSE);
         }
     }
 }
