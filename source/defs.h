@@ -52,6 +52,8 @@
 
 #define MAX_ITEM_AGE 60 * 60 * 5 // 5 minutes
 
+#define PLAYER_STATION_RANGE 8 // Radius to look for stations
+
 #define TREE_CHANCE 3
 #define MUSHROOM_CHANCE 4
 #define MIN_TREE_HEIGHT 3
@@ -198,4 +200,6 @@ enum // Special parameter for tiles
     SPECIAL_DOOR,      // specialParams[] = {int isOpen (0-1), int isRight (0-1), int part (1-6)}
     SPECIAL_TREE,      // specialParams[] = {int leafTile}
     SPECIAL_WORKBENCH, // specialParams[] = {int part (1-2)}
+
+    SPECIALS,
 };

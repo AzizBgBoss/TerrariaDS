@@ -164,6 +164,7 @@ endif
 $(BUILD):
 	@mkdir -p $@
 	@make --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
+	@python $(CURDIR)/extras/ram_usage.py $(CURDIR)/build/$(TARGET).map
 
 #---------------------------------------------------------------------------------
 clean:

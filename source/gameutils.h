@@ -243,32 +243,39 @@ void setInventorySelection(u8 slot)
     mmEffect(SFX_ENU_TICK);
 }
 
-void setCraftingSelection(u8 slot)
+void setCraftingSelectionNoSound(u8 slot)
 {
-    clearPrint();
+    craftingOffset = clamp(craftingOffset, 0, craftableRecipesCount / 16);
+    slot = clamp(slot, 0, clamp(craftableRecipesCount - craftingOffset - 1, 0, 15));
     craftingSelection = slot;
     int x = (slot % 4) * 4 * 8;
     int y = ((slot / 4) * -4 + 20) * 8;
-    if (craftingOpen)
+    if (craftingOpen && craftableRecipesCount > 0)
     {
+        clearPrint();
         print(16, 7, "              ");
-        print(16, 7, getElementName(craftingRecipes[slot + craftingOffset * 16].item));
-        for (int i = 0; i < craftingRecipes[slot + craftingOffset * 16].ingredientCount; i++)
+        print(16, 7, getElementName(craftingRecipes[craftableRecipes[slot + craftingOffset * 16]].item));
+        for (int i = 0; i < craftingRecipes[craftableRecipes[slot + craftingOffset * 16]].ingredientCount; i++)
         {
-            Bg1UpSetTile(16, 8 + i * 2, getItemTile(craftingRecipes[slot + craftingOffset * 16].itemsNeeded[i]) + 0);
-            Bg1UpSetTile(16 + 1, 8 + i * 2, getItemTile(craftingRecipes[slot + craftingOffset * 16].itemsNeeded[i]) + 1);
-            Bg1UpSetTile(16, 8 + 1 + i * 2, getItemTile(craftingRecipes[slot + craftingOffset * 16].itemsNeeded[i]) + 2);
-            Bg1UpSetTile(16 + 1, 8 + 1 + i * 2, getItemTile(craftingRecipes[slot + craftingOffset * 16].itemsNeeded[i]) + 3);
+            Bg1UpSetTile(16, 8 + i * 2, getItemTile(craftingRecipes[craftableRecipes[slot + craftingOffset * 16]].itemsNeeded[i]) + 0);
+            Bg1UpSetTile(16 + 1, 8 + i * 2, getItemTile(craftingRecipes[craftableRecipes[slot + craftingOffset * 16]].itemsNeeded[i]) + 1);
+            Bg1UpSetTile(16, 8 + 1 + i * 2, getItemTile(craftingRecipes[craftableRecipes[slot + craftingOffset * 16]].itemsNeeded[i]) + 2);
+            Bg1UpSetTile(16 + 1, 8 + 1 + i * 2, getItemTile(craftingRecipes[craftableRecipes[slot + craftingOffset * 16]].itemsNeeded[i]) + 3);
             print(16 + 2, 8 + i * 2, "              ");
-            print(16 + 2, 8 + i * 2, getElementName(craftingRecipes[slot + craftingOffset * 16].itemsNeeded[i]));
+            print(16 + 2, 8 + i * 2, getElementName(craftingRecipes[craftableRecipes[slot + craftingOffset * 16]].itemsNeeded[i]));
             print(16 + 2, 9 + i * 2, "              ");
-            printVal(16 + 2, 9 + i * 2, getPlayerItemQuantity(craftingRecipes[slot + craftingOffset * 16].itemsNeeded[i]));
+            printVal(16 + 2, 9 + i * 2, getPlayerItemQuantity(craftingRecipes[craftableRecipes[slot + craftingOffset * 16]].itemsNeeded[i]));
             printDirect("/");
-            printValDirect(craftingRecipes[slot + craftingOffset * 16].itemsNeededQuantity[i]);
+            printValDirect(craftingRecipes[craftableRecipes[slot + craftingOffset * 16]].itemsNeededQuantity[i]);
         }
         oamSet(&oamMain, 0, x, y, 0, 0, SpriteSize_32x32, SpriteColorFormat_256Color, inventorySelectionSprite, -1, false, false, false, false, false);
         oamUpdate(&oamMain);
     }
+}
+
+void setCraftingSelection(u8 slot)
+{
+    setCraftingSelectionNoSound(slot);
     mmEffect(SFX_ENU_TICK);
 }
 
@@ -319,25 +326,30 @@ void renderCrafting()
     if (craftingOpen)
     {
         Bg1UpFill(63);
-        setCraftingSelection(craftingSelection);
-        int tilesToRender = ((sizeof(craftingRecipes) / sizeof(craftingRecipes[0])) - craftingOffset * 16 <= 16)
-                                ? ((sizeof(craftingRecipes) / sizeof(craftingRecipes[0])) - craftingOffset * 16)
+        setCraftingSelectionNoSound(craftingSelection);
+        int tilesToRender = (craftableRecipesCount - craftingOffset * 16 <= 16)
+                                ? (craftableRecipesCount - craftingOffset * 16)
                                 : 16;
         for (int i = 0; i < tilesToRender; i++)
         {
-            Bg1UpSetTile((i % 4) * 4 + 1, (i / 4) * -4 + 21, getItemTile(craftingRecipes[i + craftingOffset * 16].item) + 0);
-            Bg1UpSetTile((i % 4) * 4 + 2, (i / 4) * -4 + 21, getItemTile(craftingRecipes[i + craftingOffset * 16].item) + 1);
-            Bg1UpSetTile((i % 4) * 4 + 1, (i / 4) * -4 + 22, getItemTile(craftingRecipes[i + craftingOffset * 16].item) + 2);
-            Bg1UpSetTile((i % 4) * 4 + 2, (i / 4) * -4 + 22, getItemTile(craftingRecipes[i + craftingOffset * 16].item) + 3);
+            Bg1UpSetTile((i % 4) * 4 + 1, (i / 4) * -4 + 21, getItemTile(craftingRecipes[craftableRecipes[i + craftingOffset * 16]].item) + 0);
+            Bg1UpSetTile((i % 4) * 4 + 2, (i / 4) * -4 + 21, getItemTile(craftingRecipes[craftableRecipes[i + craftingOffset * 16]].item) + 1);
+            Bg1UpSetTile((i % 4) * 4 + 1, (i / 4) * -4 + 22, getItemTile(craftingRecipes[craftableRecipes[i + craftingOffset * 16]].item) + 2);
+            Bg1UpSetTile((i % 4) * 4 + 2, (i / 4) * -4 + 22, getItemTile(craftingRecipes[craftableRecipes[i + craftingOffset * 16]].item) + 3);
             print((i % 4) * 4 + 1, (i / 4) * -4 + 23, "   ");
-            if (craftingRecipes[i + craftingOffset * 16].quantity > 1)
+            if (craftingRecipes[craftableRecipes[i + craftingOffset * 16]].quantity > 1)
             {
-                printVal((i % 4) * 4 + 1, (i / 4) * -4 + 23, craftingRecipes[i + craftingOffset * 16].quantity);
+                printVal((i % 4) * 4 + 1, (i / 4) * -4 + 23, craftingRecipes[craftableRecipes[i + craftingOffset * 16]].quantity);
             }
         }
         printVal(16, 19, craftingOffset + 1);
         printDirect("/");
-        printValDirect(((sizeof(craftingRecipes) / sizeof(craftingRecipes[0])) / 16) + 1);
+        printValDirect((craftableRecipesCount / 16) + 1);
+
+        for (int j = 0; j < 16; j++)
+            Bg0UpSetTile(24 + j % 4, 16 + j / 4, (craftingShowCraftableOnly ? 128 : 160) + j);
+        for (int j = 0; j < 16; j++)
+            Bg0UpSetTile(28 + j % 4, 16 + j / 4, (craftingShowCraftableOnly ? 144 : 176) + j);
     }
 }
 
@@ -735,7 +747,7 @@ void breakTile(int x, int y, int speed)
             int offset = tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParams[0] - 1;
             for (int i = 0; i < 2; i++)
             {
-                setGameTerrain(x- offset + i, y, TILE_AIR);
+                setGameTerrain(x - offset + i, y, TILE_AIR);
             }
         }
         else

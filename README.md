@@ -89,7 +89,7 @@ Initial commit with basic project structure.
 - Show health as hearts.
 - Add more music and intros.
 - Use more pointers for cleaner code.
-- Implement dynamic crafting recipes (based on nearby stations).
+- Implement dynamic crafting recipes (based on nearby stations) ***(done)***.
 - Add crafting stations (workbench, furnace, etc...). ***(done for now: Workbench)***
 - Probably converting all tile handling data to a struct (even special tiles). ***(done: this is great news, now I can add a huge variety of special tiles with the same function easily)***
 - Add more crafting recipes. ***(done: now implemented pages)***

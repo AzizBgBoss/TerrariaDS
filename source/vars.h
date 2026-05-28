@@ -25,6 +25,7 @@ u8 inventory[8 * 4] = {0};
 u8 inventoryQuantity[8 * 4] = {0};
 u8 inventorySelection = 0;
 u8 craftingSelection = 0;
+bool craftingShowCraftableOnly = false;
 
 u16 *inventorySelectionSprite;
 u16 *itemHandSprite;
@@ -186,6 +187,7 @@ typedef struct
 	int ingredientCount;
 	int itemsNeeded[4];
 	int itemsNeededQuantity[4];
+	int specialParam; // Special parameter for the station to use
 } CraftingRecipe;
 
 typedef struct
@@ -515,29 +517,31 @@ const BiomeProperties biomes[BIOMES] = {
 Item item[MAX_ITEMS_TOTAL];
 
 // Define crafting recipes
-// TODO: this will no longer become a static array, it will change based on nearby stations
 const CraftingRecipe craftingRecipes[] = {
-	{TILE_WOOD_WALL, 4, 1, {TILE_PLANKS}, {1}},
-	{TILE_STONE_WALL, 4, 1, {TILE_STONE}, {1}},
-	{TILE_DIRT_WALL, 4, 1, {TILE_DIRT}, {1}},
-	{TILE_PLANKS, 1, 1, {TILE_WOOD_WALL}, {4}},
-	{TILE_STONE, 1, 1, {TILE_STONE_WALL}, {4}},
-	{TILE_DIRT, 1, 1, {TILE_DIRT_WALL}, {4}},
-	{TILE_WOODEN_DOOR_CLOSED_3, 1, 1, {TILE_PLANKS}, {6}},
-	{ITEM_TIN_PICKAXE, 1, 2, {TILE_PLANKS, TILE_TIN_ORE}, {1, 3}},
-	{ITEM_TIN_AXE, 1, 2, {TILE_PLANKS, TILE_TIN_ORE}, {1, 3}},
-	{ITEM_TIN_LONGSWORD, 1, 2, {TILE_PLANKS, TILE_TIN_ORE}, {1, 3}},
-	{ITEM_TIN_HAMMER, 1, 2, {TILE_PLANKS, TILE_TIN_ORE}, {1, 1}},
-	{ITEM_COPPER_PICKAXE, 1, 2, {TILE_PLANKS, TILE_COPPER_ORE}, {1, 3}},
-	{ITEM_COPPER_AXE, 1, 2, {TILE_PLANKS, TILE_COPPER_ORE}, {1, 3}},
-	{ITEM_COPPER_LONGSWORD, 1, 2, {TILE_PLANKS, TILE_COPPER_ORE}, {1, 3}},
-	{ITEM_COPPER_HAMMER, 1, 2, {TILE_PLANKS, TILE_COPPER_ORE}, {1, 1}},
-	{TILE_HARDENED_SAND, 1, 1, {TILE_SAND}, {2}},
-	{TILE_SANDSTONE_WALL, 4, 1, {TILE_HARDENED_SAND}, {1}},
-	{TILE_HARDENED_SAND, 1, 1, {TILE_SANDSTONE_WALL}, {4}},
-	{TILE_ICE, 1, 1, {TILE_SNOW}, {2}},
-	{TILE_SNOW, 2, 1, {TILE_ICE}, {1}},
-	{TILE_WORKBENCH_1, 1, 1, {TILE_PLANKS}, {3}},
+	{TILE_WOOD_WALL, 4, 1, {TILE_PLANKS}, {1}, SPECIAL_WORKBENCH},
+	{TILE_STONE_WALL, 4, 1, {TILE_STONE}, {1}, SPECIAL_WORKBENCH},
+	{TILE_DIRT_WALL, 4, 1, {TILE_DIRT}, {1}, SPECIAL_WORKBENCH},
+	{TILE_PLANKS, 1, 1, {TILE_WOOD_WALL}, {4}, SPECIAL_WORKBENCH},
+	{TILE_STONE, 1, 1, {TILE_STONE_WALL}, {4}, SPECIAL_WORKBENCH},
+	{TILE_DIRT, 1, 1, {TILE_DIRT_WALL}, {4}, SPECIAL_WORKBENCH},
+	{TILE_WOODEN_DOOR_CLOSED_3, 1, 1, {TILE_PLANKS}, {6}, SPECIAL_WORKBENCH},
+	{ITEM_TIN_PICKAXE, 1, 2, {TILE_PLANKS, TILE_TIN_ORE}, {1, 3}, SPECIAL_WORKBENCH},
+	{ITEM_TIN_AXE, 1, 2, {TILE_PLANKS, TILE_TIN_ORE}, {1, 3}, SPECIAL_WORKBENCH},
+	{ITEM_TIN_LONGSWORD, 1, 2, {TILE_PLANKS, TILE_TIN_ORE}, {1, 3}, SPECIAL_WORKBENCH},
+	{ITEM_TIN_HAMMER, 1, 2, {TILE_PLANKS, TILE_TIN_ORE}, {1, 1}, SPECIAL_WORKBENCH},
+	{ITEM_COPPER_PICKAXE, 1, 2, {TILE_PLANKS, TILE_COPPER_ORE}, {1, 3}, SPECIAL_WORKBENCH},
+	{ITEM_COPPER_AXE, 1, 2, {TILE_PLANKS, TILE_COPPER_ORE}, {1, 3}, SPECIAL_WORKBENCH},
+	{ITEM_COPPER_LONGSWORD, 1, 2, {TILE_PLANKS, TILE_COPPER_ORE}, {1, 3}, SPECIAL_WORKBENCH},
+	{ITEM_COPPER_HAMMER, 1, 2, {TILE_PLANKS, TILE_COPPER_ORE}, {1, 1}, SPECIAL_WORKBENCH},
+	{TILE_HARDENED_SAND, 1, 1, {TILE_SAND}, {2}, SPECIAL_NONE},
+	{TILE_SANDSTONE_WALL, 4, 1, {TILE_HARDENED_SAND}, {1}, SPECIAL_WORKBENCH},
+	{TILE_HARDENED_SAND, 1, 1, {TILE_SANDSTONE_WALL}, {4}, SPECIAL_WORKBENCH},
+	{TILE_ICE, 1, 1, {TILE_SNOW}, {2}, SPECIAL_NONE},
+	{TILE_SNOW, 2, 1, {TILE_ICE}, {1}, SPECIAL_NONE},
+	{TILE_WORKBENCH_1, 1, 1, {TILE_PLANKS}, {3}, SPECIAL_NONE},
 };
+
+int craftableRecipes[sizeof(craftingRecipes) / sizeof(CraftingRecipe)]; // IDs of the recipes that can be crafted based on nearby stations
+int craftableRecipesCount = 0;
 
 u16 *bg2Map;

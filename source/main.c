@@ -869,7 +869,7 @@ mainMenu:
 						int y = ((i / 4) * -4 + 20) * 8;
 						if (touch.px >= x && touch.px < x + 32 && touch.py >= y && touch.py < y + 32)
 						{
-							if (i < (sizeof(craftingRecipes) / sizeof(craftingRecipes[0]) - craftingOffset * 16))
+							if (i < (craftableRecipesCount - craftingOffset * 16))
 							{
 								setCraftingSelection(i);
 								renderCrafting();
@@ -881,28 +881,33 @@ mainMenu:
 					{
 						inventorySetFull();
 					}
+					if (touch.px >= 24 * 8 && touch.px < 32 * 8 && touch.py >= 16 * 8 && touch.py < 20 * 8) // player touched the Craftable/Available button
+					{
+						craftingShowCraftableOnly = !craftingShowCraftableOnly;
+						renderCrafting();
+					}
 					if (touch.px >= 24 * 8 && touch.px < 32 * 8 && touch.py >= 20 * 8 && touch.py < 24 * 8) // player touched the Craft button
 					{
-						if (craftingSelection >= 0 && craftingSelection < sizeof(craftingRecipes) / sizeof(craftingRecipes[0]))
+						if (craftingSelection >= 0 && craftingSelection < craftableRecipesCount)
 						{
 							bool craftable = true;
-							for (int i = 0; i < craftingRecipes[craftingSelection + craftingOffset * 16].ingredientCount; i++)
+							for (int i = 0; i < craftingRecipes[craftableRecipes[craftingSelection + craftingOffset * 16]].ingredientCount; i++)
 							{
-								if (playerHasItem(craftingRecipes[craftingSelection + craftingOffset * 16].itemsNeeded[i], craftingRecipes[craftingSelection + craftingOffset * 16].itemsNeededQuantity[i]) == false)
+								if (playerHasItem(craftingRecipes[craftableRecipes[craftingSelection + craftingOffset * 16]].itemsNeeded[i], craftingRecipes[craftableRecipes[craftingSelection + craftingOffset * 16]].itemsNeededQuantity[i]) == false)
 								{
 									craftable = false;
 								}
 							}
 							if (craftable)
 							{
-								for (int i = 0; i < craftingRecipes[craftingSelection + craftingOffset * 16].ingredientCount; i++)
+								for (int i = 0; i < craftingRecipes[craftableRecipes[craftingSelection + craftingOffset * 16]].ingredientCount; i++)
 								{
-									takeInventory(craftingRecipes[craftingSelection + craftingOffset * 16].itemsNeeded[i], craftingRecipes[craftingSelection + craftingOffset * 16].itemsNeededQuantity[i]);
+									takeInventory(craftingRecipes[craftableRecipes[craftingSelection + craftingOffset * 16]].itemsNeeded[i], craftingRecipes[craftableRecipes[craftingSelection + craftingOffset * 16]].itemsNeededQuantity[i]);
 								}
-								giveInventory(craftingRecipes[craftingSelection + craftingOffset * 16].item, craftingRecipes[craftingSelection + craftingOffset * 16].quantity);
+								giveInventory(craftingRecipes[craftableRecipes[craftingSelection + craftingOffset * 16]].item, craftingRecipes[craftableRecipes[craftingSelection + craftingOffset * 16]].quantity);
 								print(0, 1, "                                  ");
 								print(0, 1, "Crafted ");
-								printDirect(getElementName(craftingRecipes[craftingSelection + craftingOffset * 16].item));
+								printDirect(getElementName(craftingRecipes[craftableRecipes[craftingSelection + craftingOffset * 16]].item));
 								setCraftingSelection(craftingSelection);
 								renderCrafting();
 							}
@@ -924,8 +929,8 @@ mainMenu:
 					if (touch.px >= 20 * 8 && touch.px < 24 * 8 && touch.py >= 20 * 8 && touch.py < 24 * 8) // player touched the > button
 					{
 						craftingOffset++;
-						if (craftingOffset > (sizeof(craftingRecipes) / sizeof(craftingRecipes[0])) / 16)
-							craftingOffset = (sizeof(craftingRecipes) / sizeof(craftingRecipes[0])) / 16;
+						if (craftingOffset > (craftableRecipesCount) / 16)
+							craftingOffset = (craftableRecipesCount) / 16;
 						setCraftingSelection(0);
 						renderCrafting();
 					}
@@ -1067,8 +1072,7 @@ mainMenu:
 									breakTile(worldTouchX, worldTouchY, 1);
 								}
 							}
-							else if (tileProperties[inventory[inventorySelection]].isTool
-									 && inventoryQuantity[inventorySelection])
+							else if (tileProperties[inventory[inventorySelection]].isTool && inventoryQuantity[inventorySelection])
 							{
 								if (isToolCompatible(inventory[inventorySelection], gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH_MAX])) // Check if the tool can break the tile
 								{
@@ -1568,7 +1572,69 @@ mainMenu:
 					}
 				}
 			}
+
+			craftableRecipesCount = 0;
+
+			int nearbySpecials[SPECIALS];
+			int specialCount = 0;
+
+			int playerTX = player.x / 8, playerTY = player.y / 8;
+
+			for (int x = 0; x < PLAYER_STATION_RANGE * 2 + 1; x++)
+			{
+				for (int y = 0; y < PLAYER_STATION_RANGE * 2 + 1; y++)
+				{
+					int tx = playerTX + x - PLAYER_STATION_RANGE;
+					int ty = playerTY + y - PLAYER_STATION_RANGE;
+
+					if (tx < 0 || tx >= mapWidth || ty < 0 || ty >= mapHeight)
+						continue;
+
+					if (tileProperties[gameTerrain[tx + ty * MAP_WIDTH_MAX]].specialParam != SPECIAL_NONE)
+					{
+						nearbySpecials[specialCount++] = tileProperties[gameTerrain[tx + ty * MAP_WIDTH_MAX]].specialParam;
+					}
+				}
+			}
+
+			// Refresh craftable items
+			for (int i = 0; i < sizeof(craftingRecipes) / sizeof(craftingRecipes[0]); i++)
+			{
+				bool canCraft = false;
+				for (int j = 0; j < specialCount; j++)
+				{
+					if (craftingRecipes[i].specialParam == nearbySpecials[j] || craftingRecipes[i].specialParam == SPECIAL_NONE)
+					{
+						canCraft = true;
+						break;
+					}
+				}
+
+				bool hasAll = true;
+				bool hasAny = false;
+
+				if (canCraft)
+				{
+					for (int j = 0; j < craftingRecipes[i].ingredientCount; j++)
+					{
+						if (!playerHasItem(craftingRecipes[i].itemsNeeded[j], craftingRecipes[i].itemsNeededQuantity[j]))
+							hasAll = false;
+						if (playerHasItem(craftingRecipes[i].itemsNeeded[j], 1))
+							hasAny = true;
+					}
+				}
+
+				if (craftingShowCraftableOnly && !hasAll)
+					canCraft = false;
+				else if (!craftingShowCraftableOnly && !hasAny)
+					canCraft = false;
+
+				if (canCraft)
+					craftableRecipes[craftableRecipesCount++] = i;
+			}
 		}
+
+		renderCrafting();
 
 		for (int i = 0; i < ENTITY_COUNT; i++)
 		{
