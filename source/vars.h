@@ -81,8 +81,8 @@ const char *titleSplashes[] = {
 	"Please don't sue me :(",
 	"The comments are not only for you to understand, but for me to not make the same mistake again...",
 	"Using a copper pickaxe, you can break a Demonite tile after exactly 68 years",
-	"Never speak ill of Triple T",
-	"NO, IT'S NOT 2D MINECRAFT"
+	"Never speak ill of Triple T...",
+	"NO, IT'S NOT 2D MINECRAFT!"
 };
 
 u16 *nullSprite;

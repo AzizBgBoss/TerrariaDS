@@ -1317,11 +1317,11 @@ void generateMap()
         {
             if (y >= grassSurface[x] && y < stoneSurface[x])
             {
-                setGameTerrain(x, y, biomes[biomeSurface[x]].surfaceTile);
+                setGameTerrain(x, y, biomes[biomeSurface[clamp(x + fractalPerlin1D(y, 4, 0.4f, 0.1f, seed + 67) * 5, 0, mapWidth - 1)]].surfaceTile);
             }
             else if (y >= stoneSurface[x])
             {
-                setGameTerrain(x, y, biomes[biomeSurface[x]].undergroundTile);
+                setGameTerrain(x, y, biomes[biomeSurface[clamp(x + fractalPerlin1D(y, 4, 0.4f, 0.1f, seed + 67) * 5, 0, mapWidth - 1)]].undergroundTile);
             }
         }
         if (x % (mapWidth / 32) == 0)
@@ -1335,6 +1335,7 @@ void generateMap()
     int veins = rando(mapWidth * mapHeight / (64 * 2), mapWidth * mapHeight / (64 * 1)); // Number of ore veins to generate (proportional to map size)
     const int ores[] = {TILE_COPPER_ORE, TILE_TIN_ORE, TILE_IRON_ORE, TILE_GOLD_ORE};
     const int oresSize = sizeof(ores) / sizeof(ores[0]);
+    int cur = 0;
     for (int i = 0; i < veins; i++)
     {
         int centerX = rando(0, mapWidth - 1);
@@ -1352,7 +1353,7 @@ void generateMap()
             y += rando(-1, 1);
             if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight)
             {
-                continue;
+                break;
             }
             if (gameTerrain[x + y * MAP_WIDTH_MAX] == TILE_AIR)
                 continue;
@@ -1362,12 +1363,11 @@ void generateMap()
 
             if (rando(0, 100) < dist * 2) // Chance to stop the vein (grows with distance)
                 break;
-        }   
+        }
 
-        int step = (veins > 32) ? (veins / 32) : 1;
-
-        if (i % step == 0)
+        if (((i + 1) * 32) / veins != cur)
             printDirect(".");
+        cur = ((i + 1) * 32) / veins;
     }
 
     // Generate caves
@@ -1401,11 +1401,11 @@ void generateMap()
             {
                 if (y >= grassSurface[x] && y < stoneSurface[x])
                 {
-                    setGameTerrain(x, y, biomes[biomeSurface[x]].surfaceWall);
+                    setGameTerrain(x, y, biomes[biomeSurface[clamp(x + fractalPerlin1D(y, 4, 0.4f, 0.1f, seed + 67) * 5, 0, mapWidth - 1)]].surfaceWall);
                 }
                 else if (y >= stoneSurface[x])
                 {
-                    setGameTerrain(x, y, biomes[biomeSurface[x]].undergroundWall);
+                    setGameTerrain(x, y, biomes[biomeSurface[clamp(x + fractalPerlin1D(y, 4, 0.4f, 0.1f, seed + 67) * 5, 0, mapWidth - 1)]].undergroundWall);
                 }
             }
         }
