@@ -250,25 +250,32 @@ void setCraftingSelectionNoSound(u8 slot)
     craftingSelection = slot;
     int x = (slot % 4) * 4 * 8;
     int y = ((slot / 4) * -4 + 20) * 8;
-    if (craftingOpen && craftableRecipesCount > 0)
+    if (craftingOpen)
     {
         clearPrint();
-        print(16, 7, "              ");
-        print(16, 7, getElementName(craftingRecipes[craftableRecipes[slot + craftingOffset * 16]].item));
-        for (int i = 0; i < craftingRecipes[craftableRecipes[slot + craftingOffset * 16]].ingredientCount; i++)
+        if (craftableRecipesCount > 0)
         {
-            Bg1UpSetTile(16, 8 + i * 2, getItemTile(craftingRecipes[craftableRecipes[slot + craftingOffset * 16]].itemsNeeded[i]) + 0);
-            Bg1UpSetTile(16 + 1, 8 + i * 2, getItemTile(craftingRecipes[craftableRecipes[slot + craftingOffset * 16]].itemsNeeded[i]) + 1);
-            Bg1UpSetTile(16, 8 + 1 + i * 2, getItemTile(craftingRecipes[craftableRecipes[slot + craftingOffset * 16]].itemsNeeded[i]) + 2);
-            Bg1UpSetTile(16 + 1, 8 + 1 + i * 2, getItemTile(craftingRecipes[craftableRecipes[slot + craftingOffset * 16]].itemsNeeded[i]) + 3);
-            print(16 + 2, 8 + i * 2, "              ");
-            print(16 + 2, 8 + i * 2, getElementName(craftingRecipes[craftableRecipes[slot + craftingOffset * 16]].itemsNeeded[i]));
-            print(16 + 2, 9 + i * 2, "              ");
-            printVal(16 + 2, 9 + i * 2, getPlayerItemQuantity(craftingRecipes[craftableRecipes[slot + craftingOffset * 16]].itemsNeeded[i]));
-            printDirect("/");
-            printValDirect(craftingRecipes[craftableRecipes[slot + craftingOffset * 16]].itemsNeededQuantity[i]);
+            print(16, 7, "              ");
+            print(16, 7, getElementName(craftingRecipes[craftableRecipes[slot + craftingOffset * 16]].item));
+            for (int i = 0; i < craftingRecipes[craftableRecipes[slot + craftingOffset * 16]].ingredientCount; i++)
+            {
+                Bg1UpSetTile(16, 8 + i * 2, getItemTile(craftingRecipes[craftableRecipes[slot + craftingOffset * 16]].itemsNeeded[i]) + 0);
+                Bg1UpSetTile(16 + 1, 8 + i * 2, getItemTile(craftingRecipes[craftableRecipes[slot + craftingOffset * 16]].itemsNeeded[i]) + 1);
+                Bg1UpSetTile(16, 8 + 1 + i * 2, getItemTile(craftingRecipes[craftableRecipes[slot + craftingOffset * 16]].itemsNeeded[i]) + 2);
+                Bg1UpSetTile(16 + 1, 8 + 1 + i * 2, getItemTile(craftingRecipes[craftableRecipes[slot + craftingOffset * 16]].itemsNeeded[i]) + 3);
+                print(16 + 2, 8 + i * 2, "              ");
+                print(16 + 2, 8 + i * 2, getElementName(craftingRecipes[craftableRecipes[slot + craftingOffset * 16]].itemsNeeded[i]));
+                print(16 + 2, 9 + i * 2, "              ");
+                printVal(16 + 2, 9 + i * 2, getPlayerItemQuantity(craftingRecipes[craftableRecipes[slot + craftingOffset * 16]].itemsNeeded[i]));
+                printDirect("/");
+                printValDirect(craftingRecipes[craftableRecipes[slot + craftingOffset * 16]].itemsNeededQuantity[i]);
+            }
+            oamSet(&oamMain, 0, x, y, 0, 0, SpriteSize_32x32, SpriteColorFormat_256Color, inventorySelectionSprite, -1, false, false, false, false, false);
         }
-        oamSet(&oamMain, 0, x, y, 0, 0, SpriteSize_32x32, SpriteColorFormat_256Color, inventorySelectionSprite, -1, false, false, false, false, false);
+        else
+        {
+            oamSet(&oamMain, 0, -32, -32, 0, 0, SpriteSize_32x32, SpriteColorFormat_256Color, inventorySelectionSprite, -1, false, false, false, false, false);
+        }
         oamUpdate(&oamMain);
     }
 }
@@ -512,6 +519,35 @@ void playerPutGameTerrain(int x, int y, int tile)
             }
         }
     }
+    else if (tileProperties[tile].specialParam == SPECIAL_FURNACE)
+    {
+        if (x - 1 < 0 || x + 1 >= mapWidth || y - 1 < 0 || y + 1 >= mapHeight) // Whole furnace is out of bounds
+        {
+            canPlace = false;
+        }
+        else
+        {
+            canPlace = true;
+            for (int dx = -1; dx <= 1; dx++)
+            {
+                int nx = x + dx;
+                for (int dy = -1; dy <= 0; dy++)
+                {
+                    int ny = y + dy;
+                    if (gameTerrain[nx + ny * MAP_WIDTH_MAX] != TILE_AIR)
+                    {
+                        canPlace = false;
+                        break;
+                    }
+                }
+                if (!isTileSolid(gameTerrain[nx + (y + 1) * MAP_WIDTH_MAX]))
+                {
+                    canPlace = false;
+                    break;
+                }
+            }
+        }
+    }
     else
     {
         for (int dx = -1; dx <= 1; dx++)
@@ -550,6 +586,18 @@ void playerPutGameTerrain(int x, int y, int tile)
     else if (tileProperties[tile].specialParam == SPECIAL_WORKBENCH)
     {
         setGameTerrain(x + 1, y, tile + 1);
+    }
+    else if (tileProperties[tile].specialParam == SPECIAL_FURNACE)
+    {
+        for (int dx = -1; dx <= 1; dx++)
+        {
+            int nx = x + dx;
+            for (int dy = -1; dy <= 0; dy++)
+            {
+                int ny = y + dy;
+                setGameTerrain(nx, ny, TILE_FURNACE_1 + (dx + 1) + (dy + 1) * 3);
+            }
+        }
     }
     switch (rando(0, 2))
     {
@@ -687,25 +735,26 @@ void breakTile(int x, int y, int speed)
         // Special blocks handling
         if (tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParam == SPECIAL_TREE)
         {
+            int log = gameTerrain[x + y * MAP_WIDTH_MAX];
             // Trees have special treatment: break all the logs and leaves above it
             for (int i = y; i >= 0; i--)
             {
-                if (gameTerrain[x + i * MAP_WIDTH_MAX] == gameTerrain[x + y * MAP_WIDTH_MAX])
+                if (gameTerrain[x + i * MAP_WIDTH_MAX] == log)
                 {
-                    dropItem(x, i, getElementDrop(gameTerrain[x + y * MAP_WIDTH_MAX]), 1);
+                    dropItem(x, i, getElementDrop(log), 1);
                     setGameTerrain(x, i, 0);
                     gameTerrainHealth[x + i * MAP_WIDTH_MAX] = 0;
                 }
-                else if (gameTerrain[x + i * MAP_WIDTH_MAX] == tileProperties[gameTerrain[x + i * MAP_WIDTH_MAX]].specialParams[0])
+                else if (gameTerrain[x + i * MAP_WIDTH_MAX] == tileProperties[log].specialParams[0])
                 { // Leaves don't drop anything if broken from tree
                     setGameTerrain(x, i, 0);
                     gameTerrainHealth[x + i * MAP_WIDTH_MAX] = 0;
-                    if (gameTerrain[x - 1 + i * MAP_WIDTH_MAX] == tileProperties[gameTerrain[x + i * MAP_WIDTH_MAX]].specialParams[0])
+                    if (gameTerrain[x - 1 + i * MAP_WIDTH_MAX] == tileProperties[log].specialParams[0])
                     {
                         setGameTerrain(x - 1, i, 0);
                         gameTerrainHealth[x - 1 + i * MAP_WIDTH_MAX] = 0;
                     }
-                    if (gameTerrain[x + 1 + i * MAP_WIDTH_MAX] == tileProperties[gameTerrain[x + i * MAP_WIDTH_MAX]].specialParams[0])
+                    if (gameTerrain[x + 1 + i * MAP_WIDTH_MAX] == tileProperties[log].specialParams[0])
                     {
                         setGameTerrain(x + 1, i, 0);
                         gameTerrainHealth[x + 1 + i * MAP_WIDTH_MAX] = 0;
@@ -748,6 +797,19 @@ void breakTile(int x, int y, int speed)
             for (int i = 0; i < 2; i++)
             {
                 setGameTerrain(x - offset + i, y, TILE_AIR);
+            }
+        }
+        else if (tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParam == SPECIAL_FURNACE)
+        {
+            dropItem(x, y, getElementDrop(gameTerrain[x + y * MAP_WIDTH_MAX]), 1);
+            int offsetX = (tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParams[0] - 1) % 3;
+            int offsetY = (tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParams[0] - 1) / 3;
+            for (int i = 0; i < 2; i++)
+            {
+                for (int j = 0; j < 3; j++)
+                {
+                    setGameTerrain(x - offsetX + j, y - offsetY + i, TILE_AIR);
+                }
             }
         }
         else

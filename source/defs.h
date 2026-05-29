@@ -135,6 +135,13 @@ enum // Make sure the indexing follows the one in the textures
     TILE_IRON_ORE,
     TILE_GOLD_ORE,
 
+    TILE_FURNACE_1,
+    TILE_FURNACE_2,
+    TILE_FURNACE_3,
+    TILE_FURNACE_4,
+    TILE_FURNACE_5,
+    TILE_FURNACE_6,
+
     TILES,
 };
 
@@ -203,6 +210,7 @@ enum // Special parameter for tiles
     SPECIAL_DOOR,      // specialParams[] = {int isOpen (0-1), int isRight (0-1), int part (1-6)}
     SPECIAL_TREE,      // specialParams[] = {int leafTile}
     SPECIAL_WORKBENCH, // specialParams[] = {int part (1-2)}
+    SPECIAL_FURNACE,   // specialParams[] = {int part (1-6)}
 
     SPECIALS,
 };

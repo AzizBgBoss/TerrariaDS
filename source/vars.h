@@ -506,12 +506,22 @@ const TileProperties tileProperties[TILES] = {
 	{"Snow", false, 16, 128, 100, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}},
 	{"Ice", false, 17, 132, 150, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}},
 
-	{"Workbench", true, 162, 136, 50, true, TILE_WORKBENCH_1, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_WORKBENCH, {1}},
+	{"Workbench", true, 162, 136, 50, true, TILE_WORKBENCH_1, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_WORKBENCH, {1}}, // 2x1
 	{"", true, 163, 56, 50, true, TILE_WORKBENCH_1, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_WORKBENCH, {2}},
 
 	{"Iron Ore", false, 19, 140, 200, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}},
 	{"Gold Ore", false, 20, 144, 200, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}},
+
+	{"", true, 165, 56, 50, true, TILE_FURNACE_5, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_FURNACE, {1}}, // 3x2
+	{"", true, 166, 56, 50, true, TILE_FURNACE_5, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_FURNACE, {2}},
+	{"", true, 167, 56, 50, true, TILE_FURNACE_5, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_FURNACE, {3}},
+	{"", true, 168, 56, 50, true, TILE_FURNACE_5, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_FURNACE, {4}},
+	{"Furnace", true, 169, 148, 50, true, TILE_FURNACE_5, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_FURNACE, {5}},
+	{"", true, 170, 56, 50, true, TILE_FURNACE_5, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_FURNACE, {6}},
 };
+
+//TODO: add ingots
+//TODO: maybe give special treatment to whatever tile that isn't 1x1, or decor tiles maybe idk
 
 const BiomeProperties biomes[BIOMES] = {
 	{"Forest", TILE_DIRT, TILE_DIRT_WALL, TILE_STONE, TILE_STONE_WALL},
@@ -544,6 +554,7 @@ const CraftingRecipe craftingRecipes[] = {
 	{TILE_ICE, 1, 1, {TILE_SNOW}, {2}, SPECIAL_NONE},
 	{TILE_SNOW, 2, 1, {TILE_ICE}, {1}, SPECIAL_NONE},
 	{TILE_WORKBENCH_1, 1, 1, {TILE_PLANKS}, {3}, SPECIAL_NONE},
+	{TILE_FURNACE_5, 1, 2, {TILE_PLANKS, TILE_STONE}, {4, 20}, SPECIAL_WORKBENCH},
 };
 
 int craftableRecipes[sizeof(craftingRecipes) / sizeof(CraftingRecipe)]; // IDs of the recipes that can be crafted based on nearby stations

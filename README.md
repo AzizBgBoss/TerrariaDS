@@ -90,7 +90,7 @@ Initial commit with basic project structure.
 - Use more pointers for cleaner code.
 - Add chests.
 - Implement dynamic crafting recipes (based on nearby stations). ***(done)***
-- Add crafting stations (workbench, furnace, etc...). ***(done for now: Workbench)***
+- Add crafting stations (workbench, furnace, etc...). ***(done for now: Workbench, Furnace)***
 - Probably converting all tile handling data to a struct (even special tiles). ***(done: this is great news, now I can add a huge variety of special tiles with the same function easily)***
 - Add more crafting recipes. ***(done: now implemented pages)***
 - Add more biomes. ***(done: desert, snow)***

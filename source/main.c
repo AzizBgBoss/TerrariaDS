@@ -893,7 +893,7 @@ mainMenu:
 							bool craftable = true;
 							for (int i = 0; i < craftingRecipes[craftableRecipes[craftingSelection + craftingOffset * 16]].ingredientCount; i++)
 							{
-								if (playerHasItem(craftingRecipes[craftableRecipes[craftingSelection + craftingOffset * 16]].itemsNeeded[i], craftingRecipes[craftableRecipes[craftingSelection + craftingOffset * 16]].itemsNeededQuantity[i]) == false)
+								if (!playerHasItem(craftingRecipes[craftableRecipes[craftingSelection + craftingOffset * 16]].itemsNeeded[i], craftingRecipes[craftableRecipes[craftingSelection + craftingOffset * 16]].itemsNeededQuantity[i]))
 								{
 									craftable = false;
 								}
@@ -905,16 +905,18 @@ mainMenu:
 									takeInventory(craftingRecipes[craftableRecipes[craftingSelection + craftingOffset * 16]].itemsNeeded[i], craftingRecipes[craftableRecipes[craftingSelection + craftingOffset * 16]].itemsNeededQuantity[i]);
 								}
 								giveInventory(craftingRecipes[craftableRecipes[craftingSelection + craftingOffset * 16]].item, craftingRecipes[craftableRecipes[craftingSelection + craftingOffset * 16]].quantity);
+								setCraftingSelection(craftingSelection);
+								renderCrafting();
 								print(0, 1, "                                  ");
 								print(0, 1, "Crafted ");
 								printDirect(getElementName(craftingRecipes[craftableRecipes[craftingSelection + craftingOffset * 16]].item));
-								setCraftingSelection(craftingSelection);
-								renderCrafting();
+								delay(1);
 							}
 							else
 							{
 								print(0, 1, "                                  ");
 								print(0, 1, "Oops! You don't have enough items!");
+								delay(1);
 							}
 						}
 					}
@@ -1572,7 +1574,10 @@ mainMenu:
 					}
 				}
 			}
+		}
 
+		if (frame % 15 == 0)
+		{
 			craftableRecipesCount = 0;
 
 			int nearbySpecials[SPECIALS];
@@ -1596,14 +1601,17 @@ mainMenu:
 					}
 				}
 			}
-
 			// Refresh craftable items
 			for (int i = 0; i < sizeof(craftingRecipes) / sizeof(craftingRecipes[0]); i++)
 			{
 				bool canCraft = false;
+				
+				if (craftingRecipes[i].specialParam == SPECIAL_NONE)
+					canCraft = true;
+
 				for (int j = 0; j < specialCount; j++)
 				{
-					if (craftingRecipes[i].specialParam == nearbySpecials[j] || craftingRecipes[i].specialParam == SPECIAL_NONE)
+					if (craftingRecipes[i].specialParam == nearbySpecials[j])
 					{
 						canCraft = true;
 						break;
@@ -1632,18 +1640,18 @@ mainMenu:
 				if (canCraft)
 					craftableRecipes[craftableRecipesCount++] = i;
 			}
-		}
 
-		renderCrafting();
+			renderCrafting();
 
-		for (int i = 0; i < ENTITY_COUNT; i++)
-		{
-			if (entity[i].exists)
+			for (int i = 0; i < ENTITY_COUNT; i++)
 			{
-				Entity *E = &entity[i];
-				if (E->x < 0 || E->x >= mapWidth * 8 || E->y < 0 || E->y >= mapHeight * 8)
+				if (entity[i].exists)
 				{
-					removeEntity(i);
+					Entity *E = &entity[i];
+					if (E->x < 0 || E->x >= mapWidth * 8 || E->y < 0 || E->y >= mapHeight * 8)
+					{
+						removeEntity(i);
+					}
 				}
 			}
 		}
