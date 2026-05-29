@@ -910,13 +910,11 @@ mainMenu:
 								print(0, 1, "                                  ");
 								print(0, 1, "Crafted ");
 								printDirect(getElementName(craftingRecipes[craftableRecipes[craftingSelection + craftingOffset * 16]].item));
-								delay(1);
 							}
 							else
 							{
 								print(0, 1, "                                  ");
 								print(0, 1, "Oops! You don't have enough items!");
-								delay(1);
 							}
 						}
 					}
@@ -1605,7 +1603,7 @@ mainMenu:
 			for (int i = 0; i < sizeof(craftingRecipes) / sizeof(craftingRecipes[0]); i++)
 			{
 				bool canCraft = false;
-				
+
 				if (craftingRecipes[i].specialParam == SPECIAL_NONE)
 					canCraft = true;
 
