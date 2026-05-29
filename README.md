@@ -80,7 +80,7 @@ Initial commit with basic project structure.
 - Add simple day/night cycle (just darken the rear background and start spawning enemies at night). ***(done)***
 - Add sound effects. ***(done)***
 
-### Version 0.2 (In progress):
+### Version 0.2 (In progress, releasing soon):
 - Ability to save character data and world data independently.
 - Add swinging animation.
 - Add particles (for example when breaking blocks).
@@ -89,8 +89,9 @@ Initial commit with basic project structure.
 - Add more music and intros.
 - Use more pointers for cleaner code.
 - Add chests.
+- Add more tools. ***(done: Iron and Gold pickaxes, axes, hammers, and long swords, and a wooden hammer lol)***
 - Implement dynamic crafting recipes (based on nearby stations). ***(done)***
-- Add crafting stations (workbench, furnace, etc...). ***(done for now: Workbench, Furnace)***
+- Add crafting stations. ***(done for now: Workbench, Furnace, Anvil)***
 - Probably converting all tile handling data to a struct (even special tiles). ***(done: this is great news, now I can add a huge variety of special tiles with the same function easily)***
 - Add more crafting recipes. ***(done: now implemented pages)***
 - Add more biomes. ***(done: desert, snow)***
