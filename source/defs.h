@@ -142,6 +142,26 @@ enum // Make sure the indexing follows the one in the textures
     TILE_FURNACE_5,
     TILE_FURNACE_6,
 
+    ITEM_COPPER_BAR,
+    ITEM_TIN_BAR,
+    ITEM_IRON_BAR,
+    ITEM_GOLD_BAR,
+
+    TILE_ANVIL_1,
+    TILE_ANVIL_2,
+
+    ITEM_IRON_PICKAXE,
+    ITEM_IRON_AXE,
+    ITEM_IRON_LONGSWORD,
+    ITEM_IRON_HAMMER,
+
+    ITEM_GOLD_PICKAXE,
+    ITEM_GOLD_AXE,
+    ITEM_GOLD_LONGSWORD,
+    ITEM_GOLD_HAMMER,
+
+    ITEM_WOODEN_HAMMER,
+
     TILES,
 };
 
@@ -211,6 +231,7 @@ enum // Special parameter for tiles
     SPECIAL_TREE,      // specialParams[] = {int leafTile}
     SPECIAL_WORKBENCH, // specialParams[] = {int part (1-2)}
     SPECIAL_FURNACE,   // specialParams[] = {int part (1-6)}
+    SPECIAL_ANVIL,     // specialParams[] = {int part (1-2)}
 
     SPECIALS,
 };

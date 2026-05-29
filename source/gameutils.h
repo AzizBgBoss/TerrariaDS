@@ -255,8 +255,8 @@ void setCraftingSelectionNoSound(u8 slot)
         clearPrint();
         if (craftableRecipesCount > 0)
         {
-            print(16, 7, "              ");
-            print(16, 7, getElementName(craftingRecipes[craftableRecipes[slot + craftingOffset * 16]].item));
+            print(0, 7, "              ");
+            print(0, 7, getElementName(craftingRecipes[craftableRecipes[slot + craftingOffset * 16]].item));
             for (int i = 0; i < craftingRecipes[craftableRecipes[slot + craftingOffset * 16]].ingredientCount; i++)
             {
                 Bg1UpSetTile(16, 8 + i * 2, getItemTile(craftingRecipes[craftableRecipes[slot + craftingOffset * 16]].itemsNeeded[i]) + 0);
@@ -503,7 +503,7 @@ void playerPutGameTerrain(int x, int y, int tile)
             }
         }
     }
-    else if (tileProperties[tile].specialParam == SPECIAL_WORKBENCH)
+    else if (tileProperties[tile].specialParam == SPECIAL_WORKBENCH || tileProperties[tile].specialParam == SPECIAL_ANVIL)
     {
         if (x + 1 >= mapWidth || y + 1 >= mapHeight) // Whole bench is out of bounds
         {
@@ -583,7 +583,7 @@ void playerPutGameTerrain(int x, int y, int tile)
         setGameTerrain(x, y - 1, tile - 1);
         setGameTerrain(x, y - 2, tile - 2);
     }
-    else if (tileProperties[tile].specialParam == SPECIAL_WORKBENCH)
+    else if (tileProperties[tile].specialParam == SPECIAL_WORKBENCH || tileProperties[tile].specialParam == SPECIAL_ANVIL)
     {
         setGameTerrain(x + 1, y, tile + 1);
     }
@@ -790,7 +790,7 @@ void breakTile(int x, int y, int speed)
                 }
             }
         }
-        else if (tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParam == SPECIAL_WORKBENCH)
+        else if (tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParam == SPECIAL_WORKBENCH || tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParam == SPECIAL_ANVIL)
         {
             dropItem(x, y, getElementDrop(gameTerrain[x + y * MAP_WIDTH_MAX]), 1);
             int offset = tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParams[0] - 1;

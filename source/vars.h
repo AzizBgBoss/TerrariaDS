@@ -82,8 +82,7 @@ const char *titleSplashes[] = {
 	"The comments are not only for you to understand, but for me to not make the same mistake again...",
 	"Using a copper pickaxe, you can break a Demonite tile after exactly 68 years",
 	"Never speak ill of Triple T...",
-	"NO, IT'S NOT 2D MINECRAFT!"
-};
+	"NO, IT'S NOT 2D MINECRAFT!"};
 
 u16 *nullSprite;
 
@@ -486,13 +485,15 @@ const TileProperties tileProperties[TILES] = {
 	{"Tin Ore", false, 12, 68, 200, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}},
 
 	{"Copper Pickaxe", true, 0, 4, 0, true, 0, 0, {}, false, false, true, 1, 2, TOOL_TYPE_PICKAXE, 4, true, SPECIAL_NONE, {}},
-	{"Copper Axe", true, 0, 8, 0, true, 0, 0, {}, false, false, true, 1, 2, TOOL_TYPE_AXE, 4, true, SPECIAL_NONE, {}},
-	{"Copper Long Sword", true, 0, 0, 0, true, 0, 0, {}, false, false, true, 1, 5, TOOL_TYPE_LONGSWORD, 8, true, SPECIAL_NONE, {}},
-	{"Copper Hammer", true, 0, 12, 0, true, 0, 0, {}, false, false, true, 1, 1, TOOL_TYPE_HAMMER, 1, true, SPECIAL_NONE, {}},
+	{"Copper Axe", true, 0, 8, 0, true, 0, 0, {}, false, false, true, 1, 2, TOOL_TYPE_AXE, 3, true, SPECIAL_NONE, {}},
+	{"Copper Long Sword", true, 0, 0, 0, true, 0, 0, {}, false, false, true, 1, 5, TOOL_TYPE_LONGSWORD, 9, true, SPECIAL_NONE, {}},
+	{"Copper Hammer", true, 0, 12, 0, true, 0, 0, {}, false, false, true, 1, 1, TOOL_TYPE_HAMMER, 4, true, SPECIAL_NONE, {}},
+
 	{"Tin Pickaxe", true, 0, 84, 0, true, 0, 0, {}, false, false, true, 2, 2, TOOL_TYPE_PICKAXE, 5, true, SPECIAL_NONE, {}},
-	{"Tin Axe", true, 0, 88, 0, true, 0, 0, {}, false, false, true, 2, 2, TOOL_TYPE_AXE, 5, true, SPECIAL_NONE, {}},
+	{"Tin Axe", true, 0, 88, 0, true, 0, 0, {}, false, false, true, 2, 2, TOOL_TYPE_AXE, 4, true, SPECIAL_NONE, {}},
 	{"Tin Long Sword", true, 0, 80, 0, true, 0, 0, {}, false, false, true, 2, 5, TOOL_TYPE_LONGSWORD, 10, true, SPECIAL_NONE, {}},
-	{"Tin Hammer", true, 0, 92, 0, true, 0, 0, {}, false, false, true, 2, 1, TOOL_TYPE_HAMMER, 1, true, SPECIAL_NONE, {}},
+	{"Tin Hammer", true, 0, 92, 0, true, 0, 0, {}, false, false, true, 2, 1, TOOL_TYPE_HAMMER, 6, true, SPECIAL_NONE, {}},
+
 	{"Copper Coin", true, 0, 96, 0, true, 0, 0, {}, false, false, false, 0, 0, -1, 0, true, SPECIAL_NONE, {}},
 	{"Silver Coin", true, 0, 100, 0, true, 0, 0, {}, false, false, false, 0, 0, -1, 0, true, SPECIAL_NONE, {}},
 	{"Gold Coin", true, 0, 104, 0, true, 0, 0, {}, false, false, false, 0, 0, -1, 0, true, SPECIAL_NONE, {}},
@@ -518,10 +519,30 @@ const TileProperties tileProperties[TILES] = {
 	{"", true, 168, 56, 50, true, TILE_FURNACE_5, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_FURNACE, {4}},
 	{"Furnace", true, 169, 148, 50, true, TILE_FURNACE_5, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_FURNACE, {5}},
 	{"", true, 170, 56, 50, true, TILE_FURNACE_5, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_FURNACE, {6}},
+
+	{"Copper Bar", true, 0, 152, 0, true, 0, 0, {}, false, false, false, 0, 0, -1, 0, true, SPECIAL_NONE, {}},
+	{"Tin Bar", true, 0, 156, 0, true, 0, 0, {}, false, false, false, 0, 0, -1, 0, true, SPECIAL_NONE, {}},
+	{"Iron Bar", true, 0, 160, 0, true, 0, 0, {}, false, false, false, 0, 0, -1, 0, true, SPECIAL_NONE, {}},
+	{"Gold Bar", true, 0, 164, 0, true, 0, 0, {}, false, false, false, 0, 0, -1, 0, true, SPECIAL_NONE, {}},
+
+	{"Anvil", true, 189, 168, 100, true, TILE_ANVIL_1, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_ANVIL, {1}}, // 2x1
+	{"", true, 190, 56, 100, true, TILE_ANVIL_1, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_ANVIL, {2}},
+
+	{"Iron Pickaxe", true, 0, 176, 0, true, 0, 0, {}, false, false, true, 3, 2, TOOL_TYPE_PICKAXE, 5, true, SPECIAL_NONE, {}},
+	{"Iron Axe", true, 0, 180, 0, true, 0, 0, {}, false, false, true, 3, 2, TOOL_TYPE_AXE, 5, true, SPECIAL_NONE, {}},
+	{"Iron Long Sword", true, 0, 184, 0, true, 0, 0, {}, false, false, true, 3, 5, TOOL_TYPE_LONGSWORD, 12, true, SPECIAL_NONE, {}},
+	{"Iron Hammer", true, 0, 188, 0, true, 0, 0, {}, false, false, true, 3, 1, TOOL_TYPE_HAMMER, 7, true, SPECIAL_NONE, {}},
+
+	{"Gold Pickaxe", true, 0, 192, 0, true, 0, 0, {}, false, false, true, 4, 2, TOOL_TYPE_PICKAXE, 6, true, SPECIAL_NONE, {}},
+	{"Gold Axe", true, 0, 196, 0, true, 0, 0, {}, false, false, true, 4, 2, TOOL_TYPE_AXE, 7, true, SPECIAL_NONE, {}},
+	{"Gold Long Sword", true, 0, 200, 0, true, 0, 0, {}, false, false, true, 4, 5, TOOL_TYPE_LONGSWORD, 15, true, SPECIAL_NONE, {}},
+	{"Gold Hammer", true, 0, 204, 0, true, 0, 0, {}, false, false, true, 4, 1, TOOL_TYPE_HAMMER, 9, true, SPECIAL_NONE, {}},
+
+	{"Wooden Hammer", true, 0, 172, 0, true, 0, 0, {}, false, false, true, 1, 1, TOOL_TYPE_HAMMER, 2, true, SPECIAL_NONE, {}},
 };
 
-//TODO: add ingots
-//TODO: maybe give special treatment to whatever tile that isn't 1x1, or decor tiles maybe idk
+// TODO: add ingots
+// TODO: maybe give special treatment to whatever tile that isn't 1x1, or decor tiles maybe idk
 
 const BiomeProperties biomes[BIOMES] = {
 	{"Forest", TILE_DIRT, TILE_DIRT_WALL, TILE_STONE, TILE_STONE_WALL},
@@ -540,14 +561,29 @@ const CraftingRecipe craftingRecipes[] = {
 	{TILE_STONE, 1, 1, {TILE_STONE_WALL}, {4}, SPECIAL_WORKBENCH},
 	{TILE_DIRT, 1, 1, {TILE_DIRT_WALL}, {4}, SPECIAL_WORKBENCH},
 	{TILE_WOODEN_DOOR_CLOSED_3, 1, 1, {TILE_PLANKS}, {6}, SPECIAL_WORKBENCH},
-	{ITEM_TIN_PICKAXE, 1, 2, {TILE_PLANKS, TILE_TIN_ORE}, {1, 3}, SPECIAL_WORKBENCH},
-	{ITEM_TIN_AXE, 1, 2, {TILE_PLANKS, TILE_TIN_ORE}, {1, 3}, SPECIAL_WORKBENCH},
-	{ITEM_TIN_LONGSWORD, 1, 2, {TILE_PLANKS, TILE_TIN_ORE}, {1, 3}, SPECIAL_WORKBENCH},
-	{ITEM_TIN_HAMMER, 1, 2, {TILE_PLANKS, TILE_TIN_ORE}, {1, 1}, SPECIAL_WORKBENCH},
-	{ITEM_COPPER_PICKAXE, 1, 2, {TILE_PLANKS, TILE_COPPER_ORE}, {1, 3}, SPECIAL_WORKBENCH},
-	{ITEM_COPPER_AXE, 1, 2, {TILE_PLANKS, TILE_COPPER_ORE}, {1, 3}, SPECIAL_WORKBENCH},
-	{ITEM_COPPER_LONGSWORD, 1, 2, {TILE_PLANKS, TILE_COPPER_ORE}, {1, 3}, SPECIAL_WORKBENCH},
-	{ITEM_COPPER_HAMMER, 1, 2, {TILE_PLANKS, TILE_COPPER_ORE}, {1, 1}, SPECIAL_WORKBENCH},
+
+	{ITEM_COPPER_PICKAXE, 1, 2, {TILE_PLANKS, ITEM_COPPER_BAR}, {4, 8}, SPECIAL_ANVIL},
+	{ITEM_COPPER_AXE, 1, 2, {TILE_PLANKS, ITEM_COPPER_BAR}, {3, 6}, SPECIAL_ANVIL},
+	{ITEM_COPPER_LONGSWORD, 1, 1, {ITEM_COPPER_BAR}, {6}, SPECIAL_ANVIL},
+	{ITEM_COPPER_HAMMER, 1, 2, {TILE_PLANKS, ITEM_COPPER_BAR}, {3, 8}, SPECIAL_ANVIL},
+
+	{ITEM_TIN_PICKAXE, 1, 2, {TILE_PLANKS, ITEM_TIN_BAR}, {4, 8}, SPECIAL_ANVIL},
+	{ITEM_TIN_AXE, 1, 2, {TILE_PLANKS, ITEM_TIN_BAR}, {3, 6}, SPECIAL_ANVIL},
+	{ITEM_TIN_LONGSWORD, 1, 1, {ITEM_TIN_BAR}, {6}, SPECIAL_ANVIL},
+	{ITEM_TIN_HAMMER, 1, 2, {TILE_PLANKS, ITEM_TIN_BAR}, {3, 8}, SPECIAL_ANVIL},
+
+	{ITEM_IRON_PICKAXE, 1, 2, {TILE_PLANKS, ITEM_IRON_BAR}, {4, 8}, SPECIAL_ANVIL},
+	{ITEM_IRON_AXE, 1, 2, {TILE_PLANKS, ITEM_IRON_BAR}, {3, 6}, SPECIAL_ANVIL},
+	{ITEM_IRON_LONGSWORD, 1, 1, {ITEM_IRON_BAR}, {6}, SPECIAL_ANVIL},
+	{ITEM_IRON_HAMMER, 1, 2, {TILE_PLANKS, ITEM_IRON_BAR}, {3, 8}, SPECIAL_ANVIL},
+
+	{ITEM_GOLD_PICKAXE, 1, 2, {TILE_PLANKS, ITEM_GOLD_BAR}, {4, 8}, SPECIAL_ANVIL},
+	{ITEM_GOLD_AXE, 1, 2, {TILE_PLANKS, ITEM_GOLD_BAR}, {3, 6}, SPECIAL_ANVIL},
+	{ITEM_GOLD_LONGSWORD, 1, 1, {ITEM_GOLD_BAR}, {6}, SPECIAL_ANVIL},
+	{ITEM_GOLD_HAMMER, 1, 2, {TILE_PLANKS, ITEM_GOLD_BAR}, {3, 8}, SPECIAL_ANVIL},
+
+	{ITEM_WOODEN_HAMMER, 1, 1, {TILE_PLANKS}, {8}, SPECIAL_WORKBENCH},
+
 	{TILE_HARDENED_SAND, 1, 1, {TILE_SAND}, {2}, SPECIAL_NONE},
 	{TILE_SANDSTONE_WALL, 4, 1, {TILE_HARDENED_SAND}, {1}, SPECIAL_WORKBENCH},
 	{TILE_HARDENED_SAND, 1, 1, {TILE_SANDSTONE_WALL}, {4}, SPECIAL_WORKBENCH},
@@ -555,6 +591,11 @@ const CraftingRecipe craftingRecipes[] = {
 	{TILE_SNOW, 2, 1, {TILE_ICE}, {1}, SPECIAL_NONE},
 	{TILE_WORKBENCH_1, 1, 1, {TILE_PLANKS}, {3}, SPECIAL_NONE},
 	{TILE_FURNACE_5, 1, 2, {TILE_PLANKS, TILE_STONE}, {4, 20}, SPECIAL_WORKBENCH},
+	{TILE_ANVIL_1, 1, 1, {ITEM_IRON_BAR}, {5}, SPECIAL_WORKBENCH},
+	{ITEM_COPPER_BAR, 1, 1, {TILE_COPPER_ORE}, {3}, SPECIAL_FURNACE},
+	{ITEM_TIN_BAR, 1, 1, {TILE_TIN_ORE}, {3}, SPECIAL_FURNACE},
+	{ITEM_IRON_BAR, 1, 1, {TILE_IRON_ORE}, {3}, SPECIAL_FURNACE},
+	{ITEM_GOLD_BAR, 1, 1, {TILE_GOLD_ORE}, {4}, SPECIAL_FURNACE},
 };
 
 int craftableRecipes[sizeof(craftingRecipes) / sizeof(CraftingRecipe)]; // IDs of the recipes that can be crafted based on nearby stations

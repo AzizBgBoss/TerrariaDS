@@ -1595,6 +1595,16 @@ mainMenu:
 
 					if (tileProperties[gameTerrain[tx + ty * MAP_WIDTH_MAX]].specialParam != SPECIAL_NONE)
 					{
+						bool add = true;
+						for (int i = 0; i < specialCount; i++)
+						{
+							if (nearbySpecials[i] == tileProperties[gameTerrain[tx + ty * MAP_WIDTH_MAX]].specialParam)
+							{
+								add = false;
+								break;
+							}
+						}
+						if (add && specialCount < SPECIALS)
 						nearbySpecials[specialCount++] = tileProperties[gameTerrain[tx + ty * MAP_WIDTH_MAX]].specialParam;
 					}
 				}
