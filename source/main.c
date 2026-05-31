@@ -1194,6 +1194,10 @@ mainMenu:
 							entity[i].velocity = 0; // Reset velocity when on the ground
 						}
 					}
+					else if (entity[i].isOnGround && entity[i].velocityX != 0)
+					{
+						entity[i].animation = ANIM_WALK;
+					}
 					else
 					{
 						entity[i].animation = ANIM_NONE;
@@ -1290,7 +1294,7 @@ mainMenu:
 						entity[i].velocity = -7;
 						entity[i].isOnGround = false;
 						entity[i].isJumping = true;
-						entity[i].nextTick = rando(1 * 60, 3 * 60); // Jump every 1 to 3 seconds
+						entity[i].nextTick = rando(2 * 60, 5 * 60); // Jump every 1 to 3 seconds
 						if (player.x > entity[i].x)
 						{
 							changeEntityVelocityX(i, 1);
@@ -1298,6 +1302,13 @@ mainMenu:
 						else
 						{
 							changeEntityVelocityX(i, -1);
+						}
+					}
+					if (entity[i].isOnGround)
+					{
+						if (entity[i].nextTick <= 60)
+						{
+							entity[i].animation = ANIM_WALK;
 						}
 					}
 				}
@@ -1319,6 +1330,13 @@ mainMenu:
 							changeEntityVelocityX(i, 1);
 						}
 					}
+					if (entity[i].isOnGround)
+					{
+						if (entity[i].nextTick <= 60)
+						{
+							changeEntityVelocityX(i, entity[i].isLookingLeft ? -1 : 1); // Walk in the direction it's looking
+						}
+					}
 				}
 				else if (entities[entity[i].type].AItype == ENTITY_AI_ZOMBIE)
 				{
@@ -1330,13 +1348,11 @@ mainMenu:
 							{
 								changeEntityVelocityX(i, 1);
 								entity[i].isLookingLeft = false;
-								entity[i].animation = ANIM_WALK;
 							}
 							else if (player.x < entity[i].x && entity[i].isOnGround)
 							{
 								changeEntityVelocityX(i, -1);
 								entity[i].isLookingLeft = true;
-								entity[i].animation = ANIM_WALK;
 							}
 						}
 						else // Day time: run for your fucking life (do zombies have lives?)
@@ -1345,13 +1361,11 @@ mainMenu:
 							{
 								changeEntityVelocityX(i, 1);
 								entity[i].isLookingLeft = false;
-								entity[i].animation = ANIM_WALK;
 							}
 							else if (player.x > entity[i].x && entity[i].isOnGround)
 							{
 								changeEntityVelocityX(i, -1);
 								entity[i].isLookingLeft = true;
-								entity[i].animation = ANIM_WALK;
 							}
 						}
 
@@ -1605,7 +1619,7 @@ mainMenu:
 							}
 						}
 						if (add && specialCount < SPECIALS)
-						nearbySpecials[specialCount++] = tileProperties[gameTerrain[tx + ty * MAP_WIDTH_MAX]].specialParam;
+							nearbySpecials[specialCount++] = tileProperties[gameTerrain[tx + ty * MAP_WIDTH_MAX]].specialParam;
 					}
 				}
 			}
@@ -1847,7 +1861,10 @@ https://github.com/AzizBgBoss/TerrariaDS");
 					switch (entity[i].animation)
 					{
 					case ANIM_NONE:
-						setEntityAnimFrame(i, 1);
+						setEntityAnimFrame(i, (frame / 30) % 2);
+						break;
+					case ANIM_WALK:
+						setEntityAnimFrame(i, (frame / 4) % 2);
 						break;
 					case ANIM_JUMP:
 						setEntityAnimFrame(i, 0);
@@ -1863,6 +1880,7 @@ https://github.com/AzizBgBoss/TerrariaDS");
 						setEntityAnimFrame(i, 0);
 						break;
 					case ANIM_JUMP:
+					case ANIM_WALK:
 						setEntityAnimFrame(i, (frame / 4) % 7);
 						break;
 					}

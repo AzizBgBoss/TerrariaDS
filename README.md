@@ -87,7 +87,6 @@ Initial commit with basic project structure.
 - More bug fixes and optimizations.
 - Show health as hearts.
 - Add more music and intros.
-- Use more pointers for cleaner code.
 - Add chests.
 - Add more tools. ***(done: Iron and Gold pickaxes, axes, hammers, and long swords, and a wooden hammer lol)***
 - Implement dynamic crafting recipes (based on nearby stations). ***(done)***
@@ -106,6 +105,7 @@ Initial commit with basic project structure.
 - Fix misaligned sprites when zooming in/out ***(done: yeah I still don't understand why this happens, if you can please help me with it. But I just added more math to counter the offset)***
 
 ## Planned Features for the future:
+- Use more pointers for cleaner code.
 - Add ability to change button mappings (since many DS'es (including mine) have malfunctioning shoulder buttons because of dust accumulation under them over the years).
 - Add crimson/corruption.
 - Add improved lighting.
