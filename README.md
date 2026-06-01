@@ -84,10 +84,10 @@ Initial commit with basic project structure.
 - Ability to save character data and world data independently.
 - Add swinging animation.
 - Add particles (for example when breaking blocks).
-- More bug fixes and optimizations.
 - Show health as hearts.
 - Add more music and intros.
 - Add more sound effects.
+- Fix touch misalignment when close to world edges at 2x scale. ***(can't do it: I don't know why, prolly got something to do with bgSetCenter, if you're close to the edges just keep the scale 1x)***
 - Add chests. ***(done: limited to 32 chests for now)***
 - Add more tools. ***(done: Iron and Gold pickaxes, axes, hammers, and long swords, and a wooden hammer lol)***
 - Implement dynamic crafting recipes (based on nearby stations). ***(done)***
