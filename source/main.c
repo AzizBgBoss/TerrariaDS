@@ -1048,7 +1048,9 @@ mainMenu:
 										inventorySetFull();
 									}
 								}
-							} else {
+							}
+							else
+							{
 								if (inventory[inventorySelection] != 0 && inventoryQuantity[inventorySelection] != 0)
 								{
 									if (giveChest(chestOpen, inventory[inventorySelection], inventoryQuantity[inventorySelection]))
@@ -1103,13 +1105,13 @@ mainMenu:
 						int totalQuantity = currentInventoryQuantity[itemToMove] + currentInventoryQuantity[destination];
 						if (totalQuantity > 99) // Limit quantity to 99
 						{
-							setToInventory(currentInventory, currentInventoryQuantity, destination, currentInventory[itemToMove], 99);				// Set destination to 99
+							setToInventory(currentInventory, currentInventoryQuantity, destination, currentInventory[itemToMove], 99);				  // Set destination to 99
 							setToInventory(currentInventory, currentInventoryQuantity, itemToMove, currentInventory[itemToMove], totalQuantity - 99); // Set itemToMove to the remaining quantity
 						}
 						else
 						{
 							setToInventory(currentInventory, currentInventoryQuantity, destination, currentInventory[itemToMove], totalQuantity); // Combine quantities
-							setToInventory(currentInventory, currentInventoryQuantity, itemToMove, 0, 0);											// Clear the itemToMove slot
+							setToInventory(currentInventory, currentInventoryQuantity, itemToMove, 0, 0);										  // Clear the itemToMove slot
 						}
 					}
 					else // If items are different
@@ -1789,6 +1791,10 @@ mainMenu:
 			(16 - darkness) | // BG0 weight
 			(darkness << 8);  // BG1 weight
 
+		// Compute screen-relative render coordinates
+		player.renderX = player.x - scrollX;
+		player.renderY = player.y - scrollY;
+
 		// Rendering Part
 
 		if (!inventoryOpen)
@@ -1928,11 +1934,16 @@ https://github.com/AzizBgBoss/TerrariaDS");
 			printDirect("invincibility: ");
 			printValDirect(player.invincibilityFrames);
 			printDirect("   \n");
+			printDirect("Scroll, Render: ");
+			printValDirect(scrollX);
+			printDirect(", ");
+			printValDirect(scrollY);
+			printDirect(" | ");
+			printValDirect(player.renderX);
+			printDirect(", ");
+			printValDirect(player.renderY);
+			printDirect("   \n");
 		}
-
-		// Compute screen-relative render coordinates
-		player.renderX = player.x - scrollX;
-		player.renderY = player.y - scrollY;
 
 		// Apply scroll
 		bgSetCenter(bg2, player.renderX + player.sizeX / 2, player.renderY + player.sizeY / 2);

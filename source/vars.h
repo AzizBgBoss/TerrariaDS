@@ -84,7 +84,11 @@ const char *titleSplashes[] = {
 	"The comments are not only for you to understand, but for me to not make the same mistake again...",
 	"Using a copper pickaxe, you can break a Demonite tile after exactly 68 years",
 	"Never speak ill of Triple T...",
-	"NO, IT'S NOT 2D MINECRAFT!"};
+	"NO, IT'S NOT 2D MINECRAFT!",
+	"If you like the game, consider starring it on GitHub, it helps a lot and motivates me to keep working on it!",
+	"If you've encountered a bug, please report it on GitHub with steps to reproduce it, I can't fix what I don't know about!",
+	"I hate bugs that involve math",
+};
 
 u16 *nullSprite;
 
