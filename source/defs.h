@@ -162,6 +162,11 @@ enum // Make sure the indexing follows the one in the textures
 
     ITEM_WOODEN_HAMMER,
 
+    TILE_CHEST_1,
+    TILE_CHEST_2,
+    TILE_CHEST_3,
+    TILE_CHEST_4,
+
     TILES,
 };
 
@@ -232,6 +237,7 @@ enum // Special parameter for tiles
     SPECIAL_WORKBENCH, // specialParams[] = {int part (1-2)}
     SPECIAL_FURNACE,   // specialParams[] = {int part (1-6)}
     SPECIAL_ANVIL,     // specialParams[] = {int part (1-2)}
+    SPECIAL_CHEST,     // specialParams[] = {int part (1-4)}
 
     SPECIALS,
 };

@@ -548,6 +548,33 @@ void playerPutGameTerrain(int x, int y, int tile)
             }
         }
     }
+    else if (tileProperties[tile].specialParam == SPECIAL_CHEST)
+    {
+        if (x + 1 >= mapWidth || y - 1 < 0) // Whole chest is out of bounds
+        {
+            canPlace = false;
+        }
+        else if (isTileSolid(gameTerrain[x + (y + 1) * MAP_WIDTH_MAX]) && // Check if the 2 tiles below and to the right of the chest are solid
+                 isTileSolid(gameTerrain[x + 1 + (y + 1) * MAP_WIDTH_MAX]))
+        {
+            canPlace = true;
+            for (int dx = 0; dx <= 1; dx++)
+            {
+                int nx = x + dx;
+                for (int dy = -1; dy <= 0; dy++)
+                {
+                    int ny = y + dy;
+                    if (gameTerrain[nx + ny * MAP_WIDTH_MAX] != TILE_AIR)
+                    {
+                        canPlace = false;
+                        break;
+                    }
+                }
+                if (!canPlace)
+                    break;
+            }
+        }
+    }
     else
     {
         for (int dx = -1; dx <= 1; dx++)
@@ -596,6 +623,18 @@ void playerPutGameTerrain(int x, int y, int tile)
             {
                 int ny = y + dy;
                 setGameTerrain(nx, ny, TILE_FURNACE_1 + (dx + 1) + (dy + 1) * 3);
+            }
+        }
+    }
+    else if (tileProperties[tile].specialParam == SPECIAL_CHEST)
+    {
+        for (int dx = 0; dx <= 1; dx++)
+        {
+            int nx = x + dx;
+            for (int dy = -1; dy <= 0; dy++)
+            {
+                int ny = y + dy;
+                setGameTerrain(nx, ny, TILE_CHEST_1 + dx + (dy+1) * 2);
             }
         }
     }
@@ -807,6 +846,19 @@ void breakTile(int x, int y, int speed)
             for (int i = 0; i < 2; i++)
             {
                 for (int j = 0; j < 3; j++)
+                {
+                    setGameTerrain(x - offsetX + j, y - offsetY + i, TILE_AIR);
+                }
+            }
+        }
+        else if (tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParam == SPECIAL_CHEST)
+        {
+            dropItem(x, y, getElementDrop(gameTerrain[x + y * MAP_WIDTH_MAX]), 1);
+            int offsetX = (tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParams[0] - 1) % 2;
+            int offsetY = (tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParams[0] - 1) / 2;
+            for (int i = 0; i < 2; i++)
+            {
+                for (int j = 0; j < 2; j++)
                 {
                     setGameTerrain(x - offsetX + j, y - offsetY + i, TILE_AIR);
                 }

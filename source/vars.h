@@ -539,6 +539,11 @@ const TileProperties tileProperties[TILES] = {
 	{"Gold Hammer", true, 0, 204, 0, true, 0, 0, {}, false, false, true, 4, 1, TOOL_TYPE_HAMMER, 9, true, SPECIAL_NONE, {}},
 
 	{"Wooden Hammer", true, 0, 172, 0, true, 0, 0, {}, false, false, true, 1, 1, TOOL_TYPE_HAMMER, 2, true, SPECIAL_NONE, {}},
+
+	{"", true, 192, 56, 100, true, TILE_CHEST_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_CHEST, {1}}, // 2x2
+	{"", true, 193, 56, 100, true, TILE_CHEST_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_CHEST, {2}},
+	{"Chest", true, 195, 208, 100, true, TILE_CHEST_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_CHEST, {3}},
+	{"", true, 196, 56, 100, true, TILE_CHEST_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_CHEST, {4}},
 };
 
 // TODO: add ingots
@@ -596,6 +601,8 @@ const CraftingRecipe craftingRecipes[] = {
 	{ITEM_TIN_BAR, 1, 1, {TILE_TIN_ORE}, {3}, SPECIAL_FURNACE},
 	{ITEM_IRON_BAR, 1, 1, {TILE_IRON_ORE}, {3}, SPECIAL_FURNACE},
 	{ITEM_GOLD_BAR, 1, 1, {TILE_GOLD_ORE}, {4}, SPECIAL_FURNACE},
+
+	{TILE_CHEST_3, 1, 2, {TILE_PLANKS, ITEM_IRON_BAR}, {8, 2}, SPECIAL_WORKBENCH},
 };
 
 int craftableRecipes[sizeof(craftingRecipes) / sizeof(CraftingRecipe)]; // IDs of the recipes that can be crafted based on nearby stations
