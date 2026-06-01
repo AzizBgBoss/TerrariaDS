@@ -225,12 +225,12 @@ void setInventorySelectionNoSound(u8 slot)
         if (inventoryOpen)
         {
             print(1, 7, "                              ");
-            print(1, 7, getElementName(inventory[inventorySelection]));
+            print(1, 7, getElementName(currentInventory[inventorySelection]));
         }
         else
         {
             print(1, 19, "                             ");
-            print(1, 19, getElementName(inventory[inventorySelection]));
+            print(1, 19, getElementName(currentInventory[inventorySelection]));
         }
         oamSet(&oamMain, 0, x, y, 0, 0, SpriteSize_32x32, SpriteColorFormat_256Color, inventorySelectionSprite, -1, false, false, false, false, false);
         oamUpdate(&oamMain);
@@ -293,7 +293,7 @@ void renderInventoryNoSound()
         Bg1UpFill(63);
         for (int i = 0; i < (inventoryOpen ? 8 * 4 : 8); i++) // Only show from the lowest 8 slots if using hotbar mode
         {
-            if (inventory[i] == 0 || inventoryQuantity[i] == 0)
+            if (currentInventory[i] == 0 || currentInventoryQuantity[i] == 0)
             {
                 Bg1UpSetTile((i % 8) * 4 + 1, (i / 8) * -4 + 21, 63);
                 Bg1UpSetTile((i % 8) * 4 + 2, (i / 8) * -4 + 21, 63);
@@ -303,15 +303,15 @@ void renderInventoryNoSound()
             }
             else
             {
-                Bg1UpSetTile((i % 8) * 4 + 1, (i / 8) * -4 + 21, getItemTile(inventory[i]) + 0);
-                Bg1UpSetTile((i % 8) * 4 + 2, (i / 8) * -4 + 21, getItemTile(inventory[i]) + 1);
-                Bg1UpSetTile((i % 8) * 4 + 1, (i / 8) * -4 + 22, getItemTile(inventory[i]) + 2);
-                Bg1UpSetTile((i % 8) * 4 + 2, (i / 8) * -4 + 22, getItemTile(inventory[i]) + 3);
+                Bg1UpSetTile((i % 8) * 4 + 1, (i / 8) * -4 + 21, getItemTile(currentInventory[i]) + 0);
+                Bg1UpSetTile((i % 8) * 4 + 2, (i / 8) * -4 + 21, getItemTile(currentInventory[i]) + 1);
+                Bg1UpSetTile((i % 8) * 4 + 1, (i / 8) * -4 + 22, getItemTile(currentInventory[i]) + 2);
+                Bg1UpSetTile((i % 8) * 4 + 2, (i / 8) * -4 + 22, getItemTile(currentInventory[i]) + 3);
                 print((i % 8) * 4 + 1, (i / 8) * -4 + 23, "   ");
-                if (inventoryQuantity[i] > 1)
+                if (currentInventoryQuantity[i] > 1)
                 {
                     char buffer[3];
-                    itoa(inventoryQuantity[i], buffer, 10);
+                    itoa(currentInventoryQuantity[i], buffer, 10);
                     print((i % 8) * 4 + 1, (i / 8) * -4 + 23, buffer);
                 }
             }
@@ -360,20 +360,25 @@ void renderCrafting()
     }
 }
 
-void setInventory(int slot, int item, int quantity)
+void setToInventory(u8 *targetI, u8 *targetQ, int slot, int item, int quantity)
 {
     if (slot < 0 || slot >= 8 * 4)
         return;
     if (item == 0 || quantity == 0)
     {
-        inventory[slot] = 0;
-        inventoryQuantity[slot] = 0;
+        targetI[slot] = 0;
+        targetQ[slot] = 0;
         renderInventory();
         return;
     }
-    inventory[slot] = item;
-    inventoryQuantity[slot] = quantity;
+    targetI[slot] = item;
+    targetQ[slot] = quantity;
     renderInventory();
+}
+
+void setInventory(int slot, int item, int quantity)
+{
+    setToInventory(inventory, inventoryQuantity, slot, item, quantity);
 }
 
 void inventorySetHotbar()
@@ -381,6 +386,10 @@ void inventorySetHotbar()
     lcdMainOnTop();
     inventoryOpen = false;
     craftingOpen = false;
+    isChestOpen = false;
+    chestOpen = -1;
+    currentInventory = inventory;
+    currentInventoryQuantity = inventoryQuantity;
     Bg0UpFill(0);
     Bg1UpFill(63);
     for (int i = 0; i < 32; i += 4)
@@ -414,6 +423,23 @@ void inventorySetFull()
     }
     for (int j = 0; j < 16; j++)
         Bg0UpSetTile(27 + j % 4, j / 4, 32 + j);
+    if (chestOpen != -1)
+    {
+        if (isChestOpen)
+        {
+            for (int j = 0; j < 16; j++)
+                Bg0UpSetTile(23 + j % 4, j / 4, 48 + j);
+            for (int j = 0; j < 16; j++)
+                Bg0UpSetTile(19 + j % 4, j / 4, 208 + j);
+        }
+        else
+        {
+            for (int j = 0; j < 16; j++)
+                Bg0UpSetTile(23 + j % 4, j / 4, 192 + j);
+            for (int j = 0; j < 16; j++)
+                Bg0UpSetTile(19 + j % 4, j / 4, 224 + j);
+        }
+    }
     clearPrint();
     renderInventory();
     mmEffect(SFX_ENU_OPEN);
@@ -434,8 +460,16 @@ void inventorySetCrafting()
         }
     }
 
-    for (int j = 0; j < 16; j++)
-        Bg0UpSetTile(27 + j % 4, j / 4, 48 + j);
+    if (isChestOpen)
+    {
+        for (int j = 0; j < 16; j++)
+            Bg0UpSetTile(27 + j % 4, j / 4, 192 + j);
+    }
+    else
+    {
+        for (int j = 0; j < 16; j++)
+            Bg0UpSetTile(27 + j % 4, j / 4, 48 + j);
+    }
 
     for (int j = 0; j < 16; j++)
         Bg0UpSetTile(16 + j % 4, 20 + j / 4, 96 + j);
@@ -449,6 +483,66 @@ void inventorySetCrafting()
     clearPrint();
     renderCrafting();
     mmEffect(SFX_ENU_OPEN);
+}
+
+bool setChestLink(int x, int y)
+{
+    for (int i = 0; i < CHEST_COUNT; i++)
+    {
+        if (chestLinks[i].active && x >= chestLinks[i].x && x < chestLinks[i].x + 2 && y >= chestLinks[i].y && y < chestLinks[i].y + 2)
+        {
+            return false; // Chest already exists at this location
+        }
+        if (!chestLinks[i].active)
+        {
+            chestLinks[i].active = true;
+            chestLinks[i].x = x;
+            chestLinks[i].y = y;
+
+            for (int j = 0; j < 8 * 4; j++)
+            {
+                chestInventory[i][j] = 0;
+                chestInventoryQuantity[i][j] = 0;
+            }
+
+            return true;
+        }
+    }
+    return false;
+}
+
+int getChestLink(int x, int y)
+{
+    for (int i = 0; i < CHEST_COUNT; i++)
+    {
+        if (chestLinks[i].active && x >= chestLinks[i].x && x < chestLinks[i].x + 2 && y >= chestLinks[i].y && y < chestLinks[i].y + 2)
+        {
+            return i;
+        }
+    }
+    return -1; // No chest found at this location
+}
+
+bool removeChestLink(int x, int y)
+{
+    int chestLink = getChestLink(x, y);
+    if (chestLink != -1)
+    {
+        chestLinks[chestLink].active = false;
+        return true;
+    }
+    return false; // No chest found at this location
+}
+
+void openChest(int chestLink)
+{
+    if (chestLink < 0 || chestLink >= CHEST_COUNT)
+        return;
+    chestOpen = chestLink;
+    isChestOpen = true;
+    currentInventory = chestInventory[chestOpen];
+    currentInventoryQuantity = chestInventoryQuantity[chestOpen];
+    inventorySetFull();
 }
 
 void setGameTerrain(int x, int y, int tile)
@@ -573,6 +667,13 @@ void playerPutGameTerrain(int x, int y, int tile)
                 if (!canPlace)
                     break;
             }
+            if (canPlace)
+            {
+                if (!setChestLink(x, y - 1))
+                {
+                    canPlace = false;
+                }
+            }
         }
     }
     else
@@ -634,10 +735,11 @@ void playerPutGameTerrain(int x, int y, int tile)
             for (int dy = -1; dy <= 0; dy++)
             {
                 int ny = y + dy;
-                setGameTerrain(nx, ny, TILE_CHEST_1 + dx + (dy+1) * 2);
+                setGameTerrain(nx, ny, TILE_CHEST_1 + dx + (dy + 1) * 2);
             }
         }
     }
+
     switch (rando(0, 2))
     {
     case 0:
@@ -682,7 +784,7 @@ bool takeInventory(int item, int quantity)
     return true;
 }
 
-bool giveInventory(int item, int quantity)
+bool giveToInventory(u8 *targetInv, u8 *targetQ, int item, int quantity)
 {
     while (quantity > 0)
     {
@@ -692,11 +794,11 @@ bool giveInventory(int item, int quantity)
         for (int i = 0; i < 8 * 4; i++)
         {
             int j = (item >= ITEM_COPPER_COIN && item <= ITEM_PLATINUM_COIN) ? (8 * 4 - 1 - i) : i; // If it's a coin, start from the end for convenience
-            if (inventory[j] == item && inventoryQuantity[j] < 100)
+            if (targetInv[j] == item && targetQ[j] < 100)
             {
-                int add = min(100 - inventoryQuantity[j], quantity);
+                int add = min(100 - targetQ[j], quantity);
 
-                setInventory(j, item, inventoryQuantity[j] + add);
+                setToInventory(targetInv, targetQ, j, item, targetQ[j] + add);
 
                 quantity -= add;
                 changed = true;
@@ -710,11 +812,11 @@ bool giveInventory(int item, int quantity)
         for (int i = 0; i < 8 * 4; i++)
         {
             int j = (item >= ITEM_COPPER_COIN && item <= ITEM_PLATINUM_COIN) ? (8 * 4 - 1 - i) : i;
-            if (inventory[j] == 0)
+            if (targetInv[j] == 0)
             {
                 int add = min(100, quantity);
 
-                setInventory(j, item, add);
+                setToInventory(targetInv, targetQ, j, item, add);
 
                 quantity -= add;
                 changed = true;
@@ -729,6 +831,26 @@ bool giveInventory(int item, int quantity)
             return false;
     }
 
+    return true;
+}
+
+bool giveInventory(int item, int quantity)
+{
+    return giveToInventory(inventory, inventoryQuantity, item, quantity);
+}
+
+bool giveChest(int chestLink, int item, int quantity)
+{
+    return giveToInventory(chestInventory[chestLink], chestInventoryQuantity[chestLink], item, quantity);
+}
+
+bool isInventoryEmpty(u8 *targetInv, u8 *targetQ)
+{
+    for (int i = 0; i < 8 * 4; i++)
+    {
+        if (targetInv[i] != 0 && targetQ[i] > 0)
+            return false;
+    }
     return true;
 }
 
@@ -768,6 +890,16 @@ void destroyItem(int id)
 
 void breakTile(int x, int y, int speed)
 {
+    if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight)
+        return;
+    if (tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParam == SPECIAL_CHEST &&
+        !isInventoryEmpty(chestInventory[getChestLink(x, y)], chestInventoryQuantity[getChestLink(x, y)]))
+        return;
+    if (y - 1 >= 0)
+    {
+        if (tileProperties[gameTerrain[x + (y-1) * MAP_WIDTH_MAX]].specialParam != SPECIAL_NONE)
+            return;
+    }
     gameTerrainHealth[x + y * MAP_WIDTH_MAX] += speed;
     if (gameTerrainHealth[x + y * MAP_WIDTH_MAX] >= getElementHealth(gameTerrain[x + y * MAP_WIDTH_MAX]))
     {
@@ -944,6 +1076,14 @@ void interact(int x, int y)
             }
 
             mmEffect(SFX_DOOR_CLOSE);
+        }
+    }
+    else if (tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParam == SPECIAL_CHEST)
+    {
+        int chestLink = getChestLink(x, y);
+        if (chestLink != -1)
+        {
+            openChest(chestLink);
         }
     }
 }
@@ -1169,9 +1309,12 @@ bool saveMapToFile(const char *filen)
     bytesWritten += fwrite(gameTerrain, 1, sizeof(gameTerrain), file);
     bytesWritten += fwrite(inventory, 1, sizeof(inventory), file);
     bytesWritten += fwrite(inventoryQuantity, 1, sizeof(inventoryQuantity), file);
+    bytesWritten += fwrite(chestInventory, 1, sizeof(chestInventory), file);
+    bytesWritten += fwrite(chestInventoryQuantity, 1, sizeof(chestInventoryQuantity), file);
+    bytesWritten += fwrite(chestLinks, 1, sizeof(chestLinks), file);
     fclose(file);
 
-    if (bytesWritten != 4 + 4 + 4 + sizeof(stoneSurface) + sizeof(biomeSurface) + sizeof(gameTerrain) + sizeof(inventory) + sizeof(inventoryQuantity))
+    if (bytesWritten != 4 + 4 + 4 + sizeof(stoneSurface) + sizeof(biomeSurface) + sizeof(gameTerrain) + sizeof(inventory) + sizeof(inventoryQuantity) + sizeof(chestInventory) + sizeof(chestInventoryQuantity) + sizeof(chestLinks))
     {
         print(0, 0, "Map save error");
         return false;
@@ -1213,6 +1356,9 @@ bool loadMapFromFile(const char *filen)
         mapHeight = 64;
         memset(stoneSurface, (int)64 * MAX_STONE_HEIGHT, sizeof(stoneSurface));
         memset(biomeSurface, BIOME_FOREST, sizeof(biomeSurface));
+        memset(chestInventory, 0, sizeof(chestInventory));
+        memset(chestInventoryQuantity, 0, sizeof(chestInventoryQuantity));
+        memset(chestLinks, 0, sizeof(chestLinks));
         for (int i = 0; i < 8 * 4; i++)
         {
             if (inventory[i] >= 100)
@@ -1226,7 +1372,7 @@ bool loadMapFromFile(const char *filen)
         }
 
         clearPrint();
-        printSmart(0, 0, "Old world loaded successfully! Consider saving it in the new format to avoid issues in the future.\n\nEven if backwards compatibility was implemented, this world can still experience some issues.");
+        printSmart(0, 0, "Old world loaded successfully! Consider saving it in the new format to avoid issues in the future.\n\nEven if backwards compatibility was implemented, this world can still experience some issues. Try creating a new world for even more features!");
         delay(5);
     }
     else
@@ -1245,9 +1391,12 @@ bool loadMapFromFile(const char *filen)
         bytesRead += fread(gameTerrain, 1, sizeof(gameTerrain), file);
         bytesRead += fread(inventory, 1, sizeof(inventory), file);
         bytesRead += fread(inventoryQuantity, 1, sizeof(inventoryQuantity), file);
+        bytesRead += fread(chestInventory, 1, sizeof(chestInventory), file);
+        bytesRead += fread(chestInventoryQuantity, 1, sizeof(chestInventoryQuantity), file);
+        bytesRead += fread(chestLinks, 1, sizeof(chestLinks), file);
         fclose(file);
 
-        if (bytesRead != 4 + 4 + 4 + sizeof(stoneSurface) + sizeof(biomeSurface) + sizeof(gameTerrain) + sizeof(inventory) + sizeof(inventoryQuantity))
+        if (bytesRead != 4 + 4 + 4 + sizeof(stoneSurface) + sizeof(biomeSurface) + sizeof(gameTerrain) + sizeof(inventory) + sizeof(inventoryQuantity) + sizeof(chestInventory) + sizeof(chestInventoryQuantity) + sizeof(chestLinks))
         {
             print(0, 0, "Map load error");
             return false;
@@ -1291,16 +1440,62 @@ void playerDamage(int damage)
     }
     if (player.health == 0)
     { // Player is ded
+        u8 coinsToDrop[4];
+        for (int i = 0; i < 4; i++) // softcore drops half of wealth
+        {
+            coinsToDrop[i] = getPlayerItemQuantity(ITEM_COPPER_COIN + i) / 2;
+            takeInventory(ITEM_COPPER_COIN + i, coinsToDrop[i]);
+            dropItem(player.x / 8, player.y / 8, ITEM_COPPER_COIN + i, coinsToDrop[i]);
+        }
+
         mmEffect(SFX_LAYER_KILLED);
         inventorySetHotbar();
         clearPrint();
-        print(0, 0, "You died lol");
+        print(0, 0, "You were slain!\n");
+        printDirect("You dropped ");
+        if (coinsToDrop[3] > 0)
+        {
+            printValDirect(coinsToDrop[3]);
+            printDirect(" platinum coin");
+            if (coinsToDrop[3] > 1)
+                printDirect("s");
+            printDirect(", ");
+        }
+        if (coinsToDrop[2] > 0)
+        {
+            printValDirect(coinsToDrop[2]);
+            printDirect(" gold coin");
+            if (coinsToDrop[2] > 1)
+                printDirect("s");
+            printDirect(", ");
+        }
+        if (coinsToDrop[1] > 0)
+        {
+            printValDirect(coinsToDrop[1]);
+            printDirect(" silver coin");
+            if (coinsToDrop[1] > 1)
+                printDirect("s");
+            printDirect(", ");
+        }
+        if (coinsToDrop[0] > 0)
+        {
+            printValDirect(coinsToDrop[0]);
+            printDirect(" copper coin");
+            if (coinsToDrop[0] > 1)
+                printDirect("s");
+            printDirect(". ");
+        }
+        if (coinsToDrop[0] + coinsToDrop[1] + coinsToDrop[2] + coinsToDrop[3] == 0)
+        {
+            printDirect("nothing...");
+        }
         oamSet(&oamSub, 0, 0, 0, 0, 0, SpriteSize_8x8, SpriteColorFormat_256Color, nullSprite, -1, false, false, false, false, false);
         oamUpdate(&oamSub);
         for (int i = 0; i < 600; i++)
         {
-            printVal(0, 1, 10 - i / 60);
-            printDirect(" ");
+            print(0, 6, "Respawning in ");
+            printValDirect(10 - i / 60);
+            printDirect(" seconds...    ");
             swiWaitForVBlank();
             mmStreamUpdate();
         }

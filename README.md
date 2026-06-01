@@ -87,7 +87,8 @@ Initial commit with basic project structure.
 - More bug fixes and optimizations.
 - Show health as hearts.
 - Add more music and intros.
-- Add chests.
+- Add more sound effects.
+- Add chests. ***(done: limited to 32 chests for now)***
 - Add more tools. ***(done: Iron and Gold pickaxes, axes, hammers, and long swords, and a wooden hammer lol)***
 - Implement dynamic crafting recipes (based on nearby stations). ***(done)***
 - Add crafting stations. ***(done for now: Workbench, Furnace, Anvil)***

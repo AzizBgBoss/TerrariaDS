@@ -33,6 +33,8 @@ u16 *itemHandSprite;
 bool debug = false;
 bool inventoryOpen = false;
 bool craftingOpen = false;
+bool isChestOpen = false;
+int chestOpen = -1;
 int craftingOffset = 0;
 bool interacting;
 int touchFrame;
@@ -222,6 +224,20 @@ typedef struct
 	int undergroundTile;
 	int undergroundWall;
 } BiomeProperties;
+
+typedef struct
+{
+	bool active;
+	int x;
+	int y;
+} ChestLink;
+
+u8 chestInventory[8 * 4][CHEST_COUNT] = {0};
+u8 chestInventoryQuantity[8 * 4][CHEST_COUNT] = {0};
+ChestLink chestLinks[CHEST_COUNT] = {0};
+
+u8 *currentInventory = inventory;
+u8 *currentInventoryQuantity = inventoryQuantity;
 
 // Define the player entity
 Player player = {0, 0, 0, 0, 0, NULL, 16, 24, false, true, 1, 0, 0, true, false, 4, 100, 100, 0, 0, ANIM_NONE};
@@ -546,7 +562,6 @@ const TileProperties tileProperties[TILES] = {
 	{"", true, 196, 56, 100, true, TILE_CHEST_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_CHEST, {4}},
 };
 
-// TODO: add ingots
 // TODO: maybe give special treatment to whatever tile that isn't 1x1, or decor tiles maybe idk
 
 const BiomeProperties biomes[BIOMES] = {

@@ -478,7 +478,7 @@ mainMenu:
 			printDirect("Press X to close debug menu.\n");
 
 			int selection = 0;
-			int maxSelection = 7;
+			int maxSelection = 8;
 
 			while (pmMainLoop())
 			{
@@ -517,28 +517,31 @@ mainMenu:
 						printDirect("Spawn entity");
 						break;
 					case 1:
-						printDirect("Set health to max");
+						printDirect("Get Item");
 						break;
 					case 2:
-						printDirect("Kill all entities");
+						printDirect("Set health to max");
 						break;
 					case 3:
-						printDirect("Kill player");
+						printDirect("Kill all entities");
 						break;
 					case 4:
-						printDirect("Become [TITLE CARD] for 5 mins");
+						printDirect("Kill player");
 						break;
 					case 5:
+						printDirect("Become [TITLE CARD] for 5 mins");
+						break;
+					case 6:
 						printDirect("Show debug info: ");
 						if (debug)
 							printDirect("ON ");
 						else
 							printDirect("OFF");
 						break;
-					case 6:
+					case 7:
 						printDirect("Set time to night");
 						break;
-					case 7:
+					case 8:
 						printDirect("Set time to day");
 						break;
 					default:
@@ -552,6 +555,7 @@ mainMenu:
 					switch (selection)
 					{
 					case 0:
+					{
 						int chosenID = 0;
 						while (pmMainLoop())
 						{
@@ -564,6 +568,8 @@ mainMenu:
 							clearPrint();
 							print(0, 0, "Choose an entity ID: ");
 							printValDirect(chosenID);
+							printDirect("\n");
+							printDirect(entities[chosenID].name);
 							printDirect("\nPress A to spawn at player's position.\nPress X to cancel.");
 
 							if (pressed & KEY_UP)
@@ -581,10 +587,7 @@ mainMenu:
 							else if (pressed & KEY_A)
 							{
 								spawnEntity(chosenID, player.x, player.y);
-								clearPrint();
-								print(0, 0, "Debug menu, bazinga!\n");
-								printDirect("Press X to close debug menu.\n");
-								break;
+								printDirect("\nEntity spawned!");
 							}
 							else if (pressed & KEY_X)
 							{
@@ -594,12 +597,73 @@ mainMenu:
 								break;
 							}
 						}
-						break;
+					}
+					break;
 					case 1:
+					{
+						int chosenID = 0;
+						int chosenQ = 1;
+						while (pmMainLoop())
+						{
+							swiWaitForVBlank();
+							mmStreamUpdate();
+							scanKeys();
+
+							int pressed = keysDown();
+
+							clearPrint();
+							print(0, 0, "Choose an item ID: ^ ");
+							printValDirect(chosenID);
+							printDirect(" v\n< ");
+							printValDirect(chosenQ);
+							printDirect(" >\n");
+							printDirect(getElementName(chosenID));
+							printDirect("\nPress A to spawn at player's position.\nPress X to cancel.");
+
+							if (pressed & KEY_UP)
+							{
+								chosenID--;
+								if (chosenID < 0)
+									chosenID = TILES - 1;
+							}
+							else if (pressed & KEY_DOWN)
+							{
+								chosenID++;
+								if (chosenID >= TILES)
+									chosenID = 0;
+							}
+							else if (pressed & KEY_LEFT)
+							{
+								chosenQ--;
+								if (chosenQ < 1)
+									chosenQ = 100;
+							}
+							else if (pressed & KEY_RIGHT)
+							{
+								chosenQ++;
+								if (chosenQ > 100)
+									chosenQ = 1;
+							}
+							else if (pressed & KEY_A)
+							{
+								giveInventory(chosenID, chosenQ);
+								printDirect("\nItem given!");
+							}
+							else if (pressed & KEY_X)
+							{
+								clearPrint();
+								print(0, 0, "Debug menu, bazinga!\n");
+								printDirect("Press X to close debug menu.\n");
+								break;
+							}
+						}
+					}
+					break;
+					case 2:
 						player.health = 400;
 						printDirect("\nHealth set to max!");
 						break;
-					case 2:
+					case 3:
 						for (int e = 0; e < ENTITY_COUNT; e++)
 						{
 							if (entity[e].exists)
@@ -609,23 +673,23 @@ mainMenu:
 						}
 						printDirect("\nAll entities killed!");
 						break;
-					case 3:
+					case 4:
 						player.invincibilityFrames = 0;
 						playerDamage(9999);
 						printDirect("\nPlayer killed!");
 						break;
-					case 4:
+					case 5:
 						player.invincibilityFrames += 60 * 5 * 60; // 5 minutes of invincibility at 60 fps
 						printDirect("\nInvincibility for 5 minutes!");
 						break;
-					case 5:
+					case 6:
 						debug = !debug;
 						break;
-					case 6:
+					case 7:
 						gametime = DAY_LENGTH / 2 - 16; // Night time
 						printDirect("\nTime set to night!");
 						break;
-					case 7:
+					case 8:
 						gametime = DAY_LENGTH - 16; // Day time
 						printDirect("\nTime set to day!");
 						break;
@@ -954,6 +1018,49 @@ mainMenu:
 					{
 						inventorySetCrafting();
 					}
+					if (chestOpen != -1)
+					{
+						if (touch.px >= 23 * 8 && touch.px < 27 * 8 && touch.py >= 0 * 8 && touch.py < 4 * 8) // Switch between chest/inventory if one is opened
+						{
+							if (isChestOpen)
+							{
+								currentInventory = inventory;
+								currentInventoryQuantity = inventoryQuantity;
+							}
+							else
+							{
+								currentInventory = chestInventory[chestOpen];
+								currentInventoryQuantity = chestInventoryQuantity[chestOpen];
+							}
+							isChestOpen = !isChestOpen;
+							inventorySetFull();
+						}
+						if (touch.px >= 19 * 8 && touch.px < 23 * 8 && touch.py >= 0 * 8 && touch.py < 4 * 8) // Move selected item to chest/inventory
+						{
+							if (isChestOpen)
+							{
+								if (chestInventory[chestOpen][inventorySelection] != 0 && chestInventoryQuantity[chestOpen][inventorySelection] != 0)
+								{
+									if (giveInventory(chestInventory[chestOpen][inventorySelection], chestInventoryQuantity[chestOpen][inventorySelection]))
+									{
+										chestInventory[chestOpen][inventorySelection] = 0;
+										chestInventoryQuantity[chestOpen][inventorySelection] = 0;
+										inventorySetFull();
+									}
+								}
+							} else {
+								if (inventory[inventorySelection] != 0 && inventoryQuantity[inventorySelection] != 0)
+								{
+									if (giveChest(chestOpen, inventory[inventorySelection], inventoryQuantity[inventorySelection]))
+									{
+										inventory[inventorySelection] = 0;
+										inventoryQuantity[inventorySelection] = 0;
+										inventorySetFull();
+									}
+								}
+							}
+						}
+					}
 				}
 			}
 			else if (held & KEY_TOUCH) // Player is moving an item
@@ -989,35 +1096,35 @@ mainMenu:
 						break;
 					}
 				}
-				if (itemToMove != -1 && destination != -1 && itemToMove != destination && inventory[itemToMove] != 0)
+				if (itemToMove != -1 && destination != -1 && itemToMove != destination && currentInventory[itemToMove] != 0)
 				{
-					if (inventory[itemToMove] == inventory[destination]) // If both items are the same
+					if (currentInventory[itemToMove] == currentInventory[destination]) // If both items are the same
 					{
-						int totalQuantity = inventoryQuantity[itemToMove] + inventoryQuantity[destination];
+						int totalQuantity = currentInventoryQuantity[itemToMove] + currentInventoryQuantity[destination];
 						if (totalQuantity > 99) // Limit quantity to 99
 						{
-							setInventory(destination, inventory[itemToMove], 99);				 // Set destination to 99
-							setInventory(itemToMove, inventory[itemToMove], totalQuantity - 99); // Set itemToMove to the remaining quantity
+							setToInventory(currentInventory, currentInventoryQuantity, destination, currentInventory[itemToMove], 99);				// Set destination to 99
+							setToInventory(currentInventory, currentInventoryQuantity, itemToMove, currentInventory[itemToMove], totalQuantity - 99); // Set itemToMove to the remaining quantity
 						}
 						else
 						{
-							setInventory(destination, inventory[itemToMove], totalQuantity); // Combine quantities
-							setInventory(itemToMove, 0, 0);									 // Clear the itemToMove slot
+							setToInventory(currentInventory, currentInventoryQuantity, destination, currentInventory[itemToMove], totalQuantity); // Combine quantities
+							setToInventory(currentInventory, currentInventoryQuantity, itemToMove, 0, 0);											// Clear the itemToMove slot
 						}
 					}
 					else // If items are different
 					{
-						if (inventory[destination] == 0) // Just move the itemToMove to the destination
+						if (currentInventory[destination] == 0) // Just move the itemToMove to the destination
 						{
-							setInventory(destination, inventory[itemToMove], inventoryQuantity[itemToMove]);
-							setInventory(itemToMove, 0, 0); // Clear the itemToMove slot
+							setToInventory(currentInventory, currentInventoryQuantity, destination, currentInventory[itemToMove], currentInventoryQuantity[itemToMove]);
+							setToInventory(currentInventory, currentInventoryQuantity, itemToMove, 0, 0); // Clear the itemToMove slot
 						}
 						else // Swap items
 						{
-							int tempItem = inventory[destination];
-							int tempQuantity = inventoryQuantity[destination];
-							setInventory(destination, inventory[itemToMove], inventoryQuantity[itemToMove]);
-							setInventory(itemToMove, tempItem, tempQuantity); // Swap the items
+							int tempItem = currentInventory[destination];
+							int tempQuantity = currentInventoryQuantity[destination];
+							setToInventory(currentInventory, currentInventoryQuantity, destination, currentInventory[itemToMove], currentInventoryQuantity[itemToMove]);
+							setToInventory(currentInventory, currentInventoryQuantity, itemToMove, tempItem, tempQuantity); // Swap the items
 						}
 					}
 				}
@@ -1776,6 +1883,7 @@ https://github.com/AzizBgBoss/TerrariaDS");
 		{
 			int entityCount = 0;
 			int itemCount = 0;
+			int chestCount = 0;
 			for (int i = 0; i < ENTITY_COUNT; i++)
 			{
 				if (entity[i].exists)
@@ -1785,6 +1893,11 @@ https://github.com/AzizBgBoss/TerrariaDS");
 			{
 				if (item[i].exists)
 					itemCount++;
+			}
+			for (int i = 0; i < CHEST_COUNT; i++)
+			{
+				if (chestLinks[i].active)
+					chestCount++;
 			}
 
 			printDirect("X, Y: ");
@@ -1808,6 +1921,9 @@ https://github.com/AzizBgBoss/TerrariaDS");
 			printDirect("   \n");
 			printDirect("items: ");
 			printValDirect(itemCount);
+			printDirect("   \n");
+			printDirect("chests: ");
+			printValDirect(chestCount);
 			printDirect("   \n");
 			printDirect("invincibility: ");
 			printValDirect(player.invincibilityFrames);

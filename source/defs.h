@@ -50,6 +50,8 @@
 #define MAX_ITEMS_TOTAL 64 // Maximum items in the world at once
 #define ENTITY_COUNT 16    // Maximum number of entities in the game at once
 
+#define CHEST_COUNT 32     // Maximum number of chests in the game at once
+
 #define MAX_ITEM_AGE 60 * 60 * 5 // 5 minutes
 
 #define PLAYER_STATION_RANGE 8 // Radius to look for stations
