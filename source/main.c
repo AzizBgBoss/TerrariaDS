@@ -20,22 +20,10 @@ int main(void)
 
 
 	// Load sound effects
-	mmLoadEffect(SFX_IG_0);
-	mmLoadEffect(SFX_IG_1);
-	mmLoadEffect(SFX_IG_2);
-	mmLoadEffect(SFX_RAB);
-	mmLoadEffect(SFX_ENU_OPEN);
-	mmLoadEffect(SFX_ENU_CLOSE);
-	mmLoadEffect(SFX_ENU_TICK);
-	mmLoadEffect(SFX_LAYER_HIT_0);
-	mmLoadEffect(SFX_LAYER_HIT_1);
-	mmLoadEffect(SFX_LAYER_HIT_2);
-	mmLoadEffect(SFX_LAYER_KILLED);
-	mmLoadEffect(SFX_MUSHROOM);
-	mmLoadEffect(SFX_SWING);
-	mmLoadEffect(SFX_HIT);
-	mmLoadEffect(SFX_DOOR_OPEN);
-	mmLoadEffect(SFX_DOOR_CLOSE);
+	for (int i = 0; i < MSL_NSAMPS; i++)
+	{
+		mmLoadEffect(i);
+	}
 
 	if (!fatInitDefault() || keysHeld() & KEY_START)
 	{
@@ -1283,11 +1271,6 @@ mainMenu:
 		{
 			if (entity[i].exists == true)
 			{
-				if (entity[i].health <= 0)
-				{
-					killEntity(i);
-					continue;
-				}
 				if (frame % 2 == 0) // Move every 2 frames to make it slower
 				{
 					if (!entity[i].isOnGround || entity[i].velocity < 0)
@@ -1397,6 +1380,12 @@ mainMenu:
 				}
 
 				// Handle entity AI
+
+				if (entityAISounds[entities[entity[i].type].AItype].idleCount > 0 && frame % 60 == 0 && rando(1, 20) == 1) // Play idle sound every second
+				{
+					mmEffect(entityAISounds[entities[entity[i].type].AItype].idle[rando(0, entityAISounds[entities[entity[i].type].AItype].idleCount - 1)]);
+				}
+
 				entity[i].nextTick--;
 				if (entities[entity[i].type].AItype == ENTITY_AI_SLIME)
 				{

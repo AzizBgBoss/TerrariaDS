@@ -1159,6 +1159,7 @@ void killEntity(int id)
                          rando(e->dropRange[i][0], e->dropRange[i][1]));
         }
     }
+    mmEffect(entityAISounds[entities[entity[id].type].AItype].killed);
 }
 
 bool checkPlayerCollision(int x, int y, int sizeX, int sizeY)
@@ -1197,8 +1198,13 @@ void damageEntity(int id, int damage)
 {
     if (entity[id].exists)
     {
-        mmEffect(SFX_HIT);
+        mmEffect(entityAISounds[entities[entity[id].type].AItype].hit);
         entity[id].health -= damage;
+    }
+
+    if (entity[id].health <= 0)
+    {
+        killEntity(id);
     }
 }
 
@@ -1460,7 +1466,9 @@ void playerDamage(int damage, int hitType, const char *name)
         else if (hitType == HIT_FALL)
         {
             printSmartDirect(fallDeathMessage[rando(0, FALLDEATHMESSAGE_COUNT - 1)]);
-        } else if (hitType == HIT_PVP) {
+        }
+        else if (hitType == HIT_PVP)
+        {
             printSmartDirect(defaultDeathMessage[rando(0, DEFAULTDEATHMESSAGE_COUNT - 1)]);
             printSmartDirect(" by ");
             printSmartDirect(name);

@@ -200,11 +200,12 @@ enum // Entity type
 
 enum // Entity AI type
 {
-    ENTITY_AI_NONE,
     ENTITY_AI_EYE,
     ENTITY_AI_SLIME,
     ENTITY_AI_BUNNY,
     ENTITY_AI_ZOMBIE,
+
+    ENTITY_AIS,
 };
 
 enum // Animations
