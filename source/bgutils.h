@@ -103,15 +103,14 @@ void printValDirect(int value)
 
 void printSmart(int x, int y, const char *text)
 {
-    int startX = x;
-    int maxW = SCREEN_WIDTH / 8;
-    int maxH = SCREEN_HEIGHT / 8;
+    const int maxW = SCREEN_WIDTH / 8;
+    const int maxH = SCREEN_HEIGHT / 8;
 
     while (*text)
     {
         if (*text == '\n')
         {
-            x = startX;
+            x = 0;
             y++;
             if (y >= maxH)
                 return;
@@ -119,7 +118,6 @@ void printSmart(int x, int y, const char *text)
             continue;
         }
 
-        // Measure next word length
         int wordLen = 0;
         const char *tmp = text;
         while (*tmp && *tmp != ' ' && *tmp != '\n')
@@ -128,26 +126,25 @@ void printSmart(int x, int y, const char *text)
             tmp++;
         }
 
-        // If word fits on current line, print it; else wrap first
-        // (if word itself is too long, just let it split naturally)
-        if (wordLen > 1 && x + wordLen > maxW && x != startX)
+        if (x + wordLen > maxW && x != 0)
         {
-            x = startX;
+            x = 0;
             y++;
             if (y >= maxH)
                 return;
         }
 
-        // Print one character
         print(x, y, (char[]){*text, '\0'});
         x++;
+
         if (x >= maxW)
         {
-            x = startX;
+            x = 0;
             y++;
             if (y >= maxH)
                 return;
         }
+
         text++;
     }
 

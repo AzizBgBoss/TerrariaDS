@@ -243,3 +243,10 @@ enum // Special parameter for tiles
 
     SPECIALS,
 };
+
+enum // Hit types (used for death messages)
+{
+    HIT_NONE,
+    HIT_FALL,
+    HIT_PVP,
+};

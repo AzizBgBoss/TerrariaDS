@@ -18,6 +18,8 @@ int main(void)
 
 	mmInitDefaultMem((mm_addr)soundbank_bin);
 
+
+	// Load sound effects
 	mmLoadEffect(SFX_IG_0);
 	mmLoadEffect(SFX_IG_1);
 	mmLoadEffect(SFX_IG_2);
@@ -675,7 +677,7 @@ mainMenu:
 						break;
 					case 4:
 						player.invincibilityFrames = 0;
-						playerDamage(9999);
+						playerDamage(9999, HIT_NONE, "");
 						printDirect("\nPlayer killed!");
 						break;
 					case 5:
@@ -1245,7 +1247,7 @@ mainMenu:
 				player.y = BLCtileY * 8 - player.sizeY;
 				int h = (player.y - player.fall) / 8 - 25;
 				if (h > 0)
-					playerDamage(10 * h);
+					playerDamage(10 * h, HIT_FALL, "");
 			}
 		}
 
@@ -1259,7 +1261,7 @@ mainMenu:
 				player.y = BRCtileY * 8 - player.sizeY;
 				int h = (player.y - player.fall) / 8 - 25;
 				if (h > 0)
-					playerDamage(10 * h);
+					playerDamage(10 * h, HIT_FALL, "");
 			}
 		}
 
@@ -1514,7 +1516,7 @@ mainMenu:
 				if (checkPlayerCollision(entity[i].x, entity[i].y, entity[i].sizeX, entity[i].sizeY) && entities[entity[i].type].type == ENTITY_TYPE_HOSTILE)
 				{
 					knockBackPlayer((entity[i].x > player.x) ? -5 : 5, -5);
-					playerDamage(entities[entity[i].type].damage);
+					playerDamage(entities[entity[i].type].damage, HIT_PVP, entities[entity[i].type].name);
 				}
 			}
 		}

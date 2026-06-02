@@ -897,7 +897,7 @@ void breakTile(int x, int y, int speed)
         return;
     if (y - 1 >= 0)
     {
-        if (tileProperties[gameTerrain[x + (y-1) * MAP_WIDTH_MAX]].specialParam != SPECIAL_NONE)
+        if (tileProperties[gameTerrain[x + (y - 1) * MAP_WIDTH_MAX]].specialParam != SPECIAL_NONE)
             return;
     }
     gameTerrainHealth[x + y * MAP_WIDTH_MAX] += speed;
@@ -1418,7 +1418,7 @@ bool loadMapFromFile(const char *filen)
     return true;
 }
 
-void playerDamage(int damage)
+void playerDamage(int damage, int hitType, const char *name)
 {
     if (player.invincibilityFrames > 0)
         return; // Player is invincible
@@ -1451,12 +1451,26 @@ void playerDamage(int damage)
         mmEffect(SFX_LAYER_KILLED);
         inventorySetHotbar();
         clearPrint();
-        print(0, 0, "You were slain!\n");
-        printDirect("You dropped ");
+        print(0, 0, "Player");
+        if (hitType == HIT_NONE)
+        {
+            printSmartDirect(defaultDeathMessage[rando(0, DEFAULTDEATHMESSAGE_COUNT - 1)]);
+            printDirect(".");
+        }
+        else if (hitType == HIT_FALL)
+        {
+            printSmartDirect(fallDeathMessage[rando(0, FALLDEATHMESSAGE_COUNT - 1)]);
+        } else if (hitType == HIT_PVP) {
+            printSmartDirect(defaultDeathMessage[rando(0, DEFAULTDEATHMESSAGE_COUNT - 1)]);
+            printSmartDirect(" by ");
+            printSmartDirect(name);
+            printDirect(".");
+        }
+        printSmartDirect("\n\nYou dropped ");
         if (coinsToDrop[3] > 0)
         {
             printValDirect(coinsToDrop[3]);
-            printDirect(" platinum coin");
+            printSmartDirect(" platinum coin");
             if (coinsToDrop[3] > 1)
                 printDirect("s");
             printDirect(", ");
@@ -1464,7 +1478,7 @@ void playerDamage(int damage)
         if (coinsToDrop[2] > 0)
         {
             printValDirect(coinsToDrop[2]);
-            printDirect(" gold coin");
+            printSmartDirect(" gold coin");
             if (coinsToDrop[2] > 1)
                 printDirect("s");
             printDirect(", ");
@@ -1472,7 +1486,7 @@ void playerDamage(int damage)
         if (coinsToDrop[1] > 0)
         {
             printValDirect(coinsToDrop[1]);
-            printDirect(" silver coin");
+            printSmartDirect(" silver coin");
             if (coinsToDrop[1] > 1)
                 printDirect("s");
             printDirect(", ");
@@ -1480,14 +1494,14 @@ void playerDamage(int damage)
         if (coinsToDrop[0] > 0)
         {
             printValDirect(coinsToDrop[0]);
-            printDirect(" copper coin");
+            printSmartDirect(" copper coin");
             if (coinsToDrop[0] > 1)
                 printDirect("s");
             printDirect(". ");
         }
         if (coinsToDrop[0] + coinsToDrop[1] + coinsToDrop[2] + coinsToDrop[3] == 0)
         {
-            printDirect("nothing...");
+            printSmartDirect("nothing...");
         }
         oamSet(&oamSub, 0, 0, 0, 0, 0, SpriteSize_8x8, SpriteColorFormat_256Color, nullSprite, -1, false, false, false, false, false);
         oamUpdate(&oamSub);
