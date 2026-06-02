@@ -888,6 +888,45 @@ void destroyItem(int id)
     item[id].exists = false;
 }
 
+int createParticle(int x, int y, int sprite)
+{
+    if (sprite == PARTICLE_NONE || sprite >= PARTICLES)
+        return -1;
+    if (x < 0 || x >= mapWidth * 8 || y < 0 || y >= mapHeight * 8)
+        return -1;
+    int index = 0;
+    while (index < PARTICLE_COUNT && particles[index].exists)
+        index++;
+
+    if (index >= PARTICLE_COUNT)
+        return -1;
+    particles[index].x = x;
+    particles[index].y = y;
+    particles[index].sprite = sprite;
+    particles[index].madeFrame = frame;
+    particles[index].exists = true;
+    if (sprite == PARTICLE_LEAF)
+    {
+        particles[index].weight = 0;
+        particles[index].velocityX = rando(1, 2);
+        particles[index].velocityY = rando(1, 2);
+    }
+    else
+    {
+        particles[index].weight = 1;
+        particles[index].velocityX = rando(-2, 2);
+        particles[index].velocityY = rando(-2, 2);
+    }
+
+    dmaCopy(((const u8 *)particlesTiles) + 8 * 8 * 3 * sprite + rando(0, 2) * 8 * 8, particles[index].sprite_gfx_mem, 8 * 8);
+    return index;
+}
+
+void destroyParticle(int id)
+{
+    particles[id].exists = false;
+}
+
 void breakTile(int x, int y, int speed)
 {
     if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight)
@@ -897,7 +936,8 @@ void breakTile(int x, int y, int speed)
         return;
     if (y - 1 >= 0)
     {
-        if (tileProperties[gameTerrain[x + (y - 1) * MAP_WIDTH_MAX]].specialParam != SPECIAL_NONE)
+        if (tileProperties[gameTerrain[x + (y - 1) * MAP_WIDTH_MAX]].specialParam != SPECIAL_NONE &&
+            tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParam == SPECIAL_NONE)
             return;
     }
     gameTerrainHealth[x + y * MAP_WIDTH_MAX] += speed;
@@ -1018,6 +1058,10 @@ void breakTile(int x, int y, int speed)
             mmEffect(SFX_IG_2);
             break;
         }
+        if (rando(0, 1) == 0)
+        {
+            createParticle(x * 8 + 4, y * 8 + 4, tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].particle);
+        }
     }
 }
 
@@ -1129,12 +1173,10 @@ int spawnEntity(int type, int x, int y)
 
     if (entities[type].spriteSize == SpriteSize_32x32)
     {
-        entity[i].sprite_gfx_mem = oamAllocateGfx(&oamSub, SpriteSize_32x32, SpriteColorFormat_256Color);
         dmaCopy(((const u8 *)entitiesTiles) + entity[i].type * 32 * 32 + 32 * 32 * offset, entity[i].sprite_gfx_mem, 32 * 32);
     }
     else if (entities[type].spriteSize == SpriteSize_32x64)
     {
-        entity[i].sprite_gfx_mem = oamAllocateGfx(&oamSub, SpriteSize_32x64, SpriteColorFormat_256Color);
         dmaCopy(((const u8 *)entitiesTiles) + entity[i].type * 32 * 32 + 32 * 32 * offset, entity[i].sprite_gfx_mem, 32 * 64);
     }
 
@@ -1380,6 +1422,10 @@ bool loadMapFromFile(const char *filen)
         clearPrint();
         printSmart(0, 0, "Old world loaded successfully! Consider saving it in the new format to avoid issues in the future.\n\nEven if backwards compatibility was implemented, this world can still experience some issues. Try creating a new world for even more features!");
         delay(5);
+        giveInventory(ITEM_PLATINUM_COIN, 5);
+        clearPrint();
+        printSmart(0, 0, "Also for being an OG, I'm gifting you 5 platinum coins! Thanks for being a part of TerrariaDS! You can't do anything with them for now, but consider it an investment for future updates ;)");
+        delay(5);
     }
     else
     {
@@ -1411,9 +1457,28 @@ bool loadMapFromFile(const char *filen)
 
     player.x = mapWidth * 8 / 2;
     player.y = 0;
-    player.invincibilityFrames = 60 * 3;
     lastCamTileX = -67;
     lastCamTileY = -67;
+    player.health = 100;
+    player.maxHealth = 100;
+    player.invincibilityFrames = 300;
+    gametime = 0;
+
+    for (int i = 0; i < ENTITY_COUNT; i++)
+    {
+        removeEntity(i);
+    }
+
+    for (int i = 0; i < MAX_ITEMS; i++)
+    {
+        destroyItem(i);
+    }
+
+    for (int i = 0; i < PARTICLE_COUNT; i++)
+    {
+        destroyParticle(i);
+    }
+
     renderInventory();
     renderCrafting();
     print(0, 0, "Map loaded from ");
@@ -1813,6 +1878,8 @@ void generateMap()
     player.maxHealth = 100;
     player.invincibilityFrames = 300;
     gametime = 0;
+    lastCamTileX = -67;
+    lastCamTileY = -67;
 
     for (int i = 0; i < ENTITY_COUNT; i++)
     {
@@ -1822,6 +1889,11 @@ void generateMap()
     for (int i = 0; i < MAX_ITEMS; i++)
     {
         destroyItem(i);
+    }
+
+    for (int i = 0; i < PARTICLE_COUNT; i++)
+    {
+        destroyParticle(i);
     }
 
     printDirect("Giving you some tools to start with...");
@@ -1985,7 +2057,7 @@ void changeEntityVelocityY(int id, int y)
 
 bool isInPlayerRadius(int x, int y, float range)
 {
-    return (player.x - x) * (player.x - x) + (player.y - y) * (player.y - y) < range * range;
+    return (player.x + player.sizeX / 2 - x) * (player.x + player.sizeX / 2 - x) + (player.y + player.sizeY / 2 - y) * (player.y + player.sizeY / 2 - y) < range * range;
 }
 
 bool isInPlayerRange(int x, int y)

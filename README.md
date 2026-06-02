@@ -53,6 +53,7 @@ You can either compile the game yourself (for nightly releases) or check for sta
 - Start: Pause menu
 - A+B+Y+X: Debug menu
 - Tap/Hold a block: Interact with/break the block (with the appropriate item of course)
+- Tap enemies to damage them
 
 ## Changelog and Features
 Don't get your hopes really up, but with time, I'm sure the game will feel much more like terraria.
@@ -83,9 +84,10 @@ Initial commit with basic project structure.
 ### Version 0.2 (In progress, releasing soon):
 - Ability to save character data and world data independently.
 - Add swinging animation.
-- Add particles (for example when breaking blocks).
 - Show health as hearts.
+- Add heart crystals.
 - Add more music and intros.
+- Add particles. ***(done)***
 - Add more sound effects. ***(done: I didn't really add that much)***
 - Fix touch misalignment when close to world edges at 2x scale. ***(can't do it: I don't know why, prolly got something to do with bgSetCenter, if you're close to the edges just keep the scale 1x)***
 - Add chests. ***(done: limited to 32 chests for now)***
@@ -106,6 +108,7 @@ Initial commit with basic project structure.
 - Fix misaligned sprites when zooming in/out ***(done: yeah I still don't understand why this happens, if you can please help me with it. But I just added more math to counter the offset)***
 
 ## Planned Features for the future:
+- I'm *thinking* about making a script that scraps all tile data from the wiki but it's a bit complicated.
 - Use more pointers for cleaner code.
 - Add ability to change button mappings (since many DS'es (including mine) have malfunctioning shoulder buttons because of dust accumulation under them over the years).
 - Add crimson/corruption.

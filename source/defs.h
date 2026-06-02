@@ -35,6 +35,7 @@
 #include "mainscreenbg.h"
 #include "mainscreenbg2.h"
 #include "mainscreenui.h"
+#include "particles.h"
 
 // Soundbank
 
@@ -49,8 +50,9 @@
 #define MAX_ITEMS 16       // Maximum items to be rendered
 #define MAX_ITEMS_TOTAL 64 // Maximum items in the world at once
 #define ENTITY_COUNT 16    // Maximum number of entities in the game at once
+#define PARTICLE_COUNT 16  // Maximum number of particles in the game at once
 
-#define CHEST_COUNT 32     // Maximum number of chests in the game at once
+#define CHEST_COUNT 32 // Maximum number of chests in the game at once
 
 #define MAX_ITEM_AGE 60 * 60 * 5 // 5 minutes
 
@@ -251,3 +253,25 @@ enum // Hit types (used for death messages)
     HIT_FALL,
     HIT_PVP,
 };
+
+enum // Particles
+{
+    PARTICLE_NONE,
+    PARTICLE_DIRT,
+    PARTICLE_STONE,
+    PARTICLE_LEAF,
+    PARTICLE_WOOD,
+    PARTICLE_LEAD,
+    PARTICLE_IRON,
+    PARTICLE_GOLD,
+    PARTICLE_ICE,
+    PARTICLE_SAND,
+    PARTICLE_TIN,
+    PARTICLE_COPPER,
+
+    PARTICLES,
+};
+
+#if ENTITY_COUNT + 2 + 1 > 31
+#warning "ENTITY_COUNT is too high: affine OAM index would exceed 31 (" ENTITY_COUNT + 2 + 1 ")"
+#endif

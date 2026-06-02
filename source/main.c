@@ -18,7 +18,6 @@ int main(void)
 
 	mmInitDefaultMem((mm_addr)soundbank_bin);
 
-
 	// Load sound effects
 	for (int i = 0; i < MSL_NSAMPS; i++)
 	{
@@ -420,14 +419,23 @@ mainMenu:
 	player.sprite_gfx_mem = oamAllocateGfx(&oamSub, SpriteSize_32x64, SpriteColorFormat_256Color);
 	dmaCopy(spritesTiles, player.sprite_gfx_mem, 32 * 64);
 
-	itemHandSprite = oamAllocateGfx(&oamSub, SpriteSize_16x16, SpriteColorFormat_256Color);
+	// itemHandSprite = oamAllocateGfx(&oamSub, SpriteSize_16x16, SpriteColorFormat_256Color);
 
 	dmaCopy(tilemapTiles, itemHandSprite, 16 * 16);
+
+	for (int i = 0; i < ENTITY_COUNT; i++)
+	{
+		entity[i].sprite_gfx_mem = oamAllocateGfx(&oamSub, SpriteSize_32x64, SpriteColorFormat_256Color);
+	}
+
+	for (int i = 0; i < PARTICLE_COUNT; i++)
+	{
+		particles[i].sprite_gfx_mem = oamAllocateGfx(&oamSub, SpriteSize_8x8, SpriteColorFormat_256Color);
+	}
 
 	for (int i = 0; i < MAX_ITEMS; i++)
 	{
 		item[i].sprite_gfx_mem = oamAllocateGfx(&oamSub, SpriteSize_16x16, SpriteColorFormat_256Color);
-		// No need to copy anything, we'll do that later when we summon the item
 	}
 
 	dmaCopy(spritesPal, SPRITE_PALETTE_SUB, spritesPalLen);
@@ -895,7 +903,7 @@ mainMenu:
 		int TLCx = player.x;
 		int TLCy = player.y;
 		int TRCx = player.x + player.sizeX - 1;
-		int TRCy = player.y;
+		//int TRCy = player.y; //unused
 		int BLCx = player.x;
 		int BLCy = player.y + player.sizeY;
 		int BRCx = player.x + player.sizeX - 1;
@@ -904,7 +912,7 @@ mainMenu:
 		int TLCtileX = TLCx / 8;
 		int TLCtileY = TLCy / 8;
 		int TRCtileX = TRCx / 8;
-		int TRCtileY = TRCy / 8;
+		//int TRCtileY = TRCy / 8; //unused
 		int BLCtileX = BLCx / 8;
 		int BLCtileY = BLCy / 8;
 		int BRCtileX = BRCx / 8;
@@ -1332,7 +1340,7 @@ mainMenu:
 					TLCx = entity[i].x;
 					TLCy = entity[i].y;
 					TRCx = entity[i].x + entity[i].sizeX - 1;
-					TRCy = entity[i].y;
+					//TRCy = entity[i].y; //unused
 					BLCx = entity[i].x;
 					BLCy = entity[i].y + entity[i].sizeY;
 					BRCx = entity[i].x + entity[i].sizeX - 1;
@@ -1341,7 +1349,7 @@ mainMenu:
 					TLCtileX = TLCx / 8;
 					TLCtileY = TLCy / 8;
 					TRCtileX = TRCx / 8;
-					TRCtileY = TRCy / 8;
+					//TRCtileY = TRCy / 8; //unused
 					BLCtileX = BLCx / 8;
 					BLCtileY = BLCy / 8;
 					BRCtileX = BRCx / 8;
@@ -1530,7 +1538,7 @@ mainMenu:
 					item[i].velocity = 0;
 				}
 				// If item touches the player, remove it and set it to his inventory
-				if (item[i].x >= player.x - 8 * 2 && item[i].x < player.x + player.sizeX + 8 * 2 && item[i].y >= player.y + 8 * 2 && item[i].y < player.y + player.sizeY + 8 * 2)
+				if (isInPlayerRadius(item[i].x, item[i].y, 24))
 				{
 					if (giveInventory(item[i].tile, item[i].quantity))
 					{
@@ -1573,6 +1581,23 @@ mainMenu:
 
 				item[i].renderX = item[i].x - scrollX;
 				item[i].renderY = item[i].y - scrollY;
+			}
+		}
+
+		if (frame % 3 == 0)
+		{
+			for (int i = 0; i < PARTICLE_COUNT; i++)
+			{
+				if (particles[i].exists)
+				{
+					particles[i].x += particles[i].velocityX;
+					particles[i].y += particles[i].velocityY;
+					particles[i].velocityY += particles[i].weight; // Gravity
+					if (frame - particles[i].madeFrame >= 3 * 60)
+						destroyParticle(i);
+					if (particles[i].x < 0 || particles[i].x >= mapWidth * 8 || particles[i].y < 0 || particles[i].y >= mapHeight * 8)
+						destroyParticle(i);
+				}
 			}
 		}
 
@@ -1876,11 +1901,13 @@ https://github.com/AzizBgBoss/TerrariaDS");
 		printValDirect(player.maxHealth);
 		printDirect("   \n");
 
+		// Debugging
 		if (debug)
 		{
 			int entityCount = 0;
 			int itemCount = 0;
 			int chestCount = 0;
+			int particleCount = 0;
 			for (int i = 0; i < ENTITY_COUNT; i++)
 			{
 				if (entity[i].exists)
@@ -1895,6 +1922,11 @@ https://github.com/AzizBgBoss/TerrariaDS");
 			{
 				if (chestLinks[i].active)
 					chestCount++;
+			}
+			for (int i = 0; i < PARTICLE_COUNT; i++)
+			{
+				if (particles[i].exists)
+					particleCount++;
 			}
 
 			printDirect("X, Y: ");
@@ -1922,6 +1954,9 @@ https://github.com/AzizBgBoss/TerrariaDS");
 			printDirect("chests: ");
 			printValDirect(chestCount);
 			printDirect("   \n");
+			printDirect("particles: ");
+			printValDirect(particleCount);
+			printDirect("   \n");
 			printDirect("invincibility: ");
 			printValDirect(player.invincibilityFrames);
 			printDirect("   \n");
@@ -1941,17 +1976,6 @@ https://github.com/AzizBgBoss/TerrariaDS");
 		bgSetScroll(bg2, scrollX + player.renderX + player.sizeX / 2, scrollY + player.renderY + player.sizeY / 2);
 		bgSetScale(bg2, scale, scale);
 		oamRotateScale(&oamSub, 0, degreesToAngle(0), scale * 2 * (player.isLookingLeft ? -1 : 1), scale * 2);
-		for (int i = 0; i < ENTITY_COUNT; i++)
-		{
-			if (entity[i].exists)
-			{
-				oamRotateScale(&oamSub,
-							   2 + i,
-							   degreesToAngle(RAD2DEG(-entity[i].angle)),
-							   scale * 2 * (entity[i].isLookingLeft ? -1 : 1),
-							   scale * 2);
-			}
-		}
 		REG_BG0HOFS_SUB = scrollX / 8;
 		REG_BG0VOFS_SUB = scrollY / 8;
 
@@ -2107,6 +2131,11 @@ https://github.com/AzizBgBoss/TerrariaDS");
 				entity[i].renderY = entity[i].y - scrollY - (entity[i].y - player.y - player.sizeY / 2) * (scale - 256) / scale - (entity[i].sizeY / 2 * (scale - 128)) / 128;
 				if (entity[i].renderX + entity[i].sizeX >= 0 && entity[i].renderX < SCREEN_WIDTH && entity[i].renderY + entity[i].sizeY >= 0 && entity[i].renderY < SCREEN_HEIGHT)
 				{
+					oamRotateScale(&oamSub,
+								   2 + i,
+								   degreesToAngle(RAD2DEG(-entity[i].angle)),
+								   scale * 2 * (entity[i].isLookingLeft ? -1 : 1),
+								   scale * 2);
 					oamSet(&oamSub, renderedEntities + 2,
 						   entity[i].renderX,
 						   entity[i].renderY,
@@ -2135,8 +2164,8 @@ https://github.com/AzizBgBoss/TerrariaDS");
 					item[i].renderY = item[i].y - scrollY - (item[i].y - player.y - player.sizeY / 2) * (scale - 256) / scale - 8;
 					if (item[i].renderX + 16 >= 0 && item[i].renderX < SCREEN_WIDTH && item[i].renderY + 16 >= 0 && item[i].renderY < SCREEN_HEIGHT)
 					{
-						oamRotateScale(&oamSub, renderedItems + ENTITY_COUNT + 2, degreesToAngle(0), scale * 2, scale * 2);
-						oamSet(&oamSub, renderedItems + ENTITY_COUNT + 2, item[i].renderX, item[i].renderY, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, item[i].sprite_gfx_mem, i + ENTITY_COUNT + 2, false, false, false, false, false);
+						oamRotateScale(&oamSub, ENTITY_COUNT + 2, degreesToAngle(0), scale * 2, scale * 2); // Use the same rotation and scale for all items since affine indexes are limited to 31
+						oamSet(&oamSub, renderedItems + ENTITY_COUNT + 2, item[i].renderX, item[i].renderY, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, item[i].sprite_gfx_mem, ENTITY_COUNT + 2, false, false, false, false, false);
 						renderedItems++;
 					}
 				}
@@ -2146,6 +2175,28 @@ https://github.com/AzizBgBoss/TerrariaDS");
 		for (int i = renderedItems; i < MAX_ITEMS; i++)
 		{
 			oamSet(&oamSub, i + ENTITY_COUNT + 2, 0, 0, 0, 0, SpriteSize_8x8, SpriteColorFormat_256Color, nullSprite, -1, false, false, false, false, false);
+		}
+
+		u8 renderedParticles = 0;
+
+		for (int i = 0; i < PARTICLE_COUNT; i++)
+		{
+			if (particles[i].exists)
+			{
+				particles[i].renderX = particles[i].x - scrollX - (particles[i].x - player.x - player.sizeX / 2) * (scale - 256) / scale - 4;
+				particles[i].renderY = particles[i].y - scrollY - (particles[i].y - player.y - player.sizeY / 2) * (scale - 256) / scale - 4;
+				if (particles[i].renderX + 8 >= 0 && particles[i].renderX < SCREEN_WIDTH && particles[i].renderY + 8 >= 0 && particles[i].renderY < SCREEN_HEIGHT)
+				{
+					oamRotateScale(&oamSub, ENTITY_COUNT + 2 + 1, degreesToAngle(0), scale, scale);
+					oamSet(&oamSub, renderedParticles + ENTITY_COUNT + MAX_ITEMS + 2, particles[i].renderX, particles[i].renderY, 0, 0, SpriteSize_8x8, SpriteColorFormat_256Color, particles[i].sprite_gfx_mem, ENTITY_COUNT + 2 + 1, false, false, false, false, false);
+					renderedParticles++;
+				}
+			}
+		}
+		// Clean up unused sprites
+		for (int i = renderedParticles; i < PARTICLE_COUNT; i++)
+		{
+			oamSet(&oamSub, i + ENTITY_COUNT + MAX_ITEMS + 2, 0, 0, 0, 0, SpriteSize_8x8, SpriteColorFormat_256Color, nullSprite, -1, false, false, false, false, false);
 		}
 
 		oamUpdate(&oamSub);
