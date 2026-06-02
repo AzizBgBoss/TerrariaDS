@@ -3,6 +3,8 @@
 /extras/*.bin
 /extras/*.idx
 /extras/*.toml
+/extras/*.exe
+/extras/*.ini
 /nitro/*.bin
 /include/*.h
 /*.nds
