@@ -88,6 +88,7 @@ const char *titleSplashes[] = {
 	"If you like the game, consider starring it on GitHub, it helps a lot and motivates me to keep working on it!",
 	"If you've encountered a bug, please report it on GitHub with steps to reproduce it, I can't fix what I don't know about!",
 	"I hate bugs that involve math",
+	"Make sure to check for updates!",
 };
 
 const char *defaultDeathMessage[] = {

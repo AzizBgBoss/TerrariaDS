@@ -108,7 +108,7 @@ Initial commit with basic project structure.
 - Fix misaligned sprites when zooming in/out ***(done: yeah I still don't understand why this happens, if you can please help me with it. But I just added more math to counter the offset)***
 
 ## Planned Features for the future:
-- I'm *thinking* about making a script that scraps all tile data from the wiki but it's a bit complicated.
+- I'm *thinking* about making a script that scraps all tile/entity data from the wiki but it's a bit complicated.
 - Use more pointers for cleaner code.
 - Add ability to change button mappings (since many DS'es (including mine) have malfunctioning shoulder buttons because of dust accumulation under them over the years).
 - Add crimson/corruption.
