@@ -1328,6 +1328,18 @@ void delay(int seconds)
     }
 }
 
+void waitForPress()
+{
+    printDirect("\n\nPress any key to continue...");
+    scanKeys();
+    while (!keysDown())
+    {
+        swiWaitForVBlank();
+        mmStreamUpdate();
+        scanKeys();
+    }
+}
+
 // I honestly wanted to make a struct of SaveData but i had some problems with its stack or whatever it is
 
 bool saveMapToFile(const char *filen)
@@ -1337,6 +1349,7 @@ bool saveMapToFile(const char *filen)
     if (mkdir("terrarias/", 0777) == -1 && errno != EEXIST)
     {
         print(0, 0, "Failed to create directory 'terrarias/'");
+        waitForPress();
         return false;
     }
 
@@ -1348,6 +1361,7 @@ bool saveMapToFile(const char *filen)
     {
         print(0, 0, "Failed to open file for writing: ");
         printDirect(filename);
+        waitForPress();
         return false;
     }
 
@@ -1359,21 +1373,119 @@ bool saveMapToFile(const char *filen)
     bytesWritten += fwrite(stoneSurface, 1, sizeof(stoneSurface), file);
     bytesWritten += fwrite(biomeSurface, 1, sizeof(biomeSurface), file);
     bytesWritten += fwrite(gameTerrain, 1, sizeof(gameTerrain), file);
-    bytesWritten += fwrite(inventory, 1, sizeof(inventory), file);
-    bytesWritten += fwrite(inventoryQuantity, 1, sizeof(inventoryQuantity), file);
     bytesWritten += fwrite(chestInventory, 1, sizeof(chestInventory), file);
     bytesWritten += fwrite(chestInventoryQuantity, 1, sizeof(chestInventoryQuantity), file);
     bytesWritten += fwrite(chestLinks, 1, sizeof(chestLinks), file);
     fclose(file);
 
-    if (bytesWritten != 4 + 4 + 4 + sizeof(stoneSurface) + sizeof(biomeSurface) + sizeof(gameTerrain) + sizeof(inventory) + sizeof(inventoryQuantity) + sizeof(chestInventory) + sizeof(chestInventoryQuantity) + sizeof(chestLinks))
+    if (bytesWritten != 4 + 4 + 4 + sizeof(stoneSurface) + sizeof(biomeSurface) + sizeof(gameTerrain) + sizeof(chestInventory) + sizeof(chestInventoryQuantity) + sizeof(chestLinks))
     {
         print(0, 0, "Map save error");
+        waitForPress();
         return false;
     }
 
     print(0, 0, "Map saved to ");
     printDirect(filename);
+    waitForPress();
+    return true;
+}
+
+bool saveCharacterToFile(const char *filen)
+{
+    mmEffect(SFX_ENU_CLOSE);
+
+    if (mkdir("terrarias/", 0777) == -1 && errno != EEXIST)
+    {
+        print(0, 0, "Failed to create directory 'terrarias/'");
+        waitForPress();
+        return false;
+    }
+
+    char filename[128];
+    snprintf(filename, sizeof(filename), "terrarias/%s", filen);
+
+    FILE *file = fopen(filename, "wb"); // "wb" = write binary
+    if (!file)
+    {
+        print(0, 0, "Failed to open file for writing: ");
+        printDirect(filename);
+        waitForPress();
+        return false;
+    }
+
+    print(0, 0, "Saving character...");
+    uint32_t magic = 0xC0DEBEEF;
+    size_t bytesWritten = fwrite(&magic, 1, 4, file);
+    bytesWritten += fwrite(&player.maxHealth, 1, 4, file);
+    bytesWritten += fwrite(inventory, 1, sizeof(inventory), file);
+    bytesWritten += fwrite(inventoryQuantity, 1, sizeof(inventoryQuantity), file);
+    fclose(file);
+
+    if (bytesWritten != 4 + 4 + sizeof(inventory) + sizeof(inventoryQuantity))
+    {
+        print(0, 0, "Character save error");
+        waitForPress();
+        return false;
+    }
+
+    print(0, 0, "Character saved to ");
+    printDirect(filename);
+    waitForPress();
+    return true;
+}
+
+bool loadCharacterFromFile(const char *filen)
+{
+    mmEffect(SFX_ENU_OPEN);
+
+    char filename[128];
+    snprintf(filename, sizeof(filename), "terrarias/%s", filen);
+
+    FILE *file = fopen(filename, "rb"); // "rb" = read binary
+    if (!file)
+    {
+        print(0, 0, "Failed to open file for reading: ");
+        printDirect(filename);
+        waitForPress();
+        return false;
+    }
+
+    print(0, 0, "Loading character...");
+    uint32_t magic;
+    size_t bytesRead = fread(&magic, 1, 4, file);
+    if (magic == 0xC0DEBEEF)
+    {
+        bytesRead += fread(&player.maxHealth, 1, 4, file);
+        bytesRead += fread(inventory, 1, sizeof(inventory), file);
+        bytesRead += fread(inventoryQuantity, 1, sizeof(inventoryQuantity), file);
+        fclose(file);
+        if (bytesRead != 4 + 4 + sizeof(inventory) + sizeof(inventoryQuantity))
+        {
+            print(0, 0, "Character load error");
+            waitForPress();
+            return false;
+        }
+    }
+    else
+    {
+        clearPrint();
+        print(0, 0, "Invalid character file: ");
+        printDirect(filename);
+        fclose(file);
+        waitForPress();
+        return false;
+    }
+
+    print(0, 0, "Character loaded from ");
+    printDirect(filename);
+    printDirect(" (max health: ");
+    printValDirect(player.maxHealth);
+    printDirect(")\n");
+
+    strcpy(characterName, filen);
+    waitForPress();
+
     return true;
 }
 
@@ -1389,6 +1501,7 @@ bool loadMapFromFile(const char *filen)
     {
         print(0, 0, "Failed to open file for reading: ");
         printDirect(filename);
+        waitForPress();
         return false;
     }
 
@@ -1411,6 +1524,9 @@ bool loadMapFromFile(const char *filen)
         memset(chestInventory, 0, sizeof(chestInventory));
         memset(chestInventoryQuantity, 0, sizeof(chestInventoryQuantity));
         memset(chestLinks, 0, sizeof(chestLinks));
+
+        strcpy(characterName, names[rando(0, NAMES_COUNT - 1)]);
+
         for (int i = 0; i < 8 * 4; i++)
         {
             if (inventory[i] >= 100)
@@ -1420,24 +1536,27 @@ bool loadMapFromFile(const char *filen)
         if (bytesRead != 4 + 1024 * 64 * sizeof(u8) + sizeof(inventory) + sizeof(inventoryQuantity))
         {
             print(0, 0, "Map load error");
+            waitForPress();
             return false;
         }
 
         clearPrint();
-        printSmart(0, 0, "Old world loaded successfully! Consider saving it in the new format to avoid issues in the future.\n\nEven if backwards compatibility was implemented, this world can still experience some issues. Try creating a new world for even more features!");
-        delay(5);
+        printSmart(0, 0, "Old world loaded successfully and made a new character for it! Consider saving it in the new format to avoid issues in the future.\n\nEven if backwards compatibility was implemented, this world can still experience some issues. Try creating a new world for even more features!");
+        waitForPress();
         giveInventory(ITEM_PLATINUM_COIN, 5);
         clearPrint();
         printSmart(0, 0, "Also for being an OG, I'm gifting you 5 platinum coins! Thanks for being a part of TerrariaDS! You can't do anything with them for now, but consider it an investment for future updates ;)");
-        delay(5);
+        waitForPress();
     }
     else
     {
         if (magic != 0x550B12A2)
         {
+            clearPrint();
             print(0, 0, "Invalid map file: ");
             printDirect(filename);
             fclose(file);
+            waitForPress();
             return false;
         }
         bytesRead += fread(&mapWidth, 1, 4, file);
@@ -1445,14 +1564,12 @@ bool loadMapFromFile(const char *filen)
         bytesRead += fread(stoneSurface, 1, sizeof(stoneSurface), file);
         bytesRead += fread(biomeSurface, 1, sizeof(biomeSurface), file);
         bytesRead += fread(gameTerrain, 1, sizeof(gameTerrain), file);
-        bytesRead += fread(inventory, 1, sizeof(inventory), file);
-        bytesRead += fread(inventoryQuantity, 1, sizeof(inventoryQuantity), file);
         bytesRead += fread(chestInventory, 1, sizeof(chestInventory), file);
         bytesRead += fread(chestInventoryQuantity, 1, sizeof(chestInventoryQuantity), file);
         bytesRead += fread(chestLinks, 1, sizeof(chestLinks), file);
         fclose(file);
 
-        if (bytesRead != 4 + 4 + 4 + sizeof(stoneSurface) + sizeof(biomeSurface) + sizeof(gameTerrain) + sizeof(inventory) + sizeof(inventoryQuantity) + sizeof(chestInventory) + sizeof(chestInventoryQuantity) + sizeof(chestLinks))
+        if (bytesRead != 4 + 4 + 4 + sizeof(stoneSurface) + sizeof(biomeSurface) + sizeof(gameTerrain) + sizeof(chestInventory) + sizeof(chestInventoryQuantity) + sizeof(chestLinks))
         {
             print(0, 0, "Map load error");
             return false;
@@ -1464,7 +1581,6 @@ bool loadMapFromFile(const char *filen)
     lastCamTileX = -67;
     lastCamTileY = -67;
     player.health = 100;
-    player.maxHealth = 100;
     player.invincibilityFrames = 300;
     gametime = 0;
 
@@ -1489,6 +1605,7 @@ bool loadMapFromFile(const char *filen)
     printDirect(filename);
 
     strcpy(worldFileName, filen);
+    waitForPress();
 
     return true;
 }
@@ -1880,7 +1997,7 @@ void generateMap()
 
     // Place demonite bricks to limit the world
     printDirect("Placing demonite bricks at the bottom so you don't escape >:) ...\n");
-    for (int x = 0; x < mapWidth - 1; x++)
+    for (int x = 0; x < mapWidth; x++)
     {
         setGameTerrain(x, mapHeight - 1, TILE_DEMONITE_BRICK);
         if (x % (mapWidth / 32) == 0)
@@ -1889,18 +2006,9 @@ void generateMap()
         }
     }
 
-    // Clean Inventory
-
-    for (int i = 0; i < 8 * 4; i++)
-    {
-        inventory[i] = TILE_AIR;
-        inventoryQuantity[i] = 0;
-    }
-
     player.x = mapWidth * 8 / 2;
     player.y = 0;
     player.health = 100;
-    player.maxHealth = 100;
     player.invincibilityFrames = 300;
     gametime = 0;
     lastCamTileX = -67;
@@ -1920,11 +2028,6 @@ void generateMap()
     {
         destroyParticle(i);
     }
-
-    printDirect("Giving you some tools to start with...");
-    giveInventory(ITEM_COPPER_LONGSWORD, 1);
-    giveInventory(ITEM_COPPER_AXE, 1);
-    giveInventory(ITEM_COPPER_PICKAXE, 1);
 }
 
 bool setStreamAudio(const char *path)

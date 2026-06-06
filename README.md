@@ -84,7 +84,8 @@ Initial commit with basic project structure.
 ### Version 0.2 (In progress, releasing soon):
 - Add swinging animation.
 - Add more music and intros.
-- Ability to save character data and world data independently.
+- Add ability to delete worlds and characters.
+- Add characters. ***(done)***
 - Show health as hearts. ***(done)***
 - Add life crystals. ***(done)***
 - Add particles. ***(done)***

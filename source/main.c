@@ -172,10 +172,17 @@ mainMenu:
 		if (pressed & KEY_TOUCH)
 		{
 			touchRead(&touch);
-			if (touch.px >= 56 && touch.px <= 199 && touch.py >= 56 && touch.py <= 87)
+			if (touch.px >= 58 && touch.px <= 197 && touch.py >= 58 && touch.py <= 85)
 			{
 				changeTextBackground();
 				clearPrint();
+
+				if (strcmp(characterName, "") == 0)
+				{
+					printSmart(0, 0, "Choose a character first!");
+					waitForPress();
+					goto mainMenu;
+				}
 
 				// Let player choose a world
 				int chosenIndex = 0;
@@ -257,10 +264,18 @@ mainMenu:
 				generateMap();
 				break;
 			}
-			else if (touch.px >= 56 && touch.px <= 199 && touch.py >= 104 && touch.py <= 135)
+			else if (touch.px >= 58 && touch.px <= 197 && touch.py >= 98 && touch.py <= 125)
 			{
 				changeTextBackground();
 				clearPrint();
+
+				if (strcmp(characterName, "") == 0)
+				{
+					printSmart(0, 0, "Choose a character first!");
+					waitForPress();
+					goto mainMenu;
+				}
+
 				if (fatInitDefault())
 				{
 					// Player wants to load a world:
@@ -290,7 +305,7 @@ mainMenu:
 					{
 						// Could not open directory
 						printDirect("Could not open terrarias/ directory!");
-						delay(1);
+						delay(2);
 						goto mainMenu;
 						break;
 					}
@@ -298,7 +313,7 @@ mainMenu:
 					if (worldFileCount == 0)
 					{
 						printDirect("No worlds found in terrarias/ folder!");
-						delay(1);
+						delay(2);
 						goto mainMenu;
 						break;
 					}
@@ -310,7 +325,7 @@ mainMenu:
 						swiWaitForVBlank();
 						mmStreamUpdate();
 						clearPrint();
-						printDirect("Select a world to load:\nPress B to return.\n\n");
+						printDirect("Select a world to load:\nA: Select\nB: Return\n\n");
 						for (int i = 0; i < worldFileCount; i++)
 						{
 							if (i == chosenIndex)
@@ -357,7 +372,7 @@ mainMenu:
 					{
 						clearPrint();
 						printDirect("Error loading map!");
-						delay(1);
+						delay(2);
 						goto mainMenu;
 					}
 				}
@@ -365,10 +380,193 @@ mainMenu:
 				{
 					clearPrint();
 					printDirect("Error: FatInitDefault failed!");
-					delay(1);
+					delay(2);
 					goto mainMenu;
 				}
 				break;
+			}
+			else if (touch.px >= 58 && touch.px <= 197 && touch.py >= 18 && touch.py <= 45) // Characters
+			{
+				changeTextBackground();
+				clearPrint();
+				if (fatInitDefault())
+				{
+					// Player wants to load a world:
+					// We open the local ./terrarias/ folder and list every .ter file (world)
+
+					char characterFiles[15][64];
+					int characterFileCount = 0;
+					// List all .ter files in the terrarias directory
+					DIR *dir;
+					struct dirent *ent;
+					if ((dir = opendir("terrarias/")) != NULL)
+					{
+						while ((ent = readdir(dir)) != NULL)
+						{
+							if (strstr(ent->d_name, ".chr") != NULL)
+							{
+								strcpy(characterFiles[characterFileCount], ent->d_name);
+								characterFileCount++;
+								if (characterFileCount >= 15)
+									break; // Max 15 characters for now
+							}
+						}
+						closedir(dir);
+					}
+					else
+					{
+						// Could not open directory
+						printDirect("Could not open terrarias/ directory!");
+						delay(2);
+						goto createCharacter;
+					}
+
+					if (characterFileCount == 0)
+					{
+						printDirect("No characters found in terrarias/ folder!");
+						delay(2);
+						goto createCharacter;
+					}
+
+					// Let player choose a character
+					int chosenIndex = 0;
+					while (1)
+					{
+						swiWaitForVBlank();
+						mmStreamUpdate();
+						clearPrint();
+						printDirect("Select a character to load:\nA: Select\nB: Return\nY: Create\n\n");
+						for (int i = 0; i < characterFileCount; i++)
+						{
+							if (i == chosenIndex)
+								printDirect("> ");
+							else
+								printDirect("  ");
+							printDirect(characterFiles[i]);
+							printDirect("\n");
+						}
+
+						scanKeys();
+						int down = keysDown();
+
+						if (down & KEY_UP)
+						{
+							chosenIndex--;
+							if (chosenIndex < 0)
+								chosenIndex = characterFileCount - 1;
+						}
+						else if (down & KEY_DOWN)
+						{
+							chosenIndex++;
+							if (chosenIndex >= characterFileCount)
+								chosenIndex = 0;
+						}
+						else if (down & KEY_A)
+						{
+							break; // Character chosen
+						}
+						else if (down & KEY_B)
+						{
+							goto mainMenu;
+						}
+						else if (down & KEY_Y)
+						{
+						createCharacter:
+							int charNameIndex = rando(0, NAMES_COUNT - 1);
+							while (1)
+							{
+								swiWaitForVBlank();
+								mmStreamUpdate();
+								clearPrint();
+								printDirect("Choose character name:\n");
+								printDirect("< ");
+								printDirect(names[charNameIndex]);
+								printDirect(" >\n");
+
+								scanKeys();
+								int down = keysDown();
+								if (down & KEY_LEFT)
+								{
+									charNameIndex--;
+									if (charNameIndex < 0)
+										charNameIndex = NAMES_COUNT - 1;
+								}
+								else if (down & KEY_RIGHT)
+								{
+									charNameIndex++;
+									if (charNameIndex >= NAMES_COUNT)
+										charNameIndex = 0;
+								}
+								else if (down & KEY_A)
+								{
+									break; // Character name chosen
+								}
+								else if (down & KEY_B)
+								{
+									goto mainMenu;
+								}
+							}
+
+							strcpy(characterName, names[charNameIndex]);
+							strcat(characterName, ".chr");
+
+							player.maxHealth = 100;
+
+							for (int i = 0; i < 8 * 4; i++)
+							{
+								inventory[i] = TILE_AIR;
+								inventoryQuantity[i] = 0;
+							}
+
+							printDirect("Giving you some tools to start with...");
+							giveInventory(ITEM_COPPER_LONGSWORD, 1);
+							giveInventory(ITEM_COPPER_AXE, 1);
+							giveInventory(ITEM_COPPER_PICKAXE, 1);
+
+							clearPrint();
+							printSmart(0, 0, "Character made successfully! Going to save now...");
+							waitForPress();
+
+							clearPrint();
+							saveCharacterToFile(characterName);
+
+							goto mainMenu;
+						}
+					}
+
+					if (loadCharacterFromFile(characterFiles[chosenIndex]))
+					{
+						mmStreamClose();
+						clearPrint();
+						printDirect("Character loaded successfully!");
+						goto mainMenu;
+					}
+					else
+					{
+						clearPrint();
+						printDirect("Error loading character!");
+						delay(2);
+						goto mainMenu;
+					}
+				}
+				else
+				{
+					clearPrint();
+					printDirect("Error: FatInitDefault failed!");
+					delay(2);
+					goto mainMenu;
+				}
+			}
+			else if (touch.px >= 58 && touch.px <= 197 && touch.py >= 138 && touch.py <= 165) // About
+			{
+				changeTextBackground();
+				clearPrint();
+				printSmart(0, 0, "Terraria DS v" VERSION " - by AzizBgBoss\n\n\
+This is a fan remake of the Terraria game for the Nintendo DS.\n\
+It is in no way related to RE-LOGIC or the official Terraria.\n\n\
+Find more information at https://github.com/AzizBgBoss/TerrariaDS");
+				waitForPress();
+				goto mainMenu;
 			}
 		}
 		x++;
@@ -475,10 +673,13 @@ mainMenu:
 
 		if (held & KEY_A && held & KEY_B && held & KEY_X && held & KEY_Y) // Debug menu
 		{
+			for (int i = 0; i < 16; i++)
+				oamSet(&oamMain, i + 1, 0, 0, 0, 0, SpriteSize_8x8, SpriteColorFormat_256Color, nullSpriteMain, -1, false, false, false, false, false);
+			oamUpdate(&oamMain);
 			// Stop everything and show the debug menu
 			inventorySetHotbar();
 			clearPrint();
-			print(0, 2, "Debug menu, bazinga!\n");
+			print(0, 0, "Debug menu, bazinga!\n");
 			printDirect("Press X to close debug menu.\n");
 
 			int selection = 0;
@@ -707,15 +908,29 @@ mainMenu:
 
 		if (pressed & KEY_START) // Pause menu
 		{
+			for (int i = 0; i < 16; i++)
+				oamSet(&oamMain, i + 1, 0, 0, 0, 0, SpriteSize_8x8, SpriteColorFormat_256Color, nullSpriteMain, -1, false, false, false, false, false);
+			oamUpdate(&oamMain);
 			// Stop everything and show the pause menu
 			inventorySetHotbar();
 			clearPrint();
-			print(0, 3, worldFileName);
-			printDirect("\nGame Paused\n");
-			printDirect("Press START to resume.\n");
+
+			char cleanWorldName[64];
+			strcpy(cleanWorldName, worldFileName);
+
+			char *ext = strstr(cleanWorldName, ".ter");
+			if (ext)
+				*ext = '\0';
+
+			char cleanCharName[32];
+			strcpy(cleanCharName, characterName);
+
+			ext = strstr(cleanCharName, ".chr");
+			if (ext)
+				*ext = '\0';
 
 			int selection = 0;
-			int maxSelection = 2;
+			int maxSelection = 1;
 
 			while (pmMainLoop())
 			{
@@ -723,6 +938,13 @@ mainMenu:
 				swiWaitForVBlank();
 				mmStreamUpdate();
 				scanKeys();
+
+				clearPrint();
+
+				print(0, 0, cleanCharName);
+				printDirect(" - ");
+				printSmartDirect(cleanWorldName);
+				printDirect("\nGame Paused\nPress START to resume.\n");
 
 				int pressed = keysDown();
 				if (pressed & KEY_START)
@@ -743,9 +965,9 @@ mainMenu:
 				for (int i = 0; i <= maxSelection; i++)
 				{
 					if (i == selection)
-						print(0, 4 + i, "> ");
+						print(0, 10 + i, "> ");
 					else
-						print(0, 4 + i, "  ");
+						print(0, 10 + i, "  ");
 					switch (i)
 					{
 					case 0:
@@ -753,9 +975,6 @@ mainMenu:
 						break;
 					case 1:
 						printDirect("Save Game");
-						break;
-					case 2:
-						printDirect("Load Game");
 						break;
 					default:
 						printDirect("---");
@@ -775,10 +994,10 @@ mainMenu:
 						goto mainMenu;
 						break;
 					case 1:
+						clearPrint();
 						saveMapToFile(worldFileName);
-						break;
-					case 2:
-						loadMapFromFile(worldFileName);
+						clearPrint();
+						saveCharacterToFile(characterName);
 						break;
 					default:
 						printDirect("\nUnknown implementation.");

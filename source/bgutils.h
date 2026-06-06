@@ -120,7 +120,7 @@ void printSmart(int x, int y, const char *text)
 
         int wordLen = 0;
         const char *tmp = text;
-        while (*tmp && *tmp != ' ' && *tmp != '\n')
+        while (*tmp && *tmp != ' ' && *tmp != '\n' && *tmp != '/')
         {
             wordLen++;
             tmp++;

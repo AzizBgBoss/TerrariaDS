@@ -21,8 +21,10 @@ u8 biomeSurface[MAP_WIDTH_MAX] = {0};
 u8 gameTerrain[MAP_WIDTH_MAX * MAP_HEIGHT_MAX] = {0};
 u16 gameTerrainHealth[MAP_WIDTH_MAX * MAP_HEIGHT_MAX] = {0};
 
+char characterName[32] = "";
 u8 inventory[8 * 4] = {0};
 u8 inventoryQuantity[8 * 4] = {0};
+
 u8 inventorySelection = 0;
 u8 craftingSelection = 0;
 bool craftingShowCraftableOnly = false;
@@ -189,6 +191,78 @@ const char *fallDeathMessage[] = {
 	" forgot their happy thought."};
 
 #define FALLDEATHMESSAGE_COUNT sizeof(fallDeathMessage) / sizeof(fallDeathMessage[0])
+
+const char *names[] = {
+	"Bob",
+	"Alice",
+	"John",
+	"Emma",
+	"Paul",
+	"Olivia",
+	"George",
+	"Sophia",
+	"Ringo",
+	"Luna",
+	"Stevie",
+	"Willow",
+	"Keith",
+	"Ruby",
+	"Brian",
+	"Hazel",
+	"Ronnie",
+	"Ivy",
+	"Michael",
+	"Rose",
+
+	"Arthur",
+	"Clara",
+	"Finn",
+	"Mabel",
+	"Jack",
+	"Abigail",
+	"Henry",
+	"Violet",
+	"Theo",
+	"Charlotte",
+	"Leo",
+	"Scarlett",
+	"Felix",
+	"Aurora",
+	"Owen",
+	"Daisy",
+	"Cedric",
+	"Sylvia",
+	"Rowan",
+	"Iris",
+
+	"Merlin",
+	"Lyra",
+	"Orion",
+	"Freya",
+	"Atlas",
+	"Nova",
+	"Jasper",
+	"Celeste",
+	"Percy",
+	"Raven",
+	"Magnus",
+	"Seraphina",
+	"Dorian",
+	"Aria",
+	"Ezra",
+	"Opal",
+
+	"Aphrodite",
+	"Athena",
+	"Apollo",
+	"Artemis",
+	"Ares",
+	"Athena",
+	"Demeter",
+	"Hephaestus",
+};
+
+#define NAMES_COUNT sizeof(names) / sizeof(names[0])
 
 u16 *nullSprite;
 u16 *nullSpriteMain;
