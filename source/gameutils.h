@@ -1206,6 +1206,8 @@ void killEntity(int id)
     mmEffect(entityAISounds[entities[entity[id].type].AItype].killed);
 }
 
+// Todo: add blood particles
+
 bool checkPlayerCollision(int x, int y, int sizeX, int sizeY)
 {
     // AABB collision detection
@@ -2097,6 +2099,7 @@ void consume(int selection)
         {
             playerHeal(10);
             mmEffect(SFX_MUSHROOM);
+            setInventory(inventorySelection, inventory[inventorySelection], inventoryQuantity[inventorySelection] - 1);
         }
         break;
     case TILE_LIFE_CRYSTAL_3:
@@ -2104,10 +2107,10 @@ void consume(int selection)
         {
             player.maxHealth += 20;
             mmEffect(SFX_MAGIC);
+            setInventory(inventorySelection, inventory[inventorySelection], inventoryQuantity[inventorySelection] - 1);
         }
         break;
     default:
         return;
     }
-    setInventory(inventorySelection, inventory[inventorySelection], inventoryQuantity[inventorySelection] - 1);
 }

@@ -58,8 +58,8 @@
 
 #define PLAYER_STATION_RANGE 8 // Radius to look for stations
 
-#define TREE_CHANCE 3
-#define MUSHROOM_CHANCE 4
+#define TREE_CHANCE 4     // 1/x chance of spawning a tree
+#define MUSHROOM_CHANCE 5 // 1/x chance of spawning a mushroom
 #define MIN_TREE_HEIGHT 3
 #define MAX_TREE_HEIGHT 9
 #define MIN_GRASS_HEIGHT 0.2

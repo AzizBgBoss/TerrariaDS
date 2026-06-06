@@ -28,6 +28,7 @@ u8 craftingSelection = 0;
 bool craftingShowCraftableOnly = false;
 
 u16 *inventorySelectionSprite;
+u16 *heartSprite;
 u16 *itemHandSprite;
 
 bool debug = false;
@@ -190,6 +191,7 @@ const char *fallDeathMessage[] = {
 #define FALLDEATHMESSAGE_COUNT sizeof(fallDeathMessage) / sizeof(fallDeathMessage[0])
 
 u16 *nullSprite;
+u16 *nullSpriteMain;
 
 FILE *f;
 

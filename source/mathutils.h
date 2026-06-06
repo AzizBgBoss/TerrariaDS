@@ -19,6 +19,13 @@ static int min(int val, int min)
 	return min;
 }
 
+static int max(int val, int max)
+{
+	if (val > max)
+		return val;
+	return max;
+}
+
 int rando(int min, int max) // Random function, returns a random integer between min and max (max included)
 {
 	return rand() % (max - min + 1) + min;

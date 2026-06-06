@@ -407,7 +407,13 @@ mainMenu:
 	oamInit(&oamMain, SpriteMapping_1D_128, false);
 
 	inventorySelectionSprite = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_256Color);
-	dmaCopy(uiTiles, inventorySelectionSprite, uiTilesLen);
+	dmaCopy(uiTiles, inventorySelectionSprite, 32 * 32);
+
+	heartSprite = oamAllocateGfx(&oamMain, SpriteSize_16x16, SpriteColorFormat_256Color);
+	dmaCopy(uiTiles + 32 * 32 / 4, heartSprite, 16 * 16);
+
+	nullSpriteMain = oamAllocateGfx(&oamMain, SpriteSize_16x16, SpriteColorFormat_256Color);
+	dmaFillHalfWords(0, nullSpriteMain, 16 * 16);
 
 	dmaCopy(uiPal, SPRITE_PALETTE, uiPalLen);
 
@@ -472,7 +478,7 @@ mainMenu:
 			// Stop everything and show the debug menu
 			inventorySetHotbar();
 			clearPrint();
-			print(0, 0, "Debug menu, bazinga!\n");
+			print(0, 2, "Debug menu, bazinga!\n");
 			printDirect("Press X to close debug menu.\n");
 
 			int selection = 0;
@@ -704,7 +710,7 @@ mainMenu:
 			// Stop everything and show the pause menu
 			inventorySetHotbar();
 			clearPrint();
-			printDirect(worldFileName);
+			print(0, 3, worldFileName);
 			printDirect("\nGame Paused\n");
 			printDirect("Press START to resume.\n");
 
@@ -1812,13 +1818,13 @@ mainMenu:
 		if (!inventoryOpen)
 		{
 			clearPrint();
-			print(0, 3, "TerrariaDS v" VERSION "\n\
+			print(0, 5, "TerrariaDS v" VERSION "\n\
 By AzizBgBoss\n\
 https://github.com/AzizBgBoss/TerrariaDS");
 			renderInventoryNoSound();
 			setInventorySelectionNoSound(inventorySelection);
 
-			print(0, 8, "");
+			print(0, 10, "");
 
 			int nearestEntities[5] = {-1, -1, -1, -1, -1}; // IDs of the nearest 5 entities
 
@@ -1891,7 +1897,10 @@ https://github.com/AzizBgBoss/TerrariaDS");
 			}
 		}
 
-		print(0, 0, "Health: ");
+		if (!inventoryOpen)
+			print(0, 2, "Health: ");
+		else
+			print(0, 0, "Health: ");
 		printValDirect(player.health);
 		printDirect("/");
 		printValDirect(player.maxHealth);
@@ -2195,6 +2204,28 @@ https://github.com/AzizBgBoss/TerrariaDS");
 			oamSet(&oamSub, i + ENTITY_COUNT + MAX_ITEMS + 2, 0, 0, 0, 0, SpriteSize_8x8, SpriteColorFormat_256Color, nullSprite, -1, false, false, false, false, false);
 		}
 
+		// Hearts
+		for (int i = 0; i < 16; i++)
+		{
+			if (i < player.maxHealth / 20 && !inventoryOpen)
+			{
+				int seg = clamp(player.health - i * 20, 0, 20);
+				int segMin = 0;
+				int segMax = 20;
+				int scaleMin = 512;
+				int scaleMax = 256;
+				int s = scaleMin + ((seg - segMin) * (scaleMax - scaleMin)) / (segMax - segMin);
+				s = clamp(s, min(scaleMin, scaleMax), max(scaleMin, scaleMax));
+				oamRotateScale(&oamMain, i, degreesToAngle(0), s, s);
+				oamSet(&oamMain, i + 1, 16 * i, 16 * (i / 16), 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, heartSprite, i, false, false, false, false, false);
+			}
+			else
+			{
+				oamSet(&oamMain, i + 1, 0, 0, 0, 0, SpriteSize_8x8, SpriteColorFormat_256Color, nullSpriteMain, -1, false, false, false, false, false);
+			}
+		}
+
+		oamUpdate(&oamMain);
 		oamUpdate(&oamSub);
 		bgUpdate();
 

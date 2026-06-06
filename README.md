@@ -82,10 +82,10 @@ Initial commit with basic project structure.
 - Add sound effects. ***(done)***
 
 ### Version 0.2 (In progress, releasing soon):
-- Ability to save character data and world data independently.
 - Add swinging animation.
 - Add more music and intros.
-- Show health as hearts.
+- Ability to save character data and world data independently.
+- Show health as hearts. ***(done)***
 - Add life crystals. ***(done)***
 - Add particles. ***(done)***
 - Add more sound effects. ***(done: I didn't really add that much)***
