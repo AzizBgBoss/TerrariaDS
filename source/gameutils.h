@@ -1001,7 +1001,8 @@ void breakTile(int x, int y, int speed)
                 }
             }
         }
-        else if (tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParam == SPECIAL_WORKBENCH || tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParam == SPECIAL_ANVIL)
+        else if (tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParam == SPECIAL_WORKBENCH ||
+                 tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParam == SPECIAL_ANVIL)
         {
             dropItem(x, y, getElementDrop(gameTerrain[x + y * MAP_WIDTH_MAX]), 1);
             int offset = tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParams[0] - 1;
@@ -1023,7 +1024,8 @@ void breakTile(int x, int y, int speed)
                 }
             }
         }
-        else if (tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParam == SPECIAL_CHEST)
+        else if (tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParam == SPECIAL_CHEST ||
+                 tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParam == SPECIAL_LIFE_CRYSTAL)
         {
             dropItem(x, y, getElementDrop(gameTerrain[x + y * MAP_WIDTH_MAX]), 1);
             int offsetX = (tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParams[0] - 1) % 2;
@@ -1853,6 +1855,27 @@ void generateMap()
         }
     }
 
+    // Place life crystals
+    printDirect("Placing life crystals...\n");
+    int crystals = rando(1, mapWidth * mapHeight / 2048);
+    cur = 0;
+    for (int i = 0; i < crystals; i++)
+    {
+        int x = rando(0, mapWidth - 2);
+        int y = rando(mapHeight / 2, mapHeight - 2); // don't forget demonite bricks below!
+
+        y = getHighestTileYFrom(x, y);
+
+        setGameTerrain(x, y - 1, TILE_LIFE_CRYSTAL_1);
+        setGameTerrain(x + 1, y - 1, TILE_LIFE_CRYSTAL_2);
+        setGameTerrain(x, y, TILE_LIFE_CRYSTAL_3);
+        setGameTerrain(x + 1, y, TILE_LIFE_CRYSTAL_4);
+
+        if (((i + 1) * 32) / crystals != cur)
+            printDirect(".");
+        cur = ((i + 1) * 32) / crystals;
+    }
+
     // Place demonite bricks to limit the world
     printDirect("Placing demonite bricks at the bottom so you don't escape >:) ...\n");
     for (int x = 0; x < mapWidth - 1; x++)
@@ -2063,4 +2086,28 @@ bool isInPlayerRadius(int x, int y, float range)
 bool isInPlayerRange(int x, int y)
 {
     return isInPlayerRadius(x, y, SCREEN_WIDTH / 2);
+}
+
+void consume(int selection)
+{
+    switch (inventory[inventorySelection])
+    {
+    case TILE_MUSHROOM:
+        if (player.health < player.maxHealth)
+        {
+            playerHeal(10);
+            mmEffect(SFX_MUSHROOM);
+        }
+        break;
+    case TILE_LIFE_CRYSTAL_3:
+        if (player.maxHealth < 320)
+        {
+            player.maxHealth += 20;
+            mmEffect(SFX_MAGIC);
+        }
+        break;
+    default:
+        return;
+    }
+    setInventory(inventorySelection, inventory[inventorySelection], inventoryQuantity[inventorySelection] - 1);
 }

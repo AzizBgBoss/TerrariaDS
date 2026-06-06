@@ -171,6 +171,11 @@ enum // Make sure the indexing follows the one in the textures
     TILE_CHEST_3,
     TILE_CHEST_4,
 
+    TILE_LIFE_CRYSTAL_1,
+    TILE_LIFE_CRYSTAL_2,
+    TILE_LIFE_CRYSTAL_3,
+    TILE_LIFE_CRYSTAL_4,
+
     TILES,
 };
 
@@ -237,12 +242,13 @@ enum // Tool type
 enum // Special parameter for tiles
 {
     SPECIAL_NONE,
-    SPECIAL_DOOR,      // specialParams[] = {int isOpen (0-1), int isRight (0-1), int part (1-6)}
-    SPECIAL_TREE,      // specialParams[] = {int leafTile}
-    SPECIAL_WORKBENCH, // specialParams[] = {int part (1-2)}
-    SPECIAL_FURNACE,   // specialParams[] = {int part (1-6)}
-    SPECIAL_ANVIL,     // specialParams[] = {int part (1-2)}
-    SPECIAL_CHEST,     // specialParams[] = {int part (1-4)}
+    SPECIAL_DOOR,         // specialParams[] = {int isOpen (0-1), int isRight (0-1), int part (1-6)}
+    SPECIAL_TREE,         // specialParams[] = {int leafTile}
+    SPECIAL_WORKBENCH,    // specialParams[] = {int part (1-2)}
+    SPECIAL_FURNACE,      // specialParams[] = {int part (1-6)}
+    SPECIAL_ANVIL,        // specialParams[] = {int part (1-2)}
+    SPECIAL_CHEST,        // specialParams[] = {int part (1-4)}
+    SPECIAL_LIFE_CRYSTAL, // specialParams[] = {int part (1-4)}
 
     SPECIALS,
 };

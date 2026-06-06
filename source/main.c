@@ -266,7 +266,7 @@ mainMenu:
 					// Player wants to load a world:
 					// We open the local ./terrarias/ folder and list every .ter file (world)
 
-					char worldFiles[10][64];
+					char worldFiles[15][64];
 					int worldFileCount = 0;
 					// List all .ter files in the terrarias directory
 					DIR *dir;
@@ -280,8 +280,8 @@ mainMenu:
 							{
 								strcpy(worldFiles[worldFileCount], ent->d_name);
 								worldFileCount++;
-								if (worldFileCount >= 10)
-									break; // Max 10 worlds for now
+								if (worldFileCount >= 15)
+									break; // Max 15 worlds for now
 							}
 						}
 						closedir(dir);
@@ -903,7 +903,7 @@ mainMenu:
 		int TLCx = player.x;
 		int TLCy = player.y;
 		int TRCx = player.x + player.sizeX - 1;
-		//int TRCy = player.y; //unused
+		// int TRCy = player.y; //unused
 		int BLCx = player.x;
 		int BLCy = player.y + player.sizeY;
 		int BRCx = player.x + player.sizeX - 1;
@@ -912,7 +912,7 @@ mainMenu:
 		int TLCtileX = TLCx / 8;
 		int TLCtileY = TLCy / 8;
 		int TRCtileX = TRCx / 8;
-		//int TRCtileY = TRCy / 8; //unused
+		// int TRCtileY = TRCy / 8; //unused
 		int BLCtileX = BLCx / 8;
 		int BLCtileY = BLCy / 8;
 		int BRCtileX = BRCx / 8;
@@ -1199,11 +1199,9 @@ mainMenu:
 									damageEntity(e, getItemDamage(inventory[inventorySelection]));
 									knockBackEntity(e, (player.x > entity[e].x) ? -getItemKnockback(inventory[inventorySelection]) : getItemKnockback(inventory[inventorySelection]), -getItemKnockback(inventory[inventorySelection]));
 								}
-								else if (inventory[inventorySelection] == TILE_MUSHROOM && inventoryQuantity[inventorySelection] && player.health < player.maxHealth)
+								else if (tileProperties[inventory[inventorySelection]].isConsumable)
 								{
-									mmEffect(SFX_MUSHROOM);
-									playerHeal(10);
-									setInventory(inventorySelection, inventory[inventorySelection], inventoryQuantity[inventorySelection] - 1);
+									consume(inventorySelection);
 								}
 								else if (tileProperties[gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH_MAX]].specialParam != SPECIAL_NONE)
 									interact(worldTouchX, worldTouchY);
@@ -1218,11 +1216,9 @@ mainMenu:
 					{
 						if (interacting == true)
 						{
-							if (inventory[inventorySelection] == TILE_MUSHROOM && inventoryQuantity[inventorySelection] && player.health < player.maxHealth)
+							if (tileProperties[inventory[inventorySelection]].isConsumable)
 							{
-								mmEffect(SFX_MUSHROOM);
-								playerHeal(10);
-								setInventory(inventorySelection, inventory[inventorySelection], inventoryQuantity[inventorySelection] - 1);
+								consume(inventorySelection);
 							}
 							interacting = false;
 						}
@@ -1340,7 +1336,7 @@ mainMenu:
 					TLCx = entity[i].x;
 					TLCy = entity[i].y;
 					TRCx = entity[i].x + entity[i].sizeX - 1;
-					//TRCy = entity[i].y; //unused
+					// TRCy = entity[i].y; //unused
 					BLCx = entity[i].x;
 					BLCy = entity[i].y + entity[i].sizeY;
 					BRCx = entity[i].x + entity[i].sizeX - 1;
@@ -1349,7 +1345,7 @@ mainMenu:
 					TLCtileX = TLCx / 8;
 					TLCtileY = TLCy / 8;
 					TRCtileX = TRCx / 8;
-					//TRCtileY = TRCy / 8; //unused
+					// TRCtileY = TRCy / 8; //unused
 					BLCtileX = BLCx / 8;
 					BLCtileY = BLCy / 8;
 					BRCtileX = BRCx / 8;

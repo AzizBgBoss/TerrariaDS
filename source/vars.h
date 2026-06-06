@@ -318,6 +318,7 @@ typedef struct
 	int specialParam;
 	int specialParams[4];
 	int particle; // Particle to spawn when the tile is hit or destroyed, PARTICLE_NONE for no particles
+	bool isConsumable;
 } TileProperties;
 
 typedef struct
@@ -592,102 +593,107 @@ const EntityProperties entities[ENTITIES] = {
 };
 
 const TileProperties tileProperties[TILES] = {
-	{"", true, 0, 56, 0, true, 0, 0, {}, false, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_NONE}, // TILE_AIR
-	{"Planks", false, 4, 28, 100, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_WOOD},
-	{"Dirt", false, 1, 16, 100, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_DIRT},
-	{"Stone", false, 2, 20, 150, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_STONE},
-	{"Wood Log", true, 2, 56, 200, true, TILE_PLANKS, 1, {TOOL_TYPE_AXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_TREE, {TILE_LEAVES}, PARTICLE_WOOD},
-	{"Leaves", false, 3, 32, 50, false, 0, 1, {TOOL_TYPE_AXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_LEAF},
-	{"Mushroom", true, 1, 24, 10, false, 0, 3, {TOOL_TYPE_PICKAXE, TOOL_TYPE_AXE, TOOL_TYPE_LONGSWORD}, false, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_NONE},
-	{"Dirt Wall", false, 5, 36, 100, false, 0, 1, {TOOL_TYPE_HAMMER}, false, true, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_DIRT},
-	{"Stone Wall", false, 6, 40, 100, false, 0, 1, {TOOL_TYPE_HAMMER}, false, true, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_STONE},
-	{"Demonite Brick", false, 7, 44, INT_MAX, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_NONE},
-	{"Wood Wall", false, 8, 48, 100, false, 0, 1, {TOOL_TYPE_HAMMER}, false, true, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_WOOD},
-	{"Copper Ore", false, 9, 52, 200, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_COPPER},
+	{"", true, 0, 56, 0, true, 0, 0, {}, false, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_NONE, false}, // TILE_AIR
+	{"Planks", false, 4, 28, 100, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_WOOD, false},
+	{"Dirt", false, 1, 16, 100, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_DIRT, false},
+	{"Stone", false, 2, 20, 150, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_STONE, false},
+	{"Wood Log", true, 2, 56, 200, true, TILE_PLANKS, 1, {TOOL_TYPE_AXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_TREE, {TILE_LEAVES}, PARTICLE_WOOD, false},
+	{"Leaves", false, 3, 32, 50, false, 0, 1, {TOOL_TYPE_AXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_LEAF, false},
+	{"Mushroom", true, 1, 24, 10, false, 0, 3, {TOOL_TYPE_PICKAXE, TOOL_TYPE_AXE, TOOL_TYPE_LONGSWORD}, false, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_NONE, true},
+	{"Dirt Wall", false, 5, 36, 100, false, 0, 1, {TOOL_TYPE_HAMMER}, false, true, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_DIRT, false},
+	{"Stone Wall", false, 6, 40, 100, false, 0, 1, {TOOL_TYPE_HAMMER}, false, true, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_STONE, false},
+	{"Demonite Brick", false, 7, 44, INT_MAX, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_NONE, false},
+	{"Wood Wall", false, 8, 48, 100, false, 0, 1, {TOOL_TYPE_HAMMER}, false, true, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_WOOD, false},
+	{"Copper Ore", false, 9, 52, 200, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_COPPER, false},
 
 	// Closed wooden door
-	{"", true, 92, 56, 50, true, TILE_WOODEN_DOOR_CLOSED_3, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_DOOR, {0, 0, 1}, PARTICLE_WOOD},
-	{"", true, 95, 56, 50, true, TILE_WOODEN_DOOR_CLOSED_3, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_DOOR, {0, 0, 2}, PARTICLE_WOOD},
-	{"Wooden Door", true, 98, 64, 50, true, TILE_WOODEN_DOOR_CLOSED_3, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_DOOR, {0, 0, 3}, PARTICLE_WOOD},
+	{"", true, 92, 56, 50, true, TILE_WOODEN_DOOR_CLOSED_3, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_DOOR, {0, 0, 1}, PARTICLE_WOOD, false},
+	{"", true, 95, 56, 50, true, TILE_WOODEN_DOOR_CLOSED_3, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_DOOR, {0, 0, 2}, PARTICLE_WOOD, false},
+	{"Wooden Door", true, 98, 64, 50, true, TILE_WOODEN_DOOR_CLOSED_3, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_DOOR, {0, 0, 3}, PARTICLE_WOOD, false},
 
 	// Open to the left wooden door
-	{"", true, 90, 56, 50, true, TILE_WOODEN_DOOR_CLOSED_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_DOOR, {1, 0, 1}, PARTICLE_WOOD},
-	{"", true, 91, 56, 50, true, TILE_WOODEN_DOOR_CLOSED_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_DOOR, {1, 0, 2}, PARTICLE_WOOD},
-	{"", true, 93, 56, 50, true, TILE_WOODEN_DOOR_CLOSED_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_DOOR, {1, 0, 3}, PARTICLE_WOOD},
-	{"", true, 94, 56, 50, true, TILE_WOODEN_DOOR_CLOSED_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_DOOR, {1, 0, 4}, PARTICLE_WOOD},
-	{"", true, 96, 56, 50, true, TILE_WOODEN_DOOR_CLOSED_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_DOOR, {1, 0, 5}, PARTICLE_WOOD},
-	{"", true, 97, 56, 50, true, TILE_WOODEN_DOOR_CLOSED_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_DOOR, {1, 0, 6}, PARTICLE_WOOD},
+	{"", true, 90, 56, 50, true, TILE_WOODEN_DOOR_CLOSED_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_DOOR, {1, 0, 1}, PARTICLE_WOOD, false},
+	{"", true, 91, 56, 50, true, TILE_WOODEN_DOOR_CLOSED_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_DOOR, {1, 0, 2}, PARTICLE_WOOD, false},
+	{"", true, 93, 56, 50, true, TILE_WOODEN_DOOR_CLOSED_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_DOOR, {1, 0, 3}, PARTICLE_WOOD, false},
+	{"", true, 94, 56, 50, true, TILE_WOODEN_DOOR_CLOSED_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_DOOR, {1, 0, 4}, PARTICLE_WOOD, false},
+	{"", true, 96, 56, 50, true, TILE_WOODEN_DOOR_CLOSED_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_DOOR, {1, 0, 5}, PARTICLE_WOOD, false},
+	{"", true, 97, 56, 50, true, TILE_WOODEN_DOOR_CLOSED_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_DOOR, {1, 0, 6}, PARTICLE_WOOD, false},
 
 	// Open to the right wooden door
-	{"", true, 99, 56, 50, true, TILE_WOODEN_DOOR_CLOSED_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_DOOR, {1, 1, 1}, PARTICLE_WOOD},
-	{"", true, 100, 56, 50, true, TILE_WOODEN_DOOR_CLOSED_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_DOOR, {1, 1, 2}, PARTICLE_WOOD},
-	{"", true, 102, 56, 50, true, TILE_WOODEN_DOOR_CLOSED_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_DOOR, {1, 1, 3}, PARTICLE_WOOD},
-	{"", true, 103, 56, 50, true, TILE_WOODEN_DOOR_CLOSED_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_DOOR, {1, 1, 4}, PARTICLE_WOOD},
-	{"", true, 105, 56, 50, true, TILE_WOODEN_DOOR_CLOSED_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_DOOR, {1, 1, 5}, PARTICLE_WOOD},
-	{"", true, 106, 56, 50, true, TILE_WOODEN_DOOR_CLOSED_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_DOOR, {1, 1, 6}, PARTICLE_WOOD},
+	{"", true, 99, 56, 50, true, TILE_WOODEN_DOOR_CLOSED_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_DOOR, {1, 1, 1}, PARTICLE_WOOD, false},
+	{"", true, 100, 56, 50, true, TILE_WOODEN_DOOR_CLOSED_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_DOOR, {1, 1, 2}, PARTICLE_WOOD, false},
+	{"", true, 102, 56, 50, true, TILE_WOODEN_DOOR_CLOSED_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_DOOR, {1, 1, 3}, PARTICLE_WOOD, false},
+	{"", true, 103, 56, 50, true, TILE_WOODEN_DOOR_CLOSED_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_DOOR, {1, 1, 4}, PARTICLE_WOOD, false},
+	{"", true, 105, 56, 50, true, TILE_WOODEN_DOOR_CLOSED_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_DOOR, {1, 1, 5}, PARTICLE_WOOD, false},
+	{"", true, 106, 56, 50, true, TILE_WOODEN_DOOR_CLOSED_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_DOOR, {1, 1, 6}, PARTICLE_WOOD, false},
 
-	{"Tin Ore", false, 12, 68, 200, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_TIN},
+	{"Tin Ore", false, 12, 68, 200, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_TIN, false},
 
-	{"Copper Pickaxe", true, 0, 4, 0, true, 0, 0, {}, false, false, true, 1, 2, TOOL_TYPE_PICKAXE, 4, true, SPECIAL_NONE, {}, PARTICLE_NONE},
-	{"Copper Axe", true, 0, 8, 0, true, 0, 0, {}, false, false, true, 1, 2, TOOL_TYPE_AXE, 3, true, SPECIAL_NONE, {}, PARTICLE_NONE},
-	{"Copper Long Sword", true, 0, 0, 0, true, 0, 0, {}, false, false, true, 1, 5, TOOL_TYPE_LONGSWORD, 9, true, SPECIAL_NONE, {}, PARTICLE_NONE},
-	{"Copper Hammer", true, 0, 12, 0, true, 0, 0, {}, false, false, true, 1, 1, TOOL_TYPE_HAMMER, 4, true, SPECIAL_NONE, {}, PARTICLE_NONE},
+	{"Copper Pickaxe", true, 0, 4, 0, true, 0, 0, {}, false, false, true, 1, 2, TOOL_TYPE_PICKAXE, 4, true, SPECIAL_NONE, {}, PARTICLE_NONE, false},
+	{"Copper Axe", true, 0, 8, 0, true, 0, 0, {}, false, false, true, 1, 2, TOOL_TYPE_AXE, 3, true, SPECIAL_NONE, {}, PARTICLE_NONE, false},
+	{"Copper Long Sword", true, 0, 0, 0, true, 0, 0, {}, false, false, true, 1, 5, TOOL_TYPE_LONGSWORD, 9, true, SPECIAL_NONE, {}, PARTICLE_NONE, false},
+	{"Copper Hammer", true, 0, 12, 0, true, 0, 0, {}, false, false, true, 1, 1, TOOL_TYPE_HAMMER, 4, true, SPECIAL_NONE, {}, PARTICLE_NONE, false},
 
-	{"Tin Pickaxe", true, 0, 84, 0, true, 0, 0, {}, false, false, true, 2, 2, TOOL_TYPE_PICKAXE, 5, true, SPECIAL_NONE, {}, PARTICLE_NONE},
-	{"Tin Axe", true, 0, 88, 0, true, 0, 0, {}, false, false, true, 2, 2, TOOL_TYPE_AXE, 4, true, SPECIAL_NONE, {}, PARTICLE_NONE},
-	{"Tin Long Sword", true, 0, 80, 0, true, 0, 0, {}, false, false, true, 2, 5, TOOL_TYPE_LONGSWORD, 10, true, SPECIAL_NONE, {}, PARTICLE_NONE},
-	{"Tin Hammer", true, 0, 92, 0, true, 0, 0, {}, false, false, true, 2, 1, TOOL_TYPE_HAMMER, 6, true, SPECIAL_NONE, {}, PARTICLE_NONE},
+	{"Tin Pickaxe", true, 0, 84, 0, true, 0, 0, {}, false, false, true, 2, 2, TOOL_TYPE_PICKAXE, 5, true, SPECIAL_NONE, {}, PARTICLE_NONE, false},
+	{"Tin Axe", true, 0, 88, 0, true, 0, 0, {}, false, false, true, 2, 2, TOOL_TYPE_AXE, 4, true, SPECIAL_NONE, {}, PARTICLE_NONE, false},
+	{"Tin Long Sword", true, 0, 80, 0, true, 0, 0, {}, false, false, true, 2, 5, TOOL_TYPE_LONGSWORD, 10, true, SPECIAL_NONE, {}, PARTICLE_NONE, false},
+	{"Tin Hammer", true, 0, 92, 0, true, 0, 0, {}, false, false, true, 2, 1, TOOL_TYPE_HAMMER, 6, true, SPECIAL_NONE, {}, PARTICLE_NONE, false},
 
-	{"Copper Coin", true, 0, 96, 0, true, 0, 0, {}, false, false, false, 0, 0, -1, 0, true, SPECIAL_NONE, {}, PARTICLE_NONE},
-	{"Silver Coin", true, 0, 100, 0, true, 0, 0, {}, false, false, false, 0, 0, -1, 0, true, SPECIAL_NONE, {}, PARTICLE_NONE},
-	{"Gold Coin", true, 0, 104, 0, true, 0, 0, {}, false, false, false, 0, 0, -1, 0, true, SPECIAL_NONE, {}, PARTICLE_NONE},
-	{"Platinum Coin", true, 0, 108, 0, true, 0, 0, {}, false, false, false, 0, 0, -1, 0, true, SPECIAL_NONE, {}, PARTICLE_NONE},
-	{"Gel", true, 0, 112, 0, true, 0, 0, {}, false, false, false, 0, 0, -1, 0, true, SPECIAL_NONE, {}, PARTICLE_NONE},
+	{"Copper Coin", true, 0, 96, 0, true, 0, 0, {}, false, false, false, 0, 0, -1, 0, true, SPECIAL_NONE, {}, PARTICLE_NONE, false},
+	{"Silver Coin", true, 0, 100, 0, true, 0, 0, {}, false, false, false, 0, 0, -1, 0, true, SPECIAL_NONE, {}, PARTICLE_NONE, false},
+	{"Gold Coin", true, 0, 104, 0, true, 0, 0, {}, false, false, false, 0, 0, -1, 0, true, SPECIAL_NONE, {}, PARTICLE_NONE, false},
+	{"Platinum Coin", true, 0, 108, 0, true, 0, 0, {}, false, false, false, 0, 0, -1, 0, true, SPECIAL_NONE, {}, PARTICLE_NONE, false},
+	{"Gel", true, 0, 112, 0, true, 0, 0, {}, false, false, false, 0, 0, -1, 0, true, SPECIAL_NONE, {}, PARTICLE_NONE, false},
 
-	{"Sand", false, 13, 116, 100, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_SAND},
-	{"Sandstone Wall", false, 14, 120, 100, false, 0, 1, {TOOL_TYPE_HAMMER}, false, true, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_SAND},
-	{"Hardened Sand", false, 15, 124, 150, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_SAND},
+	{"Sand", false, 13, 116, 100, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_SAND, false},
+	{"Sandstone Wall", false, 14, 120, 100, false, 0, 1, {TOOL_TYPE_HAMMER}, false, true, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_SAND, false},
+	{"Hardened Sand", false, 15, 124, 150, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_SAND, false},
 
-	{"Snow", false, 16, 128, 100, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_ICE},
-	{"Ice", false, 17, 132, 150, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_ICE},
+	{"Snow", false, 16, 128, 100, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_ICE, false},
+	{"Ice", false, 17, 132, 150, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_ICE, false},
 
-	{"Workbench", true, 162, 136, 50, true, TILE_WORKBENCH_1, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_WORKBENCH, {1}, PARTICLE_WOOD}, // 2x1
-	{"", true, 163, 56, 50, true, TILE_WORKBENCH_1, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_WORKBENCH, {2}, PARTICLE_WOOD},
+	{"Workbench", true, 162, 136, 50, true, TILE_WORKBENCH_1, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_WORKBENCH, {1}, PARTICLE_WOOD, false}, // 2x1
+	{"", true, 163, 56, 50, true, TILE_WORKBENCH_1, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_WORKBENCH, {2}, PARTICLE_WOOD, false},
 
-	{"Iron Ore", false, 19, 140, 200, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_IRON},
-	{"Gold Ore", false, 20, 144, 200, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_GOLD},
+	{"Iron Ore", false, 19, 140, 200, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_IRON, false},
+	{"Gold Ore", false, 20, 144, 200, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_GOLD, false},
 
-	{"", true, 165, 56, 50, true, TILE_FURNACE_5, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_FURNACE, {1}, PARTICLE_STONE}, // 3x2
-	{"", true, 166, 56, 50, true, TILE_FURNACE_5, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_FURNACE, {2}, PARTICLE_STONE},
-	{"", true, 167, 56, 50, true, TILE_FURNACE_5, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_FURNACE, {3}, PARTICLE_STONE},
-	{"", true, 168, 56, 50, true, TILE_FURNACE_5, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_FURNACE, {4}, PARTICLE_STONE},
-	{"Furnace", true, 169, 148, 50, true, TILE_FURNACE_5, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_FURNACE, {5}, PARTICLE_STONE},
-	{"", true, 170, 56, 50, true, TILE_FURNACE_5, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_FURNACE, {6}, PARTICLE_STONE},
+	{"", true, 165, 56, 50, true, TILE_FURNACE_5, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_FURNACE, {1}, PARTICLE_STONE, false}, // 3x2
+	{"", true, 166, 56, 50, true, TILE_FURNACE_5, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_FURNACE, {2}, PARTICLE_STONE, false},
+	{"", true, 167, 56, 50, true, TILE_FURNACE_5, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_FURNACE, {3}, PARTICLE_STONE, false},
+	{"", true, 168, 56, 50, true, TILE_FURNACE_5, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_FURNACE, {4}, PARTICLE_STONE, false},
+	{"Furnace", true, 169, 148, 50, true, TILE_FURNACE_5, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_FURNACE, {5}, PARTICLE_STONE, false},
+	{"", true, 170, 56, 50, true, TILE_FURNACE_5, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_FURNACE, {6}, PARTICLE_STONE, false},
 
-	{"Copper Bar", true, 0, 152, 0, true, 0, 0, {}, false, false, false, 0, 0, -1, 0, true, SPECIAL_NONE, {}, PARTICLE_NONE},
-	{"Tin Bar", true, 0, 156, 0, true, 0, 0, {}, false, false, false, 0, 0, -1, 0, true, SPECIAL_NONE, {}, PARTICLE_NONE},
-	{"Iron Bar", true, 0, 160, 0, true, 0, 0, {}, false, false, false, 0, 0, -1, 0, true, SPECIAL_NONE, {}, PARTICLE_NONE},
-	{"Gold Bar", true, 0, 164, 0, true, 0, 0, {}, false, false, false, 0, 0, -1, 0, true, SPECIAL_NONE, {}, PARTICLE_NONE},
+	{"Copper Bar", true, 0, 152, 0, true, 0, 0, {}, false, false, false, 0, 0, -1, 0, true, SPECIAL_NONE, {}, PARTICLE_NONE, false},
+	{"Tin Bar", true, 0, 156, 0, true, 0, 0, {}, false, false, false, 0, 0, -1, 0, true, SPECIAL_NONE, {}, PARTICLE_NONE, false},
+	{"Iron Bar", true, 0, 160, 0, true, 0, 0, {}, false, false, false, 0, 0, -1, 0, true, SPECIAL_NONE, {}, PARTICLE_NONE, false},
+	{"Gold Bar", true, 0, 164, 0, true, 0, 0, {}, false, false, false, 0, 0, -1, 0, true, SPECIAL_NONE, {}, PARTICLE_NONE, false},
 
-	{"Anvil", true, 189, 168, 100, true, TILE_ANVIL_1, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_ANVIL, {1}, PARTICLE_LEAD}, // 2x1
-	{"", true, 190, 56, 100, true, TILE_ANVIL_1, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_ANVIL, {2}, PARTICLE_LEAD},
+	{"Anvil", true, 189, 168, 100, true, TILE_ANVIL_1, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_ANVIL, {1}, PARTICLE_LEAD, false}, // 2x1
+	{"", true, 190, 56, 100, true, TILE_ANVIL_1, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_ANVIL, {2}, PARTICLE_LEAD, false},
 
-	{"Iron Pickaxe", true, 0, 176, 0, true, 0, 0, {}, false, false, true, 3, 2, TOOL_TYPE_PICKAXE, 5, true, SPECIAL_NONE, {}, PARTICLE_NONE},
-	{"Iron Axe", true, 0, 180, 0, true, 0, 0, {}, false, false, true, 3, 2, TOOL_TYPE_AXE, 5, true, SPECIAL_NONE, {}, PARTICLE_NONE},
-	{"Iron Long Sword", true, 0, 184, 0, true, 0, 0, {}, false, false, true, 3, 5, TOOL_TYPE_LONGSWORD, 12, true, SPECIAL_NONE, {}, PARTICLE_NONE},
-	{"Iron Hammer", true, 0, 188, 0, true, 0, 0, {}, false, false, true, 3, 1, TOOL_TYPE_HAMMER, 7, true, SPECIAL_NONE, {}, PARTICLE_NONE},
+	{"Iron Pickaxe", true, 0, 176, 0, true, 0, 0, {}, false, false, true, 3, 2, TOOL_TYPE_PICKAXE, 5, true, SPECIAL_NONE, {}, PARTICLE_NONE, false},
+	{"Iron Axe", true, 0, 180, 0, true, 0, 0, {}, false, false, true, 3, 2, TOOL_TYPE_AXE, 5, true, SPECIAL_NONE, {}, PARTICLE_NONE, false},
+	{"Iron Long Sword", true, 0, 184, 0, true, 0, 0, {}, false, false, true, 3, 5, TOOL_TYPE_LONGSWORD, 12, true, SPECIAL_NONE, {}, PARTICLE_NONE, false},
+	{"Iron Hammer", true, 0, 188, 0, true, 0, 0, {}, false, false, true, 3, 1, TOOL_TYPE_HAMMER, 7, true, SPECIAL_NONE, {}, PARTICLE_NONE, false},
 
-	{"Gold Pickaxe", true, 0, 192, 0, true, 0, 0, {}, false, false, true, 4, 2, TOOL_TYPE_PICKAXE, 6, true, SPECIAL_NONE, {}, PARTICLE_NONE},
-	{"Gold Axe", true, 0, 196, 0, true, 0, 0, {}, false, false, true, 4, 2, TOOL_TYPE_AXE, 7, true, SPECIAL_NONE, {}, PARTICLE_NONE},
-	{"Gold Long Sword", true, 0, 200, 0, true, 0, 0, {}, false, false, true, 4, 5, TOOL_TYPE_LONGSWORD, 15, true, SPECIAL_NONE, {}, PARTICLE_NONE},
-	{"Gold Hammer", true, 0, 204, 0, true, 0, 0, {}, false, false, true, 4, 1, TOOL_TYPE_HAMMER, 9, true, SPECIAL_NONE, {}, PARTICLE_NONE},
+	{"Gold Pickaxe", true, 0, 192, 0, true, 0, 0, {}, false, false, true, 4, 2, TOOL_TYPE_PICKAXE, 6, true, SPECIAL_NONE, {}, PARTICLE_NONE, false},
+	{"Gold Axe", true, 0, 196, 0, true, 0, 0, {}, false, false, true, 4, 2, TOOL_TYPE_AXE, 7, true, SPECIAL_NONE, {}, PARTICLE_NONE, false},
+	{"Gold Long Sword", true, 0, 200, 0, true, 0, 0, {}, false, false, true, 4, 5, TOOL_TYPE_LONGSWORD, 15, true, SPECIAL_NONE, {}, PARTICLE_NONE, false},
+	{"Gold Hammer", true, 0, 204, 0, true, 0, 0, {}, false, false, true, 4, 1, TOOL_TYPE_HAMMER, 9, true, SPECIAL_NONE, {}, PARTICLE_NONE, false},
 
-	{"Wooden Hammer", true, 0, 172, 0, true, 0, 0, {}, false, false, true, 1, 1, TOOL_TYPE_HAMMER, 2, true, SPECIAL_NONE, {}, PARTICLE_NONE},
+	{"Wooden Hammer", true, 0, 172, 0, true, 0, 0, {}, false, false, true, 1, 1, TOOL_TYPE_HAMMER, 2, true, SPECIAL_NONE, {}, PARTICLE_NONE, false},
 
-	{"", true, 192, 56, 100, true, TILE_CHEST_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_CHEST, {1}, PARTICLE_WOOD}, // 2x2
-	{"", true, 193, 56, 100, true, TILE_CHEST_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_CHEST, {2}, PARTICLE_WOOD},
-	{"Chest", true, 195, 208, 100, true, TILE_CHEST_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_CHEST, {3}, PARTICLE_WOOD},
-	{"", true, 196, 56, 100, true, TILE_CHEST_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_CHEST, {4}, PARTICLE_WOOD},
+	{"", true, 192, 56, 100, true, TILE_CHEST_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_CHEST, {1}, PARTICLE_WOOD, false}, // 2x2
+	{"", true, 193, 56, 100, true, TILE_CHEST_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_CHEST, {2}, PARTICLE_WOOD, false},
+	{"Chest", true, 195, 208, 100, true, TILE_CHEST_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_CHEST, {3}, PARTICLE_WOOD, false},
+	{"", true, 196, 56, 100, true, TILE_CHEST_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_CHEST, {4}, PARTICLE_WOOD, false},
+
+	{"", true, 198, 56, 100, true, TILE_LIFE_CRYSTAL_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_LIFE_CRYSTAL, {1}, PARTICLE_NONE, true},
+	{"", true, 199, 56, 100, true, TILE_LIFE_CRYSTAL_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_LIFE_CRYSTAL, {2}, PARTICLE_NONE, true},
+	{"Life Crystal", true, 201, 212, 100, true, TILE_LIFE_CRYSTAL_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_LIFE_CRYSTAL, {3}, PARTICLE_NONE, true},
+	{"", true, 202, 56, 100, true, TILE_LIFE_CRYSTAL_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_LIFE_CRYSTAL, {4}, PARTICLE_NONE, true},
 };
 
 // TODO: maybe give special treatment to whatever tile that isn't 1x1, or decor tiles maybe idk

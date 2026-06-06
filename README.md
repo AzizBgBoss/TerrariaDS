@@ -84,9 +84,9 @@ Initial commit with basic project structure.
 ### Version 0.2 (In progress, releasing soon):
 - Ability to save character data and world data independently.
 - Add swinging animation.
-- Show health as hearts.
-- Add heart crystals.
 - Add more music and intros.
+- Show health as hearts.
+- Add life crystals. ***(done)***
 - Add particles. ***(done)***
 - Add more sound effects. ***(done: I didn't really add that much)***
 - Fix touch misalignment when close to world edges at 2x scale. ***(can't do it: I don't know why, prolly got something to do with bgSetCenter, if you're close to the edges just keep the scale 1x)***
