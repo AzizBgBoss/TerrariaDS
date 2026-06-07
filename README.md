@@ -85,7 +85,7 @@ Initial commit with basic project structure.
 - Add swinging animation.
 - Add more music and intros.
 - Add ability to delete worlds and characters.
-- Add characters. ***(done)***
+- Add characters with different styles. ***(done)***
 - Show health as hearts. ***(done)***
 - Add life crystals. ***(done)***
 - Add particles. ***(done)***
@@ -115,7 +115,7 @@ Initial commit with basic project structure.
 - Add crimson/corruption.
 - Add improved lighting.
 - Multiplayer support (based on my experience, this will be a fucking nightmare).
-- Skins (or changeable player styles).
+- Changeable style colors.
 - Add mana and magic items.
 - Add bosses.
 - Unique content for the DS version to make it stand out a bit.
