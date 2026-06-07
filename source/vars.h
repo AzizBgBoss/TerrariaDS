@@ -264,6 +264,19 @@ const char *names[] = {
 
 #define NAMES_COUNT sizeof(names) / sizeof(names[0])
 
+const char *styleNames[PLAYER_STYLES] = {
+	"Male Starter",
+	"Female Starter",
+	"Male Sticker",
+	"Female Sticker",
+	"Male Gangster",
+	"Female Gangster",
+	"Male Coat",
+	"Female Coat",
+	"Male Dress",
+	"Female Dress",
+};
+
 u16 *nullSprite;
 u16 *nullSpriteMain;
 
@@ -295,6 +308,7 @@ typedef struct
 	int fall;
 	int invincibilityFrames;
 	u8 animation;
+	int style;
 } Player;
 
 typedef struct
@@ -441,7 +455,7 @@ u8 *currentInventory = inventory;
 u8 *currentInventoryQuantity = inventoryQuantity;
 
 // Define the player entity
-Player player = {0, 0, 0, 0, 0, NULL, 16, 24, false, true, 1, 0, 0, true, false, 4, 100, 100, 0, 0, ANIM_NONE};
+Player player = {0, 0, 0, 0, 0, NULL, 16, 24, false, true, 1, 0, 0, true, false, 4, 100, 100, 0, 0, ANIM_NONE, 0};
 
 Entity entity[ENTITY_COUNT] = {0};
 

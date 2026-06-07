@@ -1282,14 +1282,14 @@ int getHighestTileY(int x)
     return getHighestTileYFrom(x, 0);
 }
 
-void setPlayerAnimFrame(int frame)
+void setPlayerAnimFrame(int frame, int style)
 {
     if (frame == player.anim_frame)
         return;
     if (frame < 0)
         frame = 0;
     player.anim_frame = frame;
-    dmaCopy(((const u8 *)spritesTiles) + 32 * 64 * player.anim_frame, player.sprite_gfx_mem, 32 * 64);
+    dmaCopy(((const u8 *)spritesTiles) + 32 * 64 * PLAYER_STYLES * player.anim_frame + 32 * 64 * style, player.sprite_gfx_mem, 32 * 64);
 }
 
 void setEntityAnimFrame(int id, int frame)
@@ -1418,11 +1418,12 @@ bool saveCharacterToFile(const char *filen)
     uint32_t magic = 0xC0DEBEEF;
     size_t bytesWritten = fwrite(&magic, 1, 4, file);
     bytesWritten += fwrite(&player.maxHealth, 1, 4, file);
+    bytesWritten += fwrite(&player.style, 1, 4, file);
     bytesWritten += fwrite(inventory, 1, sizeof(inventory), file);
     bytesWritten += fwrite(inventoryQuantity, 1, sizeof(inventoryQuantity), file);
     fclose(file);
 
-    if (bytesWritten != 4 + 4 + sizeof(inventory) + sizeof(inventoryQuantity))
+    if (bytesWritten != 4 + 4 + 4 + sizeof(inventory) + sizeof(inventoryQuantity))
     {
         print(0, 0, "Character save error");
         waitForPress();
@@ -1457,10 +1458,11 @@ bool loadCharacterFromFile(const char *filen)
     if (magic == 0xC0DEBEEF)
     {
         bytesRead += fread(&player.maxHealth, 1, 4, file);
+        bytesRead += fread(&player.style, 1, 4, file);
         bytesRead += fread(inventory, 1, sizeof(inventory), file);
         bytesRead += fread(inventoryQuantity, 1, sizeof(inventoryQuantity), file);
         fclose(file);
-        if (bytesRead != 4 + 4 + sizeof(inventory) + sizeof(inventoryQuantity))
+        if (bytesRead != 4 + 4 + 4 + sizeof(inventory) + sizeof(inventoryQuantity))
         {
             print(0, 0, "Character load error");
             waitForPress();
@@ -1526,6 +1528,8 @@ bool loadMapFromFile(const char *filen)
         memset(chestLinks, 0, sizeof(chestLinks));
 
         strcpy(characterName, names[rando(0, NAMES_COUNT - 1)]);
+        player.style = 0;
+        player.maxHealth = 100;
 
         for (int i = 0; i < 8 * 4; i++)
         {

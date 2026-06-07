@@ -361,12 +361,10 @@ mainMenu:
 						}
 					}
 
+					clearPrint();
 					if (loadMapFromFile(worldFiles[chosenIndex]))
 					{
 						mmStreamClose();
-						clearPrint();
-						printDirect("Map loaded successfully!");
-						gametime = 0;
 					}
 					else
 					{
@@ -472,6 +470,41 @@ mainMenu:
 						else if (down & KEY_Y)
 						{
 						createCharacter:
+							player.style = 0;
+							while (1)
+							{
+								swiWaitForVBlank();
+								mmStreamUpdate();
+								clearPrint();
+								printDirect("Choose character style:\n");
+								printDirect("< ");
+								printDirect(styleNames[player.style]);
+								printDirect(" >\n\nA: Select\nB: Return\n");
+
+								scanKeys();
+								int down = keysDown();
+								if (down & KEY_LEFT)
+								{
+									player.style--;
+									if (player.style < 0)
+										player.style = PLAYER_STYLES - 1;
+								}
+								else if (down & KEY_RIGHT)
+								{
+									player.style++;
+									if (player.style >= PLAYER_STYLES)
+										player.style = 0;
+								}
+								else if (down & KEY_A)
+								{
+									break; // Character name chosen
+								}
+								else if (down & KEY_B)
+								{
+									goto mainMenu;
+								}
+								
+							}
 							int charNameIndex = rando(0, NAMES_COUNT - 1);
 							while (1)
 							{
@@ -481,7 +514,7 @@ mainMenu:
 								printDirect("Choose character name:\n");
 								printDirect("< ");
 								printDirect(names[charNameIndex]);
-								printDirect(" >\n");
+								printDirect(" >\n\nA: Select\nB: Return\n");
 
 								scanKeys();
 								int down = keysDown();
@@ -534,20 +567,9 @@ mainMenu:
 						}
 					}
 
-					if (loadCharacterFromFile(characterFiles[chosenIndex]))
-					{
-						mmStreamClose();
-						clearPrint();
-						printDirect("Character loaded successfully!");
-						goto mainMenu;
-					}
-					else
-					{
-						clearPrint();
-						printDirect("Error loading character!");
-						delay(2);
-						goto mainMenu;
-					}
+					clearPrint();
+					loadCharacterFromFile(characterFiles[chosenIndex]);
+					goto mainMenu;
 				}
 				else
 				{
@@ -2030,7 +2052,7 @@ Find more information at https://github.com/AzizBgBoss/TerrariaDS");
 
 		// Compute screen-relative render coordinates
 		player.renderX = player.x - scrollX;
-		player.renderY = player.y - scrollY;
+		player.renderY = player.y - scrollY - 8;
 
 		// Rendering Part
 
@@ -2207,13 +2229,13 @@ https://github.com/AzizBgBoss/TerrariaDS");
 		switch (player.animation)
 		{
 		case ANIM_NONE:
-			setPlayerAnimFrame(0);
+			setPlayerAnimFrame(14, player.style);
 			break;
 		case ANIM_WALK:
-			setPlayerAnimFrame((frame / 4) % 8 + 1);
+			setPlayerAnimFrame((frame / 3) % 14, player.style);
 			break;
 		case ANIM_JUMP:
-			setPlayerAnimFrame(9);
+			setPlayerAnimFrame(18, player.style);
 			break;
 		}
 

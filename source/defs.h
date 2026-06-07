@@ -51,12 +51,13 @@
 #define MAX_ITEMS_TOTAL 64 // Maximum items in the world at once
 #define ENTITY_COUNT 16    // Maximum number of entities in the game at once
 #define PARTICLE_COUNT 16  // Maximum number of particles in the game at once
-
 #define CHEST_COUNT 32 // Maximum number of chests in the game at once
 
 #define MAX_ITEM_AGE 60 * 60 * 5 // 5 minutes
 
 #define PLAYER_STATION_RANGE 8 // Radius to look for stations
+
+#define PLAYER_STYLES 10
 
 #define TREE_CHANCE 4     // 1/x chance of spawning a tree
 #define MUSHROOM_CHANCE 5 // 1/x chance of spawning a mushroom
