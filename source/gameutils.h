@@ -1206,7 +1206,7 @@ void killEntity(int id)
     mmEffect(entityAISounds[entities[entity[id].type].AItype].killed);
 }
 
-// Todo: add blood particles
+// TODO: add blood particles
 
 bool checkPlayerCollision(int x, int y, int sizeX, int sizeY)
 {

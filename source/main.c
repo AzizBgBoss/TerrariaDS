@@ -1801,6 +1801,8 @@ Find more information at https://github.com/AzizBgBoss/TerrariaDS");
 					}
 				}
 
+				// TODO: show coin particles if in range
+
 				// Check for close items to fuse together to not waste memory
 				for (int j = 0; j < MAX_ITEMS_TOTAL; j++)
 				{
