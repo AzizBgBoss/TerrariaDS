@@ -503,7 +503,6 @@ mainMenu:
 								{
 									goto mainMenu;
 								}
-								
 							}
 							int charNameIndex = rando(0, NAMES_COUNT - 1);
 							while (1)
@@ -1801,7 +1800,13 @@ Find more information at https://github.com/AzizBgBoss/TerrariaDS");
 					}
 				}
 
-				// TODO: show coin particles if in range
+				if (isInPlayerRadius(item[i].x, item[i].y, SCREEN_WIDTH / 2) &&
+					frame % 10 == 0 &&
+					rando(1, 10) == 1 &&
+					item[i].tile >= ITEM_COPPER_COIN && item[i].tile <= ITEM_PLATINUM_COIN)
+				{
+					createParticle(item[i].x + 4 + rando(-4, 4), item[i].y + 4 + rando(-4, 4), tileProperties[item[i].tile].particle);
+				}
 
 				// Check for close items to fuse together to not waste memory
 				for (int j = 0; j < MAX_ITEMS_TOTAL; j++)

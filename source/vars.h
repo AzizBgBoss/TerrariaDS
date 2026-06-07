@@ -354,6 +354,7 @@ typedef struct
 	u8 biomes[8];
 	bool isUnderground;
 	bool isSurface;
+	int deathParticle;
 } EntityProperties;
 
 typedef struct
@@ -479,6 +480,7 @@ const EntityProperties entities[ENTITIES] = {
 		{BIOME_FOREST},
 		false,
 		true,
+		PARTICLE_NONE,
 	},
 	{
 		"Red Slime",
@@ -499,6 +501,7 @@ const EntityProperties entities[ENTITIES] = {
 		{BIOME_FOREST},
 		true,
 		false,
+		PARTICLE_NONE,
 	},
 	{
 		"Blue Slime",
@@ -519,6 +522,7 @@ const EntityProperties entities[ENTITIES] = {
 		{BIOME_FOREST},
 		true,
 		true,
+		PARTICLE_NONE,
 	},
 	{
 		"Bunny",
@@ -539,6 +543,7 @@ const EntityProperties entities[ENTITIES] = {
 		{BIOME_FOREST, BIOME_SNOW},
 		false,
 		true,
+		PARTICLE_BLOOD,
 	},
 	{
 		"Zombie",
@@ -559,6 +564,7 @@ const EntityProperties entities[ENTITIES] = {
 		{BIOME_FOREST},
 		false,
 		true,
+		PARTICLE_BLOOD,
 	},
 	{
 		"Demon Eye",
@@ -579,6 +585,7 @@ const EntityProperties entities[ENTITIES] = {
 		{BIOME_FOREST},
 		false,
 		true,
+		PARTICLE_BLOOD,
 	},
 	{
 		"Cataract Eye",
@@ -599,6 +606,7 @@ const EntityProperties entities[ENTITIES] = {
 		{BIOME_FOREST},
 		false,
 		true,
+		PARTICLE_BLOOD,
 	},
 	{
 		"Slimed Zombie",
@@ -619,6 +627,7 @@ const EntityProperties entities[ENTITIES] = {
 		{BIOME_FOREST},
 		false,
 		true,
+		PARTICLE_BLOOD,
 	},
 	{
 		"Sand Slime",
@@ -639,6 +648,7 @@ const EntityProperties entities[ENTITIES] = {
 		{BIOME_DESERT},
 		false,
 		true,
+		PARTICLE_NONE,
 	},
 	{
 		"Ice Slime",
@@ -659,6 +669,7 @@ const EntityProperties entities[ENTITIES] = {
 		{BIOME_SNOW},
 		false,
 		true,
+		PARTICLE_NONE,
 	},
 	{
 		"Frozen Zombie",
@@ -679,6 +690,7 @@ const EntityProperties entities[ENTITIES] = {
 		{BIOME_SNOW},
 		false,
 		true,
+		PARTICLE_BLOOD,
 	},
 };
 
@@ -729,10 +741,11 @@ const TileProperties tileProperties[TILES] = {
 	{"Tin Long Sword", true, 0, 80, 0, true, 0, 0, {}, false, false, true, 2, 5, TOOL_TYPE_LONGSWORD, 10, true, SPECIAL_NONE, {}, PARTICLE_NONE, false},
 	{"Tin Hammer", true, 0, 92, 0, true, 0, 0, {}, false, false, true, 2, 1, TOOL_TYPE_HAMMER, 6, true, SPECIAL_NONE, {}, PARTICLE_NONE, false},
 
-	{"Copper Coin", true, 0, 96, 0, true, 0, 0, {}, false, false, false, 0, 0, -1, 0, true, SPECIAL_NONE, {}, PARTICLE_NONE, false},
-	{"Silver Coin", true, 0, 100, 0, true, 0, 0, {}, false, false, false, 0, 0, -1, 0, true, SPECIAL_NONE, {}, PARTICLE_NONE, false},
-	{"Gold Coin", true, 0, 104, 0, true, 0, 0, {}, false, false, false, 0, 0, -1, 0, true, SPECIAL_NONE, {}, PARTICLE_NONE, false},
-	{"Platinum Coin", true, 0, 108, 0, true, 0, 0, {}, false, false, false, 0, 0, -1, 0, true, SPECIAL_NONE, {}, PARTICLE_NONE, false},
+	{"Copper Coin", true, 0, 96, 0, true, 0, 0, {}, false, false, false, 0, 0, -1, 0, true, SPECIAL_NONE, {}, PARTICLE_COPPER_COIN, false},
+	{"Silver Coin", true, 0, 100, 0, true, 0, 0, {}, false, false, false, 0, 0, -1, 0, true, SPECIAL_NONE, {}, PARTICLE_SILVER_COIN, false},
+	{"Gold Coin", true, 0, 104, 0, true, 0, 0, {}, false, false, false, 0, 0, -1, 0, true, SPECIAL_NONE, {}, PARTICLE_GOLD_COIN, false},
+	{"Platinum Coin", true, 0, 108, 0, true, 0, 0, {}, false, false, false, 0, 0, -1, 0, true, SPECIAL_NONE, {}, PARTICLE_PLATINUM_COIN, false},
+
 	{"Gel", true, 0, 112, 0, true, 0, 0, {}, false, false, false, 0, 0, -1, 0, true, SPECIAL_NONE, {}, PARTICLE_NONE, false},
 
 	{"Sand", false, 13, 116, 100, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_SAND, false},

@@ -911,6 +911,12 @@ int createParticle(int x, int y, int sprite)
         particles[index].velocityX = rando(1, 2);
         particles[index].velocityY = rando(1, 2);
     }
+    else if (sprite >= PARTICLE_COPPER_COIN && sprite <= PARTICLE_PLATINUM_COIN)
+    {
+        particles[index].weight = 0;
+        particles[index].velocityX = 0;
+        particles[index].velocityY = 0;
+    }
     else
     {
         particles[index].weight = 1;
@@ -920,6 +926,12 @@ int createParticle(int x, int y, int sprite)
 
     dmaCopy(((const u8 *)particlesTiles) + 8 * 8 * 3 * sprite + rando(0, 2) * 8 * 8, particles[index].sprite_gfx_mem, 8 * 8);
     return index;
+}
+
+void createParticles(int x, int y, int sprite, int count)
+{
+    for (int i = 0; i < count; i++)
+        createParticle(x, y, sprite);
 }
 
 void destroyParticle(int id)
@@ -1204,9 +1216,8 @@ void killEntity(int id)
         }
     }
     mmEffect(entityAISounds[entities[entity[id].type].AItype].killed);
+    createParticles(entity[id].x, entity[id].y, entities[entity[id].type].deathParticle, 3);
 }
-
-// TODO: add blood particles
 
 bool checkPlayerCollision(int x, int y, int sizeX, int sizeY)
 {
