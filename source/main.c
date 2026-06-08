@@ -789,6 +789,8 @@ Find more information at https://github.com/AzizBgBoss/TerrariaDS");
 						snprintf(newName, sizeof(newName), "%s The Cheater.chr", tempName);
 						strcpy(characterName, newName);
 						clearPrint();
+						saveCharacterToFile(characterName);
+						clearPrint();
 						printSmart(0, 0, "Oopsies! You're now \"");
 						printSmartDirect(characterName);
 						printSmartDirect("\"! Don't worry, your original character is still saved if you want to revert to it, you little rascal!");
