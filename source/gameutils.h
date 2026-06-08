@@ -1848,6 +1848,12 @@ void generateMap()
         }
     }
 
+    for (int i = 0; i < mapWidth * mapHeight; i++)
+    {
+        setGameTerrain(i % mapWidth, i / mapWidth, 0);
+        gameTerrainHealth[i] = 0;
+    }
+
     // Place terrain
     printDirect("Placing terrain...\n");
     for (int x = 0; x < mapWidth; x++)
