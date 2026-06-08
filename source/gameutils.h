@@ -1599,7 +1599,7 @@ bool loadMapFromFile(const char *filen)
     }
 
     player.x = mapWidth * 8 / 2;
-    player.y = getHighestTileY(mapWidth * 8 / 2) - player.sizeY;
+    player.y = getHighestTileY(mapWidth / 2) * 8 - player.sizeY;
     lastCamTileX = -67;
     lastCamTileY = -67;
     player.health = 100;
@@ -1731,7 +1731,7 @@ void playerDamage(int damage, int hitType, const char *name)
         }
         clearPrint();
         player.x = mapWidth * 8 / 2;
-        player.y = getHighestTileY(mapWidth * 8 / 2) - player.sizeY;
+        player.y = getHighestTileY(mapWidth / 2) * 8 - player.sizeY;
         player.velocityX = 0;
         player.velocity = 0;
         player.health = 100;
@@ -2041,7 +2041,7 @@ void generateMap()
     }
 
     player.x = mapWidth * 8 / 2;
-    player.y = getHighestTileY(mapWidth * 8 / 2) - player.sizeY;
+    player.y = getHighestTileY(mapWidth / 2) * 8 - player.sizeY;
     player.health = 100;
     player.invincibilityFrames = 300;
     gametime = 0;
