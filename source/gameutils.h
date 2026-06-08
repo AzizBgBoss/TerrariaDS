@@ -1218,7 +1218,7 @@ void killEntity(int id)
         for (int i = 0; i < e->dropCount; i++)
         {
             if (rando(1, e->dropChance[i]) == 1)
-                dropItem(entity[id].x / 8 + rando(-2, 2), entity[id].y / 8 + rando(-2, 2), e->drops[i],
+                dropItem(entity[id].x / 8 + rando(-1, 3), entity[id].y / 8 + rando(-1, 3), e->drops[i],
                          rando(e->dropRange[i][0], e->dropRange[i][1]));
         }
     }
@@ -2244,4 +2244,9 @@ void consume(int selection)
     default:
         return;
     }
+}
+
+void swing() 
+{
+    swingFrame = frame;
 }

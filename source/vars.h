@@ -42,6 +42,8 @@ int craftingOffset = 0;
 bool interacting;
 int touchFrame;
 
+int swingFrame = -99;
+
 const char *titleSplashes[] = {
 	"Does this work?",
 	"Definetly not inspired by a small game called Terraria?!",

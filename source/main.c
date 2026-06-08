@@ -785,11 +785,11 @@ Find more information at https://github.com/AzizBgBoss/TerrariaDS");
 						*ext = '\0';
 					if (strstr(tempName, " The Cheater") == NULL)
 					{
+						clearPrint();
+						saveCharacterToFile(characterName);
 						char newName[64];
 						snprintf(newName, sizeof(newName), "%s The Cheater.chr", tempName);
 						strcpy(characterName, newName);
-						clearPrint();
-						saveCharacterToFile(characterName);
 						clearPrint();
 						printSmart(0, 0, "Oopsies! You're now \"");
 						printSmartDirect(characterName);
@@ -1432,16 +1432,21 @@ Find more information at https://github.com/AzizBgBoss/TerrariaDS");
 									if (!(worldTouchX >= TLCtileX && worldTouchX <= TRCtileX && worldTouchY >= TLCtileY && worldTouchY <= BLCtileY))
 									{
 										playerPutGameTerrain(worldTouchX, worldTouchY, inventory[inventorySelection]);
+										swing();
 									}
 									else
 									{
 										if (!isTileSolid(inventory[inventorySelection]))
+										{
 											playerPutGameTerrain(worldTouchX, worldTouchY, inventory[inventorySelection]);
+											swing();
+										}
 									}
 								}
 								else if (isElementWall(gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH_MAX]) && gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH_MAX] != inventory[inventorySelection])
 								{
 									breakTile(worldTouchX, worldTouchY, 1);
+									swing();
 								}
 							}
 							else if (tileProperties[inventory[inventorySelection]].isTool && inventoryQuantity[inventorySelection])
@@ -1449,7 +1454,10 @@ Find more information at https://github.com/AzizBgBoss/TerrariaDS");
 								if (isToolCompatible(inventory[inventorySelection], gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH_MAX])) // Check if the tool can break the tile
 								{
 									if (gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH_MAX])
+									{
 										breakTile(worldTouchX, worldTouchY, getItemSpeed(inventory[inventorySelection]));
+										swing();
+									}
 								}
 							}
 						}
@@ -1463,13 +1471,18 @@ Find more information at https://github.com/AzizBgBoss/TerrariaDS");
 									mmEffect(SFX_SWING);
 									damageEntity(e, getItemDamage(inventory[inventorySelection]));
 									knockBackEntity(e, (player.x > entity[e].x) ? -getItemKnockback(inventory[inventorySelection]) : getItemKnockback(inventory[inventorySelection]), -getItemKnockback(inventory[inventorySelection]));
+									swing();
 								}
 								else if (tileProperties[inventory[inventorySelection]].isConsumable)
 								{
 									consume(inventorySelection);
+									swing();
 								}
 								else if (tileProperties[gameTerrain[worldTouchX + worldTouchY * MAP_WIDTH_MAX]].specialParam != SPECIAL_NONE)
+								{
 									interact(worldTouchX, worldTouchY);
+									swing();
+								}
 								else // Make a swing sfx so the user knows the touch is registered but their dumbass can't use it
 									mmEffect(SFX_SWING);
 
@@ -2267,6 +2280,13 @@ https://github.com/AzizBgBoss/TerrariaDS");
 		REG_BG0VOFS_SUB = scrollY / 8;
 
 		// Animate player
+
+		// Force anim to swing if swinging
+		if (frame - swingFrame < 4 * 4)
+		{
+			player.animation = ANIM_SWING;
+		}
+
 		switch (player.animation)
 		{
 		case ANIM_NONE:
@@ -2277,6 +2297,9 @@ https://github.com/AzizBgBoss/TerrariaDS");
 			break;
 		case ANIM_JUMP:
 			setPlayerAnimFrame(18, player.style);
+			break;
+		case ANIM_SWING:
+			setPlayerAnimFrame((frame / 4) % 4 + 14, player.style);
 			break;
 		}
 

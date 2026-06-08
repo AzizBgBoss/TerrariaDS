@@ -221,6 +221,7 @@ enum // Animations
     ANIM_NONE,
     ANIM_WALK,
     ANIM_JUMP,
+    ANIM_SWING,
 };
 
 enum // Biomes
