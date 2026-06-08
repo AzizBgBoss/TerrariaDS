@@ -872,8 +872,13 @@ void dropItem(int x, int y, int tile, int quantity)
         return;
     int index = 0;
     while (item[index].exists)
+    {
         index++;
+        if (index >= MAX_ITEMS_TOTAL)
+            return;
+    }
     // we can do item[index] = {...} directly but it'll get confusing
+    // update: what the fucks does the comment above mean
     item[index].x = x * 8 + 4; // Drop in the middle of the tile
     item[index].y = y * 8 + 4;
     item[index].exists = true;
@@ -970,17 +975,19 @@ void breakTile(int x, int y, int speed)
                 }
                 else if (gameTerrain[x + i * MAP_WIDTH_MAX] == tileProperties[log].specialParams[0])
                 { // Leaves don't drop anything if broken from tree
-                    setGameTerrain(x, i, 0);
-                    gameTerrainHealth[x + i * MAP_WIDTH_MAX] = 0;
-                    if (gameTerrain[x - 1 + i * MAP_WIDTH_MAX] == tileProperties[log].specialParams[0])
+                    for (int j = -3; j <= 3; j++)
                     {
-                        setGameTerrain(x - 1, i, 0);
-                        gameTerrainHealth[x - 1 + i * MAP_WIDTH_MAX] = 0;
-                    }
-                    if (gameTerrain[x + 1 + i * MAP_WIDTH_MAX] == tileProperties[log].specialParams[0])
-                    {
-                        setGameTerrain(x + 1, i, 0);
-                        gameTerrainHealth[x + 1 + i * MAP_WIDTH_MAX] = 0;
+                        for (int k = -6; k <= 0; k++)
+                        {
+                            if (x + j >= 0 && x + j < mapWidth && i + k >= 0 && i + k < mapHeight)
+                            {
+                                if (gameTerrain[x + j + (i + k) * MAP_WIDTH_MAX] == tileProperties[log].specialParams[0])
+                                {
+                                    setGameTerrain(x + j, i + k, TILE_AIR);
+                                    gameTerrainHealth[x + j + (i + k) * MAP_WIDTH_MAX] = 0;
+                                }
+                            }
+                        }
                     }
                 }
                 else
@@ -1592,7 +1599,7 @@ bool loadMapFromFile(const char *filen)
     }
 
     player.x = mapWidth * 8 / 2;
-    player.y = 0;
+    player.y = getHighestTileY(mapWidth * 8 / 2) - player.sizeY;
     lastCamTileX = -67;
     lastCamTileY = -67;
     player.health = 100;
@@ -1724,7 +1731,7 @@ void playerDamage(int damage, int hitType, const char *name)
         }
         clearPrint();
         player.x = mapWidth * 8 / 2;
-        player.y = 0;
+        player.y = getHighestTileY(mapWidth * 8 / 2) - player.sizeY;
         player.velocityX = 0;
         player.velocity = 0;
         player.health = 100;
@@ -1782,7 +1789,7 @@ void generateWorldName(char *nameBuffer, size_t bufferSize)
 void generateMap()
 {
     u8 grassSurface[mapWidth];
-    int seed = rando(0, 99999999);
+    int seed = rando(0, 0x7fffffff);
 
     generateWorldName(worldFileName, sizeof(worldFileName));
 
@@ -1797,7 +1804,7 @@ void generateMap()
     while (idx < mapWidth)
     {
         int biome = rando(0, BIOMES - 1);
-        int len = rando(32, mapWidth - idx);
+        int len = rando(32, mapWidth / 2);
         for (int i = 0; i < len && idx < mapWidth; i++)
         {
             biomeSurface[idx++] = biome;
@@ -1806,7 +1813,7 @@ void generateMap()
 
     for (int x = 0; x < mapWidth; x++)
     {
-        float wave = fractalPerlin1D(x, 4, 0.4f, 0.01f, seed) * 20.0f;
+        float wave = fractalPerlin1D(x, 4, 0.4f, 0.02f, seed) * 20.0f;
         grassSurface[x] = clamp((int)(wave + (MIN_GRASS_HEIGHT * mapHeight + MAX_GRASS_HEIGHT * mapHeight) / 2), MIN_GRASS_HEIGHT * mapHeight, MAX_GRASS_HEIGHT * mapHeight);
         if (x % (mapWidth / 32) == 0)
         {
@@ -1911,7 +1918,7 @@ void generateMap()
             if (y >= grassSurface[x])
             {
                 float caveNoise = fractalPerlin2D(x, y, 6, 0.4f, 0.02f, seed);
-                if (caveNoise < -0.15f) // Adjust this threshold to control cave density
+                if (caveNoise < -0.2f) // Adjust this threshold to control cave density
                 {
                     setGameTerrain(x, y, TILE_AIR); // Create a cave
                 }
@@ -1958,16 +1965,22 @@ void generateMap()
             for (int i = 0; i < tree_height; i++)
                 setGameTerrain(x, grassSurface[x] - 1 - i, TILE_WOODLOG);
 
-            // Tree leaves (3x3 above trunk)
-            for (int i = -1; i <= 1; i++)
+            // Tree leaves (7x7 above trunk)
+            int leafRadius = rando(2, 4);
+            for (int i = -3; i <= 3; i++)
             {
-                for (int j = 0; j < 3; j++)
+                for (int j = -3; j < 3; j++)
                 {
+                    if (i * i + j * j >= leafRadius * leafRadius)
+                        continue;
+
                     int leafX = x + i;
-                    int leafY = grassSurface[x] - tree_height - 1 - j;
+                    int leafY = grassSurface[x] - tree_height - leafRadius - j;
+
                     setGameTerrain(leafX, leafY, TILE_LEAVES); // No need for bounds check, the setGameTerrain function handles it fine twin <3
                 }
             }
+            x += leafRadius * 2;
         }
         if (x % (mapWidth / 32) == 0)
         {
@@ -2022,7 +2035,7 @@ void generateMap()
     }
 
     player.x = mapWidth * 8 / 2;
-    player.y = 0;
+    player.y = getHighestTileY(mapWidth * 8 / 2) - player.sizeY;
     player.health = 100;
     player.invincibilityFrames = 300;
     gametime = 0;

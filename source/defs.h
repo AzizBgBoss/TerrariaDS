@@ -61,8 +61,8 @@
 
 #define TREE_CHANCE 4     // 1/x chance of spawning a tree
 #define MUSHROOM_CHANCE 5 // 1/x chance of spawning a mushroom
-#define MIN_TREE_HEIGHT 3
-#define MAX_TREE_HEIGHT 9
+#define MIN_TREE_HEIGHT 7
+#define MAX_TREE_HEIGHT 11
 #define MIN_GRASS_HEIGHT 0.2
 #define MAX_GRASS_HEIGHT 0.3
 #define MIN_STONE_HEIGHT 0.25

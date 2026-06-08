@@ -778,6 +778,23 @@ Find more information at https://github.com/AzizBgBoss/TerrariaDS");
 
 				if (pressed & KEY_A)
 				{
+					char tempName[64];
+					strcpy(tempName, characterName);
+					char *ext = strstr(tempName, ".chr");
+					if (ext)
+						*ext = '\0';
+					if (strstr(tempName, " The Cheater") == NULL)
+					{
+						char newName[64];
+						snprintf(newName, sizeof(newName), "%s The Cheater.chr", tempName);
+						strcpy(characterName, newName);
+						clearPrint();
+						printSmart(0, 0, "Oopsies! You're now \"");
+						printSmartDirect(characterName);
+						printSmartDirect("\"! Don't worry, your original character is still saved if you want to revert to it, you little rascal!");
+						waitForPress();
+					}
+
 					switch (selection)
 					{
 					case 0:
@@ -1832,6 +1849,21 @@ Find more information at https://github.com/AzizBgBoss/TerrariaDS");
 				item[i].renderX = item[i].x - scrollX;
 				item[i].renderY = item[i].y - scrollY;
 			}
+		}
+
+		if (frame % 60 == 0 && rando(1, 5) == 1)
+		{
+			int x = clamp(rando(player.x + player.sizeX / 2 - SCREEN_WIDTH / 2, player.x + player.sizeX / 2 + SCREEN_WIDTH / 2) / 8, 0, mapWidth - 1);
+			int y = clamp(rando(player.y + player.sizeY / 2 - SCREEN_HEIGHT / 2, player.y + player.sizeY / 2 + SCREEN_HEIGHT / 2) / 8, 0, mapHeight - 1);
+			int attempt = 0;
+			while (gameTerrain[x + y * MAP_WIDTH_MAX] != TILE_LEAVES && attempt < 100)
+			{
+				x = clamp(rando(player.x + player.sizeX / 2 - SCREEN_WIDTH / 2, player.x + player.sizeX / 2 + SCREEN_WIDTH / 2) / 8, 0, mapWidth - 1);
+				y = clamp(rando(player.y + player.sizeY / 2 - SCREEN_HEIGHT / 2, player.y + player.sizeY / 2 + SCREEN_HEIGHT / 2) / 8, 0, mapHeight - 1);
+				attempt++;
+			}
+			if (attempt < 100)
+				createParticle(x * 8 + 4, y * 8 + 4, tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].particle); // keep it modular if we gonna add more
 		}
 
 		if (frame % 3 == 0)

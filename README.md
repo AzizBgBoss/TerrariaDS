@@ -51,7 +51,7 @@ You can either compile the game yourself (for nightly releases) or check for sta
 - X/Y: Switch items
 - R: Open inventory
 - Start: Pause menu
-- A+B+Y+X: Debug menu
+- A+B+Y+X: Debug menu (you may use this to help you if you ever get stuck, at the cost of adding "the cheater" to your character name (don't worry it keeps a copy of your old character))
 - Tap/Hold a block: Interact with/break the block (with the appropriate item of course)
 - Tap enemies to damage them
 
@@ -82,9 +82,10 @@ Initial commit with basic project structure.
 - Add sound effects. ***(done)***
 
 ### Version 0.2 (In progress, releasing soon):
-- Add swinging animation.
 - Add more music and intros.
 - Add ability to delete worlds and characters.
+- Add swinging animation.
+- Add acorns to keep the world sustainable if needed.
 - Add characters with different styles. ***(done)***
 - Show health as hearts. ***(done)***
 - Add life crystals. ***(done)***
