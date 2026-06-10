@@ -84,7 +84,8 @@ Initial commit with basic project structure.
 ### Version 0.2 (In progress, releasing soon):
 - Add more music and intros.
 - Add ability to delete worlds and characters.
-- Add acorns to keep the world sustainable if needed.
+- Add item descriptions.
+- Add acorns to keep the world sustainable if needed. ***(done)***
 - Add swinging animation. ***(done)***
 - Add characters with different styles. ***(done)***
 - Show health as hearts. ***(done)***

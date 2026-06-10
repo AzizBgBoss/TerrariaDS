@@ -1881,6 +1881,23 @@ Find more information at https://github.com/AzizBgBoss/TerrariaDS");
 				createParticle(x * 8 + 4, y * 8 + 4, tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].particle); // keep it modular if we gonna add more
 		}
 
+		if (frame % 60 == 0 && rando(1, 100) == 1)
+		{
+			int x = clamp(rando(player.x + player.sizeX / 2 - SCREEN_WIDTH / 2, player.x + player.sizeX / 2 + SCREEN_WIDTH / 2) / 8, 0, mapWidth - 1);
+			int y = clamp(rando(player.y + player.sizeY / 2 - SCREEN_HEIGHT / 2, player.y + player.sizeY / 2 + SCREEN_HEIGHT / 2) / 8, 0, mapHeight - 1);
+			int attempt = 0;
+			while (gameTerrain[x + y * MAP_WIDTH_MAX] != TILE_ACORN_3 && attempt < 100)
+			{
+				x = clamp(rando(player.x + player.sizeX / 2 - SCREEN_WIDTH / 2, player.x + player.sizeX / 2 + SCREEN_WIDTH / 2) / 8, 0, mapWidth - 1);
+				y = clamp(rando(player.y + player.sizeY / 2 - SCREEN_HEIGHT / 2, player.y + player.sizeY / 2 + SCREEN_HEIGHT / 2) / 8, 0, mapHeight - 1);
+				attempt++;
+			}
+			if (attempt < 100)
+			{
+				plantTree(x, y);
+			}
+		}
+
 		if (frame % 3 == 0)
 		{
 			for (int i = 0; i < PARTICLE_COUNT; i++)

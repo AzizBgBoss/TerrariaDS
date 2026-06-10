@@ -177,6 +177,10 @@ enum // Make sure the indexing follows the one in the textures
     TILE_LIFE_CRYSTAL_3,
     TILE_LIFE_CRYSTAL_4,
 
+    TILE_ACORN_1,
+    TILE_ACORN_2,
+    TILE_ACORN_3,
+
     TILES,
 };
 
@@ -251,6 +255,7 @@ enum // Special parameter for tiles
     SPECIAL_ANVIL,        // specialParams[] = {int part (1-2)}
     SPECIAL_CHEST,        // specialParams[] = {int part (1-4)}
     SPECIAL_LIFE_CRYSTAL, // specialParams[] = {int part (1-4)}
+    SPECIAL_ACORN,        // specialParams[] = {int part (1-3)}
 
     SPECIALS,
 };

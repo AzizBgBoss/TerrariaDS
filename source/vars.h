@@ -90,7 +90,7 @@ const char *titleSplashes[] = {
 	"Using a copper pickaxe, you can break a Demonite tile after exactly 68 years",
 	"Never speak ill of Triple T...",
 	"NO, IT'S NOT 2D MINECRAFT!",
-	"If you like the game, consider starring it on GitHub, it helps a lot and motivates me to keep working on it!",
+	"If you like the game, consider starring it on GitHub, it helps to spread the game around more and motivates me to keep working on it!",
 	"If you've encountered a bug, please report it on GitHub with steps to reproduce it, I can't fix what I don't know about!",
 	"I hate bugs that involve math",
 	"Make sure to check for updates!",
@@ -799,6 +799,10 @@ const TileProperties tileProperties[TILES] = {
 	{"", true, 199, 56, 100, true, TILE_LIFE_CRYSTAL_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_LIFE_CRYSTAL, {2}, PARTICLE_NONE, true},
 	{"Life Crystal", true, 201, 212, 100, true, TILE_LIFE_CRYSTAL_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_LIFE_CRYSTAL, {3}, PARTICLE_NONE, true},
 	{"", true, 202, 56, 100, true, TILE_LIFE_CRYSTAL_3, 1, {TOOL_TYPE_PICKAXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_LIFE_CRYSTAL, {4}, PARTICLE_NONE, true},
+
+	{"", true, 197, 56, 100, true, TILE_ACORN_3, 1, {TOOL_TYPE_AXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_ACORN, {1}, PARTICLE_NONE, true}, // 1x3
+	{"", true, 200, 56, 100, true, TILE_ACORN_3, 1, {TOOL_TYPE_AXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_ACORN, {2}, PARTICLE_NONE, true},
+	{"Acorn", true, 203, 216, 100, true, TILE_ACORN_3, 1, {TOOL_TYPE_AXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_ACORN, {3}, PARTICLE_NONE, true},
 };
 
 // TODO: maybe give special treatment to whatever tile that isn't 1x1, or decor tiles maybe idk

@@ -676,6 +676,22 @@ void playerPutGameTerrain(int x, int y, int tile)
             }
         }
     }
+    else if (tileProperties[tile].specialParam == SPECIAL_ACORN)
+    {
+        if (y + 1 >= mapHeight || y - 2 < 0)
+        {
+            canPlace = false;
+        }
+        else if (isTileSolid(gameTerrain[x + (y + 1) * MAP_WIDTH_MAX]))
+        {
+            if (!isTileSolid(gameTerrain[x + y * MAP_WIDTH_MAX]) &&
+                !isTileSolid(gameTerrain[x + (y - 1) * MAP_WIDTH_MAX]) &&
+                !isTileSolid(gameTerrain[x + (y - 2) * MAP_WIDTH_MAX]))
+            {
+                canPlace = true;
+            }
+        }
+    }
     else
     {
         for (int dx = -1; dx <= 1; dx++)
@@ -738,6 +754,11 @@ void playerPutGameTerrain(int x, int y, int tile)
                 setGameTerrain(nx, ny, TILE_CHEST_1 + dx + (dy + 1) * 2);
             }
         }
+    }
+    else if (tileProperties[tile].specialParam == SPECIAL_ACORN)
+    {
+        setGameTerrain(x, y - 1, TILE_ACORN_2);
+        setGameTerrain(x, y - 2, TILE_ACORN_1);
     }
 
     switch (rando(0, 2))
@@ -1055,6 +1076,15 @@ void breakTile(int x, int y, int speed)
                 {
                     setGameTerrain(x - offsetX + j, y - offsetY + i, TILE_AIR);
                 }
+            }
+        }
+        else if (tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParam == SPECIAL_ACORN)
+        {
+            dropItem(x, y, getElementDrop(gameTerrain[x + y * MAP_WIDTH_MAX]), 1);
+            int offset = tileProperties[gameTerrain[x + y * MAP_WIDTH_MAX]].specialParams[0] - 1;
+            for (int i = 0; i < 3; i++)
+            {
+                setGameTerrain(x, y - offset + i, TILE_AIR);
             }
         }
         else
@@ -1786,6 +1816,31 @@ void generateWorldName(char *nameBuffer, size_t bufferSize)
              ofPhrases[ofIndex]);
 }
 
+int plantTree(int x, int y)
+{
+    int tree_height = rando(MIN_TREE_HEIGHT, MAX_TREE_HEIGHT);
+    // Tree trunk
+    for (int i = 0; i < tree_height; i++)
+        setGameTerrain(x, y - i, TILE_WOODLOG);
+
+    // Tree leaves (7x7 above trunk)
+    int leafRadius = rando(2, 4);
+    for (int i = -3; i <= 3; i++)
+    {
+        for (int j = -3; j < 3; j++)
+        {
+            if (i * i + j * j >= leafRadius * leafRadius)
+                continue;
+
+            int leafX = x + i;
+            int leafY = y - tree_height + 1 - leafRadius - j;
+
+            setGameTerrain(leafX, leafY, TILE_LEAVES); // No need for bounds check, the setGameTerrain function handles it fine twin <3
+        }
+    }
+    return leafRadius;
+}
+
 void generateMap()
 {
     u8 grassSurface[mapWidth];
@@ -1961,32 +2016,12 @@ void generateMap()
     }
 
     // Place trees
-    printDirect("Placing trees...\n");
+    printDirect("Planting trees...\n");
     for (int x = 1; x < mapWidth - 1; x++)
     {
         if (rando(1, TREE_CHANCE) == 1 && gameTerrain[x + (grassSurface[x] + 1) * MAP_WIDTH_MAX] == TILE_DIRT && biomeSurface[x] == BIOME_FOREST)
         {
-            int tree_height = rando(MIN_TREE_HEIGHT, MAX_TREE_HEIGHT);
-            // Tree trunk
-            for (int i = 0; i < tree_height; i++)
-                setGameTerrain(x, grassSurface[x] - 1 - i, TILE_WOODLOG);
-
-            // Tree leaves (7x7 above trunk)
-            int leafRadius = rando(2, 4);
-            for (int i = -3; i <= 3; i++)
-            {
-                for (int j = -3; j < 3; j++)
-                {
-                    if (i * i + j * j >= leafRadius * leafRadius)
-                        continue;
-
-                    int leafX = x + i;
-                    int leafY = grassSurface[x] - tree_height - leafRadius - j;
-
-                    setGameTerrain(leafX, leafY, TILE_LEAVES); // No need for bounds check, the setGameTerrain function handles it fine twin <3
-                }
-            }
-            x += leafRadius * 2;
+            x += plantTree(x, grassSurface[x] - 1) * 2;
         }
         if (x % (mapWidth / 32) == 0)
         {
@@ -2252,7 +2287,7 @@ void consume(int selection)
     }
 }
 
-void swing() 
+void swing()
 {
     swingFrame = frame;
 }
