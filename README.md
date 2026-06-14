@@ -83,7 +83,7 @@ Initial commit with basic project structure.
 
 ### Version 0.2 (In progress, releasing soon):
 - Add more music and intros.
-- Add ability to delete worlds and characters.
+- Add ability to delete worlds and characters. ***(done)***
 - Add acorns to keep the world sustainable if needed. ***(done)***
 - Add swinging animation. ***(done)***
 - Add characters with different styles. ***(done)***

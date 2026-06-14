@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------
 
 Terraria like game for the Nintendo DS
-AzizBgBoss - https://github.com/AzizBgBoss
+AzizBgBoss - https://github.com/AzizBgBoss/TerrariaDS/
 
 ---------------------------------------------------------------------------------*/
 
