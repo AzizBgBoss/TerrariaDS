@@ -698,7 +698,7 @@ const EntityProperties entities[ENTITIES] = {
 
 const TileProperties tileProperties[TILES] = {
 	{"", true, 0, 56, 0, true, 0, 0, {}, false, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_NONE, false}, // TILE_AIR
-	{"Planks", false, 4, 28, 100, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_WOOD, false},
+	{"Wood", false, 4, 28, 100, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_WOOD, false},
 	{"Dirt", false, 1, 16, 100, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_DIRT, false},
 	{"Stone", false, 2, 20, 150, false, 0, 1, {TOOL_TYPE_PICKAXE}, true, false, false, 0, 0, -1, 0, false, SPECIAL_NONE, {}, PARTICLE_STONE, false},
 	{"Wood Log", true, 2, 56, 200, true, TILE_PLANKS, 1, {TOOL_TYPE_AXE}, false, false, false, 0, 0, -1, 0, false, SPECIAL_TREE, {TILE_LEAVES}, PARTICLE_WOOD, false},
