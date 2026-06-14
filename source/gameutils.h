@@ -1388,6 +1388,31 @@ void waitForPress()
     }
 }
 
+bool confirm(const char *message)
+{
+    clearPrint();
+    printSmart(0, 0, message);
+    delay(2);
+    printDirect("\n\nA: Yes\nB: No");
+    scanKeys();
+    while (1)
+    {
+        swiWaitForVBlank();
+        mmStreamUpdate();
+        scanKeys();
+        if (keysDown() & KEY_A)
+        {
+            clearPrint();
+            return true;
+        }
+        if (keysDown() & KEY_B)
+        {
+            clearPrint();
+            return false;
+        }
+    }
+}
+
 // I honestly wanted to make a struct of SaveData but i had some problems with its stack or whatever it is
 
 bool saveMapToFile(const char *filen)
@@ -1537,6 +1562,33 @@ bool loadCharacterFromFile(const char *filen)
     waitForPress();
 
     return true;
+}
+
+void delete (const char *filen)
+{
+    char filename[128];
+    snprintf(filename, sizeof(filename), "terrarias/%s", filen);
+
+    char notice[128 + 34 + 1];
+    snprintf(notice, sizeof(notice), "Are you sure you want to delete %s?", filen);
+
+    if (!confirm(notice))
+    {
+        return;
+    }
+
+    if (remove(filename) == 0)
+    {
+        print(0, 0, "Deleted: ");
+        printDirect(filename);
+        waitForPress();
+    }
+    else
+    {
+        print(0, 0, "Failed to delete: ");
+        printDirect(filename);
+        waitForPress();
+    }
 }
 
 bool loadMapFromFile(const char *filen)

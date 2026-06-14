@@ -266,6 +266,7 @@ mainMenu:
 			}
 			else if (touch.px >= 58 && touch.px <= 197 && touch.py >= 98 && touch.py <= 125)
 			{
+				listWorlds:
 				changeTextBackground();
 				clearPrint();
 
@@ -325,7 +326,7 @@ mainMenu:
 						swiWaitForVBlank();
 						mmStreamUpdate();
 						clearPrint();
-						printDirect("Select a world to load:\nA: Select\nB: Return\n\n");
+						printDirect("Select a world to load:\nA: Select\nB: Return\nX: Delete\n\n");
 						for (int i = 0; i < worldFileCount; i++)
 						{
 							if (i == chosenIndex)
@@ -350,6 +351,11 @@ mainMenu:
 							chosenIndex++;
 							if (chosenIndex >= worldFileCount)
 								chosenIndex = 0;
+						}
+						else if (down & KEY_X)
+						{
+							delete(worldFiles[chosenIndex]);
+							goto listWorlds;
 						}
 						else if (down & KEY_A)
 						{
@@ -385,16 +391,14 @@ mainMenu:
 			}
 			else if (touch.px >= 58 && touch.px <= 197 && touch.py >= 18 && touch.py <= 45) // Characters
 			{
+				listCharacters:
 				changeTextBackground();
 				clearPrint();
 				if (fatInitDefault())
 				{
-					// Player wants to load a world:
-					// We open the local ./terrarias/ folder and list every .ter file (world)
 
 					char characterFiles[15][64];
 					int characterFileCount = 0;
-					// List all .ter files in the terrarias directory
 					DIR *dir;
 					struct dirent *ent;
 					if ((dir = opendir("terrarias/")) != NULL)
@@ -433,7 +437,7 @@ mainMenu:
 						swiWaitForVBlank();
 						mmStreamUpdate();
 						clearPrint();
-						printDirect("Select a character to load:\nA: Select\nB: Return\nY: Create\n\n");
+						printDirect("Select a character to load:\nA: Select\nB: Return\nY: Create\nX: Delete\n\n");
 						for (int i = 0; i < characterFileCount; i++)
 						{
 							if (i == chosenIndex)
@@ -466,6 +470,11 @@ mainMenu:
 						else if (down & KEY_B)
 						{
 							goto mainMenu;
+						}
+						else if (down & KEY_X)
+						{
+							delete(characterFiles[chosenIndex]);
+							goto listCharacters;
 						}
 						else if (down & KEY_Y)
 						{

@@ -164,7 +164,11 @@ endif
 $(BUILD):
 	@mkdir -p $@
 	@make --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
-	@python $(CURDIR)/extras/ram_usage.py $(CURDIR)/build/$(TARGET).map
+	@if command -v python >/dev/null 2>&1; then \
+		python $(CURDIR)/extras/ram_usage.py $(CURDIR)/build/$(TARGET).map; \
+	else \
+		echo "Python is not found, couldn't show memory usage."; \
+	fi
 
 #---------------------------------------------------------------------------------
 clean:
