@@ -61,12 +61,9 @@ You shall press START to continue, with no saving abilities.");
 
 	touchPosition touch;
 
-	int intro = rando(0, 9);
+	int intro = rando(0, INTRO_COUNT - 1);
 
-	if (intro == 0)
-		setStreamAudio("special.pcm");
-	else
-		setStreamAudio("intro1.pcm");
+	setStreamAudio(musics[intros[intro].music]);
 
 	mm_stream mystream;
 	mystream.sampling_rate = 11025;
@@ -83,30 +80,9 @@ You shall press START to continue, with no saving abilities.");
 	vramSetBankC(VRAM_C_SUB_BG);
 	BGCTRL[0] = BG_TILE_BASE(1) | BG_MAP_BASE(0) | BG_COLOR_256 | BG_32x32 | BG_PRIORITY(3);
 
-	if (intro == 0)
-	{
-		dmaCopy(intro2Tiles, (void *)CHAR_BASE_BLOCK(1), intro2TilesLen);
-		dmaCopy(intro2Map, (void *)SCREEN_BASE_BLOCK(0), intro2MapLen);
-		dmaCopy(intro2Pal, BG_PALETTE, intro2PalLen);
-	}
-	else if (intro < 3)
-	{
-		dmaCopy(intro3Tiles, (void *)CHAR_BASE_BLOCK(1), intro3TilesLen);
-		dmaCopy(intro3Map, (void *)SCREEN_BASE_BLOCK(0), intro3MapLen);
-		dmaCopy(intro3Pal, BG_PALETTE, intro3PalLen);
-	}
-	else if (intro < 6)
-	{
-		dmaCopy(intro4Tiles, (void *)CHAR_BASE_BLOCK(1), intro4TilesLen);
-		dmaCopy(intro4Map, (void *)SCREEN_BASE_BLOCK(0), intro4MapLen);
-		dmaCopy(intro4Pal, BG_PALETTE, intro4PalLen);
-	}
-	else
-	{
-		dmaCopy(introTiles, (void *)CHAR_BASE_BLOCK(1), introTilesLen);
-		dmaCopy(introMap, (void *)SCREEN_BASE_BLOCK(0), introMapLen);
-		dmaCopy(introPal, BG_PALETTE, introPalLen);
-	}
+	dmaCopy(intros[intro].tiles, (void *)CHAR_BASE_BLOCK(1), intros[intro].tilesLen);
+	dmaCopy(intros[intro].map, (void *)SCREEN_BASE_BLOCK(0), intros[intro].mapLen);
+	dmaCopy(intros[intro].pal, BG_PALETTE, intros[intro].palLen);
 
 	storeOriginalPalette();
 	fadeInPalette(64, 8);
@@ -119,18 +95,9 @@ mainMenu:
 	dmaCopy(fontTiles, (void *)CHAR_BASE_BLOCK(3), fontTilesLen);
 	dmaFillHalfWords(0, (void *)SCREEN_BASE_BLOCK(3), 2048);
 
-	if (intro == 0)
-	{
-		dmaCopy(mainscreenbg2Tiles, (void *)CHAR_BASE_BLOCK(1), mainscreenbg2TilesLen);
-		dmaCopy(mainscreenbg2Map, (void *)SCREEN_BASE_BLOCK(0), mainscreenbg2MapLen);
-		dmaCopy(mainscreenbg2Pal, BG_PALETTE, mainscreenbg2PalLen);
-	}
-	else
-	{
-		dmaCopy(mainscreenbgTiles, (void *)CHAR_BASE_BLOCK(1), mainscreenbgTilesLen);
-		dmaCopy(mainscreenbgMap, (void *)SCREEN_BASE_BLOCK(0), mainscreenbgMapLen);
-		dmaCopy(mainscreenbgPal, BG_PALETTE, mainscreenbgPalLen);
-	}
+	dmaCopy(mainscreens[intros[intro].mainscreen].tiles, (void *)CHAR_BASE_BLOCK(1), mainscreens[intros[intro].mainscreen].tilesLen);
+	dmaCopy(mainscreens[intros[intro].mainscreen].map, (void *)SCREEN_BASE_BLOCK(0), mainscreens[intros[intro].mainscreen].mapLen);
+	dmaCopy(mainscreens[intros[intro].mainscreen].pal, BG_PALETTE, mainscreens[intros[intro].mainscreen].palLen);
 
 	BGCTRL_SUB[0] = BG_TILE_BASE(1) | BG_MAP_BASE(0) | BG_COLOR_256 | BG_32x32 | BG_PRIORITY(3);
 	dmaCopy(bgTiles, (void *)CHAR_BASE_BLOCK_SUB(1), bgTilesLen);
@@ -266,7 +233,7 @@ mainMenu:
 			}
 			else if (touch.px >= 58 && touch.px <= 197 && touch.py >= 98 && touch.py <= 125)
 			{
-				listWorlds:
+			listWorlds:
 				changeTextBackground();
 				clearPrint();
 
@@ -391,7 +358,7 @@ mainMenu:
 			}
 			else if (touch.px >= 58 && touch.px <= 197 && touch.py >= 18 && touch.py <= 45) // Characters
 			{
-				listCharacters:
+			listCharacters:
 				changeTextBackground();
 				clearPrint();
 				if (fatInitDefault())
