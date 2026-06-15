@@ -641,9 +641,6 @@ Find more information at https://github.com/AzizBgBoss/TerrariaDS");
 
 	dmaCopy(spritesPal, SPRITE_PALETTE_SUB, spritesPalLen);
 
-	setStreamAudio("game2.pcm");
-	mmStreamOpen(&mystream);
-
 	// Setup inventory
 	inventorySetHotbar();
 	setInventorySelection(0);
@@ -2093,6 +2090,83 @@ Find more information at https://github.com/AzizBgBoss/TerrariaDS");
 			}
 		}
 
+		// Music handling
+		if (frame % 1 == 0)
+		{
+			int chosenSong = 0;
+
+			int playerTX = clamp(player.x / 8, 0, mapWidth - 1);
+			int playerTY = clamp(player.y / 8, 0, mapHeight - 1);
+
+			int currentbiome = biomeSurface[playerTX];
+
+			if (currentbiome == BIOME_FOREST)
+			{ // Overworld
+				if (playerTY > stoneSurface[playerTX])
+				{ // Underground
+					chosenSong = SONG_UNDERGROUND;
+				}
+				else
+				{
+					if (gametime < DAY_LENGTH / 2)
+					{ // Day
+						chosenSong = SONG_OVERWORLD_DAY;
+					}
+					else
+					{ // Night
+						chosenSong = SONG_OVERWORLD_NIGHT;
+					}
+				}
+			}
+			else if (currentbiome == BIOME_DESERT)
+			{ // Desert
+				if (playerTY > stoneSurface[playerTX])
+				{ // Underground
+					chosenSong = SONG_DESERT_UNDERGROUND;
+				}
+				else
+				{
+					chosenSong = SONG_DESERT;
+				}
+			}
+			else if (currentbiome == BIOME_SNOW)
+			{ // Snow
+				if (playerTY > stoneSurface[playerTX])
+				{ // Underground
+					chosenSong = SONG_UNDERGROUND;
+				}
+				else
+				{
+					chosenSong = SONG_ICE;
+				}
+			}
+
+			if (currentBiomeSong != chosenSong)
+			{
+				if (volume > 0)
+				{
+					volume--;
+				}
+				else
+				{
+					currentBiomeSong = chosenSong;
+
+					const char *songName = biomeSongs[currentBiomeSong].songNames[rando(0, biomeSongs[currentBiomeSong].songs - 1)];
+
+					mmStreamClose();
+					setStreamAudio(songName);
+					mmStreamOpen(&mystream);
+				}
+			}
+			else
+			{
+				if (volume < 255)
+				{
+					volume++;
+				}
+			}
+		}
+
 		REG_BLDALPHA_SUB =
 			(16 - darkness) | // BG0 weight
 			(darkness << 8);  // BG1 weight
@@ -2261,6 +2335,12 @@ https://github.com/AzizBgBoss/TerrariaDS");
 			printValDirect(player.renderX);
 			printDirect(", ");
 			printValDirect(player.renderY);
+			printDirect("   \n");
+			printDirect("Volume: ");
+			printValDirect(volume);
+			printDirect("   \n");
+			printDirect("Song: ");
+			printValDirect(currentBiomeSong);
 			printDirect("   \n");
 		}
 

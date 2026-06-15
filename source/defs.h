@@ -294,6 +294,18 @@ enum // Particles
     PARTICLES,
 };
 
+enum // Biome songs
+{
+    SONG_OVERWORLD_DAY,
+    SONG_OVERWORLD_NIGHT,
+    SONG_UNDERGROUND,
+    SONG_DESERT,
+    SONG_DESERT_UNDERGROUND,
+    SONG_ICE,
+
+    SONGS,
+};
+
 #if ENTITY_COUNT + 2 + 1 > 31
 #warning "ENTITY_COUNT is too high: affine OAM index would exceed 31 (" ENTITY_COUNT + 2 + 1 ")"
 #endif

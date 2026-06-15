@@ -42,7 +42,11 @@ int craftingOffset = 0;
 bool interacting;
 int touchFrame;
 
+u8 volume = 255; // 0-255 (0 is 0% volume, 255 is 100% volume)
+
 int swingFrame = -99;
+
+int currentBiomeSong = -67;
 
 const char *titleSplashes[] = {
 	"Does this work?",
@@ -911,3 +915,18 @@ const EntityAISounds entityAISounds[ENTITY_AIS] = {
 };
 
 Particle particles[PARTICLE_COUNT] = {0};
+
+typedef struct
+{
+	int songs;
+	const char songNames[4][32];
+} SongList;
+
+const SongList biomeSongs[SONGS] = {
+	{2, {"overworld_day.pcm", "alternate_day.pcm"}},
+	{1, {"overworld_night.pcm"}},
+	{2, {"underground.pcm", "underground_alternate.pcm"}},
+	{1, {"desert.pcm"}},
+	{1, {"underground_desert.pcm"}},
+	{1, {"ice.pcm"}},
+};

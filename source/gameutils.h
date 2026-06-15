@@ -2174,11 +2174,11 @@ bool setStreamAudio(const char *path)
 
 mm_word on_stream_request(mm_word length, mm_addr dest, mm_stream_formats format)
 {
-    uint8_t *target = (uint8_t *)dest;
+    int8_t *target = (int8_t *)dest;
 
     if (!audioReady)
     {
-        memset(target, 128, length);
+        memset(target, 0, length);
         return length;
     }
 
@@ -2187,16 +2187,34 @@ mm_word on_stream_request(mm_word length, mm_addr dest, mm_stream_formats format
 
     if (!nitroromReadFile(audioRom, audioFileId, audioPosition, target, bytesToCopy))
     {
-        memset(target, 128, length);
+        memset(target, 0, length);
         audioPosition = 0;
         return length;
     }
 
     audioPosition += bytesToCopy;
 
+    if (volume != 255)
+    {
+        for (size_t i = 0; i < bytesToCopy; i++)
+        {
+            int sample = target[i];
+
+            // signed PCM scaling around 0
+            sample = (sample * volume) / 255;
+
+            if (sample < -128)
+                sample = -128;
+            if (sample > 127)
+                sample = 127;
+
+            target[i] = (int8_t)sample;
+        }
+    }
+
     if (bytesToCopy < length)
     {
-        memset(target + bytesToCopy, 128, length - bytesToCopy);
+        memset(target + bytesToCopy, 0, length - bytesToCopy);
         audioPosition = 0;
     }
 
