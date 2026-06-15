@@ -469,16 +469,16 @@ const char *musics[] = {
 
 const IntroData mainscreens[] = {
 	{mainscreenbgTiles, mainscreenbgMap, mainscreenbgPal, mainscreenbgTilesLen, mainscreenbgMapLen, mainscreenbgPalLen},
-	{mainscreenbg2Tiles, mainscreenbg2Map, mainscreenbg2Pal, mainscreenbg2TilesLen, mainscreenbg2MapLen, mainscreenbg2PalLen},
+	//{mainscreenbg2Tiles, mainscreenbg2Map, mainscreenbg2Pal, mainscreenbg2TilesLen, mainscreenbg2MapLen, mainscreenbg2PalLen},
 };
 
 const IntroData intros[] = {
 	{introTiles, introMap, introPal, introTilesLen, introMapLen, introPalLen, 0, 0},
-	{intro2Tiles, intro2Map, intro2Pal, intro2TilesLen, intro2MapLen, intro2PalLen, 1, 1},
-	{intro3Tiles, intro3Map, intro3Pal, intro3TilesLen, intro3MapLen, intro3PalLen, 0, 0},
+	{intro2Tiles, intro2Map, intro2Pal, intro2TilesLen, intro2MapLen, intro2PalLen, 1, 0}, // mainscreen should be 1
+	//{intro3Tiles, intro3Map, intro3Pal, intro3TilesLen, intro3MapLen, intro3PalLen, 0, 0},
 	{intro4Tiles, intro4Map, intro4Pal, intro4TilesLen, intro4MapLen, intro4PalLen, 0, 0},
 	{intro5Tiles, intro5Map, intro5Pal, intro5TilesLen, intro5MapLen, intro5PalLen, 0, 0},
-	{intro6Tiles, intro6Map, intro6Pal, intro6TilesLen, intro6MapLen, intro6PalLen, 0, 0},
+	//{intro6Tiles, intro6Map, intro6Pal, intro6TilesLen, intro6MapLen, intro6PalLen, 0, 0},
 	{intro7Tiles, intro7Map, intro7Pal, intro7TilesLen, intro7MapLen, intro7PalLen, 0, 0},
 	{intro8Tiles, intro8Map, intro8Pal, intro8TilesLen, intro8MapLen, intro8PalLen, 0, 0},
 };

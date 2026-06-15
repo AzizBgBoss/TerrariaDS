@@ -82,7 +82,7 @@ Initial commit with basic project structure.
 - Add sound effects. ***(done)***
 
 ### Version 0.2 (In progress, releasing soon):
-- Add more music and intros.
+- Add more music and intros. ***(done: I didn't add much intros because I'M NOT GONNA MIGRATE TO NITROFS AGAIN AGHHH)***
 - Add ability to delete worlds and characters. ***(done)***
 - Add acorns to keep the world sustainable if needed. ***(done)***
 - Add swinging animation. ***(done)***
