@@ -984,7 +984,7 @@ Find more information at https://github.com/AzizBgBoss/TerrariaDS");
 					switch (i)
 					{
 					case 0:
-						printDirect("Quit to main menu");
+						printDirect("Save and Quit to main menu");
 						break;
 					case 1:
 						printDirect("Save Game");
@@ -1000,6 +1000,11 @@ Find more information at https://github.com/AzizBgBoss/TerrariaDS");
 					switch (selection)
 					{
 					case 0:
+						// Save and quit
+						clearPrint();
+						saveMapToFile(worldFileName);
+						clearPrint();
+						saveCharacterToFile(characterName);
 						clearPrint();
 						for (int i = 0; i < 128; i++)
 							oamSet(&oamSub, i, 0, 0, 0, 0, SpriteSize_8x8, SpriteColorFormat_256Color, nullSprite, -1, false, false, false, false, false);

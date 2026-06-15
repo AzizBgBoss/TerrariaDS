@@ -1,5 +1,5 @@
 ![TerrariaDS Logo](media/logo.png)<br>
-[![Downloads](https://img.shields.io/github/downloads/AzizBgBoss/TerrariaDS/total.svg?label=Download)](https://github.com/AzizBgBoss/TerrariaDS/releases)
+[![Downloads](https://img.shields.io/github/downloads/AzizBgBoss/TerrariaDS/total.svg?label=Download)](https://github.com/AzizBgBoss/TerrariaDS/releases) ***(this is the total downloads of all version, it's not an accurate way to count downloads but it's a good indicator of how popular the game is. Check below for each version's downloads)***
 # TerrariaDS
 A terraria remake (not port) for the Nintendo DS made by AzizBgBoss, started on the 26th of July 2025.<br>
 
@@ -21,8 +21,7 @@ You can join my [Discord server](https://discord.gg/zfMwPhvDc4) for more updates
 This project is not affiliated with Re-Logic or Terraria in any way. It is a fan-made project and is not intended for commercial use. All assets used in this project are use for educational and entertainment purposes only. If you're a party of Re-Logic and owner of any assets used in this project and want them removed, please contact me.
 
 ### Notes:
-- 17k downloads, love you guys
-- Summer break is here, I will be coming back to this project, expect an update soon.
+- v0.2 is now released! Enjoy!
 - I'm using the Terraria Wiki as a reference for the game, if you've found any mistakes, please let me know.
 
 ## Installation:
@@ -81,7 +80,7 @@ Initial commit with basic project structure.
 - Add simple day/night cycle (just darken the rear background and start spawning enemies at night). ***(done)***
 - Add sound effects. ***(done)***
 
-### Version 0.2 (In progress, releasing soon):
+### Version 0.2 ([![Download](https://img.shields.io/github/downloads/AzizBgBoss/TerrariaDS/0.2/total.svg?label=Download)](https://github.com/AzizBgBoss/TerrariaDS/releases/tag/0.2)):
 - Add more music and intros. ***(done: I didn't add much intros because I'M NOT GONNA MIGRATE TO NITROFS AGAIN AGHHH)***
 - Add ability to delete worlds and characters. ***(done)***
 - Add acorns to keep the world sustainable if needed. ***(done)***
