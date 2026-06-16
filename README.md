@@ -1,5 +1,5 @@
 ![TerrariaDS Logo](media/logo.png)<br>
-[![Downloads](https://img.shields.io/github/downloads/AzizBgBoss/TerrariaDS/total.svg?label=Download)](https://github.com/AzizBgBoss/TerrariaDS/releases) ***(this is the total downloads of all version, it's not an accurate way to count downloads but it's a good indicator of how popular the game is. Check below for each version's downloads)***
+[![Downloads](https://img.shields.io/github/downloads/AzizBgBoss/TerrariaDS/total.svg?label=Download)](https://github.com/AzizBgBoss/TerrariaDS/releases) ***(this is the total downloads of all versions, it's not an accurate way to count downloads but it's a good indicator of how popular the game is. Check below for each version's downloads)***
 # TerrariaDS
 A terraria remake (not port) for the Nintendo DS made by AzizBgBoss, started on the 26th of July 2025.<br>
 
@@ -23,6 +23,7 @@ This project is not affiliated with Re-Logic or Terraria in any way. It is a fan
 ### Notes:
 - v0.2 is now released! Enjoy!
 - I'm using the Terraria Wiki as a reference for the game, if you've found any mistakes, please let me know.
+- If you like this homebrew game, consider starring the repo or [donating](https://github.com/AzizBgBoss/TerrariaDS#donate), it helps to show your appreciation and support and it motivates me a lot :)
 
 ## Installation:
 You can either compile the game yourself (for nightly releases) or check for stable releases in the Releases page. Please check the Tested devices part before starting.
