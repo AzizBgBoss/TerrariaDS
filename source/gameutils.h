@@ -1006,6 +1006,7 @@ void breakTile(int x, int y, int speed)
                                 {
                                     setGameTerrain(x + j, i + k, TILE_AIR);
                                     gameTerrainHealth[x + j + (i + k) * MAP_WIDTH_MAX] = 0;
+                                    // TODO: drop the acorns dumbass
                                 }
                             }
                         }

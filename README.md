@@ -84,7 +84,7 @@ Initial commit with basic project structure.
 ### Version 0.2 ([![Download](https://img.shields.io/github/downloads/AzizBgBoss/TerrariaDS/0.2/total.svg?label=Download)](https://github.com/AzizBgBoss/TerrariaDS/releases/tag/0.2)):
 - Add more music and intros. ***(done: I didn't add much intros because I'M NOT GONNA MIGRATE TO NITROFS AGAIN AGHHH)***
 - Add ability to delete worlds and characters. ***(done)***
-- Add acorns to keep the world sustainable if needed. ***(done)***
+- Add acorns to keep the world sustainable if needed. ***(~~done~~ thanks to Zenic on discord that told me I forgot to implement acorns dropping from trees, you can still get them from the debug menu (use another character to place them in your world cuz it will be named "the cheater"))***
 - Add swinging animation. ***(done)***
 - Add characters with different styles. ***(done)***
 - Show health as hearts. ***(done)***
