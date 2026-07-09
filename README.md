@@ -22,6 +22,7 @@ This project is not affiliated with Re-Logic or Terraria in any way. It is a fan
 
 ### Notes:
 - v0.2 is now released! Enjoy!
+- I'm considering doing a very tedious and dangerous transition to gl2d (which uses the 3D engine to display 2D graphics) which eliminates many limitations of the 2D mode. But I don't know. I wished I discovered many things sooner before I started getting too deep into the project. And now it feels too late to make many corrections.
 - I'm using the Terraria Wiki as a reference for the game, if you've found any mistakes, please let me know.
 - If you like this homebrew game, consider starring the repo or [donating](https://github.com/AzizBgBoss/TerrariaDS#donate), it helps to show your appreciation and support and it motivates me a lot :)
 
