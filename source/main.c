@@ -261,7 +261,7 @@ mainMenu:
 						{
 							if (strstr(ent->d_name, ".ter") != NULL)
 							{
-								strcpy(worldFiles[worldFileCount], ent->d_name);
+								snprintf(worldFiles[worldFileCount], sizeof(worldFiles[0]), "%s", ent->d_name);
 								worldFileCount++;
 								if (worldFileCount >= 15)
 									break; // Max 15 worlds for now
@@ -374,7 +374,7 @@ mainMenu:
 						{
 							if (strstr(ent->d_name, ".chr") != NULL)
 							{
-								strcpy(characterFiles[characterFileCount], ent->d_name);
+								snprintf(characterFiles[characterFileCount], sizeof(characterFiles[0]), "%s", ent->d_name);
 								characterFileCount++;
 								if (characterFileCount >= 15)
 									break; // Max 15 characters for now
@@ -515,8 +515,7 @@ mainMenu:
 								}
 							}
 
-							strcpy(characterName, names[charNameIndex]);
-							strcat(characterName, ".chr");
+						snprintf(characterName, sizeof(characterName), "%s.chr", names[charNameIndex]);
 
 							player.maxHealth = 100;
 
@@ -752,7 +751,7 @@ Find more information at https://github.com/AzizBgBoss/TerrariaDS");
 				if (pressed & KEY_A)
 				{
 					char tempName[64];
-					strcpy(tempName, characterName);
+					snprintf(tempName, sizeof(tempName), "%s", characterName);
 					char *ext = strstr(tempName, ".chr");
 					if (ext)
 						*ext = '\0';
@@ -760,9 +759,7 @@ Find more information at https://github.com/AzizBgBoss/TerrariaDS");
 					{
 						clearPrint();
 						saveCharacterToFile(characterName);
-						char newName[64];
-						snprintf(newName, sizeof(newName), "%s The Cheater.chr", tempName);
-						strcpy(characterName, newName);
+						snprintf(characterName, sizeof(characterName), "%s The Cheater.chr", tempName);
 						clearPrint();
 						printSmart(0, 0, "Oopsies! You're now \"");
 						printSmartDirect(characterName);
@@ -929,14 +926,14 @@ Find more information at https://github.com/AzizBgBoss/TerrariaDS");
 			clearPrint();
 
 			char cleanWorldName[64];
-			strcpy(cleanWorldName, worldFileName);
+			snprintf(cleanWorldName, sizeof(cleanWorldName), "%s", worldFileName);
 
 			char *ext = strstr(cleanWorldName, ".ter");
 			if (ext)
 				*ext = '\0';
 
 			char cleanCharName[32];
-			strcpy(cleanCharName, characterName);
+			snprintf(cleanCharName, sizeof(cleanCharName), "%s", characterName);
 
 			ext = strstr(cleanCharName, ".chr");
 			if (ext)
